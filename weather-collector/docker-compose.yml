@@ -1,0 +1,11 @@
+version: '3'
+services:
+    weatherstation:
+        build:
+            dockerfile: ./.docker/weatherstation/Dockerfile
+            context: .
+        container_name: weatherstation-server
+        ports:
+            - "7789:7789"
+        volumes:
+            - "./data/measurements:/measurements"
