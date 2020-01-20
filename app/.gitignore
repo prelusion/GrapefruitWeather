@@ -1,5 +1,6 @@
 # APP SPECIFIC
 .idea
+.vscode
 venv
 
 # GENERATED
