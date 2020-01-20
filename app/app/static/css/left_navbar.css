@@ -1,8 +1,8 @@
 .left_navbar {
     position: fixed;
-    height: 90vh;
-    border: 1px solid black;
+    height: 94vh;   
     background-color: #091e49;
-    background-image: linear-gradient(to bottom right, #091e49, #e2063b);
+    background-image: linear-gradient(to bottom left, #091e49,#091e49,  #e2063b);
     width: 12%;
+    border: 1px solid black;
 }

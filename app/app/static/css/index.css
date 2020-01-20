@@ -1,9 +1,10 @@
 body {
-    background-color: #ddd;
+    background-color: #ccc;
+    background: linear-gradient(rgb(139, 138, 139, 0.6), rgb(39, 38, 39, 0.6), rgb(79, 78, 79, 0.6), rgb(139, 138, 139, 0.6)), url("/static/resources/images/background.jpeg");
 }
 
 .maincontainer {
-    margin-top: 100px;
+    margin-top: 50px;
     max-height: 80vh;
 }
 
