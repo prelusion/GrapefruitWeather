@@ -1,4 +1,5 @@
 from flask import Flask
+from app import api
 
 
 def create_app():
@@ -6,5 +7,6 @@ def create_app():
 
     with app.app_context():
         from app import routes
+        app.register_blueprint(api.api_bp, url_prefix="/api")
 
     return app
