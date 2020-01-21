@@ -7,6 +7,6 @@
 }
 
 .top_navbar .navbar .navbar-brand img{
-    height: 5vh;
+    max-height: 110px;
 }
 
