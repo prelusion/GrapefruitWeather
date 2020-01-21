@@ -6,3 +6,21 @@
     width: 12%;
     border: 1px solid black;
 }
+
+.left_navbar hr {
+    width: 80%;
+    color: yellow;
+    padding: 5px;
+}
+
+.left_navbar .track_container {
+    padding: 5px;
+    height: 40px;
+    width: 90%;
+    cursor: pointer;
+    background-color: none;
+}
+
+.left_navbar .track_container:hover {
+    background-color: white;
+}

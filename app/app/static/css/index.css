@@ -6,6 +6,7 @@ body {
 .maincontainer {
     margin-top: 50px;
     max-height: 80vh;
+    margin-left: 25%;
 }
 
 .maincontainer .row {
@@ -16,4 +17,30 @@ body {
 .maincontainer .row .col {
     border: 1px solid black;
     border-radius: 4px;
+}
+
+@media only screen and (max-width: 1200px) {
+    .maincontainer {
+
+    }
+}
+@media only screen and (max-width: 1200px) and (min-width: 992px) {
+    .maincontainer {
+
+    }
+}
+@media only screen and (max-width: 992px) and (min-width: 768px) {
+    .maincontainer {
+
+    }
+}
+@media only screen and (max-width: 768px) and (min-width: 576px) {
+    .maincontainer {
+
+    }
+}
+@media only screen and (max-width: 576px) {
+    .maincontainer {
+
+    }
 }
