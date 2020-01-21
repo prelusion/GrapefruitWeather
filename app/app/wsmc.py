@@ -1,8 +1,10 @@
+
+import sys
 import math
 import os
 import timeit
 from collections import OrderedDict
-
+import multiprocessing as mp
 from app import const
 
 PREFERRED_CHUNK_SIZE = 104857600  # +- 100 MB
@@ -82,18 +84,27 @@ def decode_wsmc_measurement(bindata):
     return measurement
 
 
-def search_by_field(bindata, sfield, value, rfield=None):
+def search_by_field(bindata, sfield, value, rfield=None, skip=None):
     datalen = len(bindata)
     field_startbyte = PROTOCOL_FORMAT_BS[sfield]
     bytecount = PROTOCOL_FORMAT_BC[sfield]
 
     i = field_startbyte
+    skipcount = 0
 
     while i < datalen:
         svalue = bindata[i:i + bytecount]
         decoded = decode_field(sfield, svalue)
 
         if decoded == value:
+
+            if skip and skipcount < skip:
+                skipcount += 1
+                i += MEASUREMENT_BYTE_COUNT
+                continue
+
+            skipcount = 0
+
             m_startbyte = i - field_startbyte
 
             if rfield:
@@ -130,21 +141,90 @@ def find_all_stations_by_id_return_only_temperatures():
     filepath = os.path.join(const.MEASUREMENTS_DIR, "pizza.wsmc")
     data = read_wsmc_file(filepath, ACTUAL_CHUNK_SIZE)
 
-    temperatures = list(search_by_field(data, "station_id", 743700, "temperature"))
+    temperatures = list(search_by_field(data, "station_id", 743700, rfield="temperature"))
     print("first 5 items:", temperatures[:5])
     print("temperatures:", len(temperatures))
 
 
+def find_all_stations_by_id_return_only_temperatures_and_skip_60():
+    filepath = os.path.join(const.MEASUREMENTS_DIR, "pizza.wsmc")
+    data = read_wsmc_file(filepath, ACTUAL_CHUNK_SIZE)
+
+    temperatures = list(search_by_field(data, "station_id", 743700, rfield="temperature", skip=50))
+    print("first 5 items:", temperatures[:5])
+    print("temperatures:", len(temperatures))
+
+
+def find_all_stations_by_id_return_only_temperatures_with_multiprocessing():
+
+    def search_by_field_to_list(sharedlist, bindata, sfield, value, rfield=None, skip=None):
+        sharedlist.append(1)
+
+        # result = list(search_by_field(bindata, sfield, value, rfield, skip))
+        # sharedlist.append(result)
+
+    filepath = os.path.join(const.MEASUREMENTS_DIR, "pizza.wsmc")
+    data = read_wsmc_file(filepath, ACTUAL_CHUNK_SIZE)
+    datalength = len(data)
+    print(datalength)
+
+    if datalength % MEASUREMENT_BYTE_COUNT != 0:
+        raise Exception("Corrupted wsmc file")
+
+    measurements = int(datalength / MEASUREMENT_BYTE_COUNT)
+    if measurements % mp.cpu_count() != 0:
+        raise Exception("Can not divide work to CPUs")
+
+    measurements_per_worker = int(measurements / mp.cpu_count())
+    print(measurements_per_worker)
+
+    i = 0
+    jobs = []
+    manager = mp.Manager()
+    sharedlist = manager.list()
+    for i in range(mp.cpu_count()):
+        p = mp.Process(target=search_by_field_to_list, args=(sharedlist, data[i:i+measurements_per_worker], "station_id", 743700, "temperature"))
+        jobs.append(p)
+        p.start()
+    for proc in jobs:
+        proc.join()
+    print(sharedlist)
+
+
+    # with mp.Pool(mp.cpu_count()) as pool:
+    #     for p in range(mp.cpu_count()):
+    #         print("add to pool map")
+    #         p = pool.apply_async(search_by_field_to_list, (sharedlist, data[i:i+measurements_per_worker], "station_id", 743700, "temperature"))
+    #         jobs.append(p)
+    #         i += measurements_per_worker
+    #     for job in jobs:
+    #         job.wait()
+    #     print(sharedlist)
+    # temperatures = list(search_by_field(data, "station_id", 743700, rfield="temperature", skip=50))
+    # print("first 5 items:", temperatures[:5])
+    # print("temperatures:", len(temperatures))
+
+
 if __name__ == "__main__":
-    print(
-        "Alle stations met specifiek ID zoeken waarbij ik steeds station ID vergelijk en dan de bytes skip naar de volgende meting. Return volledige measurement")
-    print(timeit.timeit("find_all_stations_by_id_return_measurement()", number=1,
-                        setup="from __main__ import find_all_stations_by_id_return_measurement"))
+    # print(
+    #     "Alle stations met specifiek ID zoeken waarbij ik steeds station ID vergelijk en dan de bytes skip naar de volgende meting. Return volledige measurement")
+    # print(timeit.timeit("find_all_stations_by_id_return_measurement()", number=1,
+    #                     setup="from __main__ import find_all_stations_by_id_return_measurement"))
+    #
+    # print(
+    #     "Alle stations met specifiek ID zoeken waarbij ik steeds station ID vergelijk en dan de bytes skip naar de volgende meting. Return alleen temperatuur")
+    # print(timeit.timeit("find_all_stations_by_id_return_only_temperatures()", number=1,
+    #                     setup="from __main__ import find_all_stations_by_id_return_only_temperatures"))
+    #
+    # print(
+    #     "Alle stations met specifiek ID zoeken waarbij ik steeds station ID vergelijk en dan de bytes skip naar de volgende meting. Return alleen temperatuur en skip steeds 60 measurements")
+    # print(timeit.timeit("find_all_stations_by_id_return_only_temperatures_and_skip_60()", number=1,
+    #                     setup="from __main__ import find_all_stations_by_id_return_only_temperatures_and_skip_60"))
 
     print(
-        "Alle stations met specifiek ID zoeken waarbij ik steeds station ID vergelijk en dan de bytes skip naar de volgende meting. Return alleen temperatuur")
-    print(timeit.timeit("find_all_stations_by_id_return_only_temperatures()", number=1,
-                        setup="from __main__ import find_all_stations_by_id_return_only_temperatures"))
+        "Alle stations met specifiek ID zoeken waarbij ik steeds station ID vergelijk en dan de bytes skip naar de volgende meting. Return alleen temperatuur. Met multiprocessing")
+    print(timeit.timeit("find_all_stations_by_id_return_only_temperatures_with_multiprocessing()", number=1,
+                        setup="from __main__ import find_all_stations_by_id_return_only_temperatures_with_multiprocessing"))
 
 #
 # def find_measurements_by_station_id(station_id=None):
