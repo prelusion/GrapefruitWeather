@@ -1,7 +1,8 @@
 from flask import current_app as app
 from flask import render_template
-
+from app import db
 
 @app.route("/")
 def index():
-    return render_template('index.html')
+    racing_tracks = db.get_racing_tracks();	
+    return render_template('index.html', racing_tracks=racing_tracks)
