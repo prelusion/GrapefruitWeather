@@ -1,5 +1,9 @@
+from copy import deepcopy
+
+
 RACING_TRACKS = [
     {
+        "id": 1,
         "title": "MELBOURNE GRAND PRIX CIRCUIT",
         "city": "Melbourne",
         "country": "Australia",
@@ -7,6 +11,7 @@ RACING_TRACKS = [
         "longitude": 144.973010,
     },
     {
+        "id": 2,
         "title": "BAHRAIN INTERNATIONAL CIRCUIT",
         "city": None,
         "country": "Bahrain",
@@ -14,6 +19,7 @@ RACING_TRACKS = [
         "longitude": 50.513254,
     },
     {
+        "id": 3,
         "title": "HANOI CIRCUIT",
         "city": "Hanoi",
         "country": "Vietnam",
@@ -21,6 +27,7 @@ RACING_TRACKS = [
         "longitude": 105.764399,
     },
     {
+        "id": 4,
         "title": "SHANGHAI INTERNATIONAL CIRCUIT",
         "city": "Shanghai",
         "country": "China",
@@ -28,6 +35,7 @@ RACING_TRACKS = [
         "longitude": 121.221456,
     },
     {
+        "id": 5,
         "title": "CIRCUIT ZANDVOORT",
         "city": "Zandvoort",
         "country": "Netherlands",
@@ -35,6 +43,7 @@ RACING_TRACKS = [
         "longitude": 4.544202,
     },
     {
+        "id": 6,
         "title": "CIRCUIT DE BARCELONA-CATALUNYA",
         "city": None,
         "country": "Spain",
@@ -42,6 +51,7 @@ RACING_TRACKS = [
         "longitude": 2.257192,
     },
     {
+        "id": 7,
         "title": "CIRCUIT DE MONACO",
         "city": "Monte Carlo",
         "country": "Monaco",
@@ -49,6 +59,7 @@ RACING_TRACKS = [
         "longitude": 7.421395,
     },
     {
+        "id": 8,
         "title": "BAKU CITY CIRCUIT",
         "city": "Baku",
         "country": "Azerbaijan",
@@ -56,6 +67,7 @@ RACING_TRACKS = [
         "longitude": 49.852495,
     },
     {
+        "id": 9,
         "title": "CIRCUIT GILLES-VILLENEUVE",
         "city": "Montreal",
         "country": "Canada",
@@ -63,6 +75,7 @@ RACING_TRACKS = [
         "longitude": -73.526623
     },
     {
+        "id": 10,
         "title": "CIRCUIT PAUL RICARD",
         "city": None,
         "country": "France",
@@ -70,6 +83,7 @@ RACING_TRACKS = [
         "longitude": 5.792839,
     },
     {
+        "id": 11,
         "title": "RED BULL RING",
         "city": "Spielberg",
         "country": "Austria",
@@ -77,6 +91,7 @@ RACING_TRACKS = [
         "longitude": 14.765180,
     },
     {
+        "id": 12,
         "title": "SILVERSTONE CIRCUIT",
         "city": None,
         "country": "Great Britain",
@@ -84,6 +99,7 @@ RACING_TRACKS = [
         "longitude": 1.014545,
     },
     {
+        "id": 13,
         "title": "HUNGARORING",
         "city": "Budapest",
         "country": "Hungary",
@@ -91,6 +107,7 @@ RACING_TRACKS = [
         "longitude": 19.250772,
     },
     {
+        "id": 14,
         "title": "CIRCUIT DE SPA-FRANCORCHAMPS",
         "city": None,
         "country": "Belgium",
@@ -98,48 +115,82 @@ RACING_TRACKS = [
         "longitude": 5.972007,
     },
     {
+        "id": 15,
         "title": "AUTODROMO NAZIONALE MONZA",
-        "city": "",
+        "city": None,
         "country": "Italy",
+        "latitude": 45.621731,
+        "longitude": 9.284843,
     },
     {
+        "id": 16,
         "title": "MARINA BAY STREET CIRCUIT",
-        "city": "",
+        "city": None,
         "country": "Singapore",
+        "latitude": 1.291346,
+        "longitude": 103.863867,
     },
-
     {
+        "id": 17,
         "title": "SOCHI AUTODROM",
-        "city": "",
+        "city": None,
         "country": "Russia",
+        "latitude": 43.409938,
+        "longitude": 39.968941,
     },
     {
+        "id": 18,
         "title": "SUZUKA INTERNATIONAL RACING COURSE",
         "city": "Ino",
         "country": "Japan",
+        "latitude": 34.845541,
+        "longitude": 136.538941,
     },
     {
+        "id": 19,
         "title": "CIRCUIT OF THE AMERICAS",
         "city": "Austin",
         "country": "United States",
+        "latitude": 30.134544,
+        "longitude": -97.635787,
     },
     {
+        "id": 20,
         "title": "AUTÓDROMO HERMANOS RODRÍGUEZ",
         "city": "Mexico City",
         "country": "Mexico",
+        "latitude": 19.403991,
+        "longitude": -99.089387,
     },
     {
+        "id": 21,
         "title": "AUTÓDROMO JOSÉ CARLOS PACE",
         "city": "Sao Paulo",
         "country": "Brazil",
+        "latitude": -23.701195,
+        "longitude": -46.697879,
     },
     {
+        "id": 22,
         "title": "YAS MARINA CIRCUIT",
-        "city": "",
+        "city": None,
         "country": "Abu Dhabi",
+        "latitude": 24.481184,
+        "longitude": 54.615285,
     },
 ]
 
 
-def get_racing_tracks():
-    return RACING_TRACKS
+def get_racing_tracks(track_id=None, name=None, city=None, country=None):
+    racing_tracks = deepcopy(RACING_TRACKS)
+
+    if track_id is not None:
+        racing_tracks = list(filter(lambda track: track["id"] == int(track_id), racing_tracks))
+    if name is not None:
+        racing_tracks = list(filter(lambda track: track["title"].lower() == name.lower(), racing_tracks))
+    if city is not None:
+        racing_tracks = list(filter(lambda track: track["city"] is not None and track["city"].lower() == city.lower(), racing_tracks))
+    if country is not None:
+        racing_tracks = list(filter(lambda track: track["country"].lower() == country.lower(), racing_tracks))
+
+    return racing_tracks
