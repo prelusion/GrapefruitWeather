@@ -1,7 +1,9 @@
 from copy import deepcopy
 from typing import TypedDict, List
 from datetime import datetime, timedelta
-
+from app import const
+import os
+import re
 
 RACING_TRACKS = [
     {
@@ -191,7 +193,9 @@ def get_racing_tracks(track_id=None, name=None, city=None, country=None):
     if name is not None:
         racing_tracks = list(filter(lambda track: track["title"].lower() == name.lower(), racing_tracks))
     if city is not None:
-        racing_tracks = list(filter(lambda track: track["city"] is not None and track["city"].lower() == city.lower(), racing_tracks))
+        racing_tracks = list(
+            filter(lambda track: track["city"] is not None and track["city"].lower() == city.lower(),
+                   racing_tracks))
     if country is not None:
         racing_tracks = list(filter(lambda track: track["country"].lower() == country.lower(), racing_tracks))
 
@@ -238,5 +242,12 @@ def get_average_measurements(stations, interval, dt1, dt2):
     """
 
 
-def _retrieve_measurements_from_fs(station_id, dt1, dt2):
-    pass
+def _retrieve_measurements_from_fs(station_id=None, dt1=None, dt2=None):
+    files = os.listdir(os.path.join(const.DATA_DIR, "measurements"))
+    files.sort(key=lambda name: int(re.sub('\D', '', name)))
+    files = list((name.split(".wsmc")[0] for name in files if ".wsmc" in name))
+    print(files)
+
+
+if __name__ == "__main__":
+    _retrieve_measurements_from_fs()
