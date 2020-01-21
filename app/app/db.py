@@ -194,3 +194,43 @@ def get_racing_tracks(track_id=None, name=None, city=None, country=None):
         racing_tracks = list(filter(lambda track: track["country"].lower() == country.lower(), racing_tracks))
 
     return racing_tracks
+
+
+def get_measurements(station_id=None, dt1=None, dt2=None, limit=None, offset=None):
+    pass
+
+
+def get_average_measurements(stations, interval, dt1, dt2):
+    """ Returns an array of measurements averaged by the following conditions:
+        - All measurements within each interval are averaged per station
+        - The averages for each station are taken as an average per interval
+
+        This results in an array of averages per interval which are averages
+        of multiple stations and multiple measurements.
+
+        :returns [{ "timestamp": "", "field": "", "value": ""], total
+    """
+
+    """
+    PSEUDOCODE:
+    
+    # Get average per interval for each station
+    stations = []
+    for each stations:
+        measurements = dt1 <= measurements <= dt2
+        measurements_per_interval = split_by_interval(measurements)
+        average_per_interval = map(avg(measurements), measurements_per_interval)
+        stations.append(average_per_interval)
+    
+    # Get average per interval of all stations
+    station_count = len(stations)
+    interval_count = len(stations[0])
+    averages = []
+    for i in range(interval_count):
+        value = 0
+        for j in range(station_count):
+            value += stations[j][i]
+        averages.append(value / station_count)
+    
+    return averages
+    """
