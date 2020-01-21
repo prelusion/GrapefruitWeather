@@ -1,0 +1,19 @@
+body {
+    background-color: #ccc;
+    background: linear-gradient(rgb(139, 138, 139, 0.6), rgb(39, 38, 39, 0.6), rgb(79, 78, 79, 0.6), rgb(139, 138, 139, 0.6)), url("/static/resources/images/background.jpeg");
+}
+
+.maincontainer {
+    margin-top: 50px;
+    max-height: 80vh;
+}
+
+.maincontainer .row {
+    max-height: 40vh;
+    min-height: 40vh;
+}
+
+.maincontainer .row .col {
+    border: 1px solid black;
+    border-radius: 4px;
+}

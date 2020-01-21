@@ -1,0 +1,12 @@
+.top_navbar {
+    
+}
+
+.top_navbar .navbar {
+    background-color:#091e49;
+}
+
+.top_navbar .navbar .navbar-brand img{
+    max-height: 110px;
+}
+
