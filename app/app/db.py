@@ -196,7 +196,7 @@ def get_racing_tracks(track_id=None, name=None, city=None, country=None):
     if country is not None:
         racing_tracks = list(filter(lambda track: track["country"].lower() == country.lower(), racing_tracks))
 
-    return racing_tracks
+    return True, racing_tracks
 
 
 def get_stations(station_id=None, longitude=None, latitude=None, radius=None, country=None):
@@ -204,7 +204,7 @@ def get_stations(station_id=None, longitude=None, latitude=None, radius=None, co
 
     if radius is not None or latitude is not None or longitude is not None:
         if radius is None or latitude is None or longitude is None:
-            return None #//TODO Implement error handling
+            return False, "Radius, latitude or longitude not set."
 
     if station_id is not None:
         stations = list(filter(lambda station: int(station[0]) == int(station_id), stations))
@@ -214,4 +214,4 @@ def get_stations(station_id=None, longitude=None, latitude=None, radius=None, co
     if country is not None:
         stations = list(filter(lambda station: station[2].lower() == country.lower(), stations))
 
-    return stations
+    return True, stations
