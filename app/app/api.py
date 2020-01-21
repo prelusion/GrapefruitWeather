@@ -1,5 +1,5 @@
 from flask import Blueprint, jsonify, request
-from app import data
+from app import db
 
 api_bp = Blueprint('api_bp', __name__)
 
@@ -11,7 +11,7 @@ def get_racing_tracks():
     city = request.args.get("city")
     country = request.args.get("country")
 
-    racing_tracks = data.get_racing_tracks(track_id, name, city, country)
+    racing_tracks = db.get_racing_tracks(track_id, name, city, country)
 
     return jsonify({
         "data": racing_tracks,
