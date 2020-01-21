@@ -1,5 +1,20 @@
+import os
 from copy import deepcopy
+from geopy import distance
+import csv
 
+from flask import jsonify
+
+STATIONS = []
+print(os.getcwd())
+with open("../../DB/stations.csv") as csvfile:
+    reader = csv.reader(csvfile)
+    for row in reader:
+        STATIONS.append(row)
+
+INVALID_ERROR = {
+            "error":"Invalid request"
+    }
 
 RACING_TRACKS = [
     {
@@ -194,3 +209,27 @@ def get_racing_tracks(track_id=None, name=None, city=None, country=None):
         racing_tracks = list(filter(lambda track: track["country"].lower() == country.lower(), racing_tracks))
 
     return racing_tracks
+
+
+def get_stations(station_id=None, longitude=None, latitude=None, radius=None, country=None):
+    stations = deepcopy(STATIONS)
+
+    if radius is not None or latitude is not None or longitude is not None:
+        if radius is None or latitude is None or longitude is None:
+            return get_error("Latitude, longitude or radius missing.")
+
+    if station_id is not None:
+        stations = list(filter(lambda station: int(station[0]) == int(station_id), stations))
+    if longitude is not None and latitude is not None and radius is not None:
+        target_location = [float(latitude), float(longitude)]
+        stations = list(filter(lambda station: distance.distance([float(station[3]), float(station[4])], target_location).km < float(radius), stations))
+    if country is not None:
+        stations = list(filter(lambda station: station[2].lower() == country.lower(), stations))
+
+    return stations
+
+
+def get_error(message="Unspecified"):
+    return  {
+        "error": message
+    }
