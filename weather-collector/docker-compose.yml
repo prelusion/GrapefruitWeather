@@ -2,10 +2,17 @@ version: '3'
 services:
     weatherstation:
         build:
-            dockerfile: ./.docker/weatherstation/Dockerfile
+            dockerfile: ./Dockerfile
             context: .
-        container_name: weatherstation-server
+        container_name: weather-collector
         ports:
             - "7789:7789"
         volumes:
-            - "./data/measurements:/measurements"
+            - "nfsmount:/measurements"
+volumes:
+    nfsmount:
+        driver: local
+        driver_opts:
+            type: nfs
+            o: addr=40.68.169.51
+            device: ":/nfsshare/"
