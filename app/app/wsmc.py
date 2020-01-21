@@ -1,8 +1,9 @@
-from collections import OrderedDict
-import os
-from app import const
 import math
+import os
 import timeit
+from collections import OrderedDict
+
+from app import const
 
 PREFERRED_CHUNK_SIZE = 104857600  # +- 100 MB
 
@@ -47,74 +48,6 @@ CHUNKS = math.trunc(PREFERRED_CHUNK_SIZE / MEASUREMENT_BYTE_COUNT)
 ACTUAL_CHUNK_SIZE = CHUNKS * MEASUREMENT_BYTE_COUNT
 
 
-def decode_wsmc(bindata):
-    binarydatalen = len(bindata)
-    i = 0
-
-    while i < binarydatalen:
-        measurement = OrderedDict()
-
-        for name, bytecount in PROTOCOL_FORMAT_BC.items():
-
-            if i > binarydatalen or i + bytecount > binarydatalen:
-                return
-
-            bytesout = bindata[i:i + bytecount]
-            converted = int.from_bytes(bytesout, byteorder="big", signed=True)
-
-            if name in ("events", "null_indication"):
-                converted = format(converted, "b")
-
-            if name == "rainfall":
-                converted = converted / 100
-
-            if name in ("temperature",
-                        "dew_point",
-                        "air_pressure",
-                        "sea_air_pressure",
-                        "visibility",
-                        "air_speed",
-                        "snowfall",
-                        "cloud_pct"):
-                converted = converted / 10
-
-            measurement[name] = converted
-            i += bytecount
-
-        yield measurement
-
-
-def decode_wsmc_measurement(bindata):
-    measurement = OrderedDict()
-    i = 0
-
-    for name, bytecount in PROTOCOL_FORMAT_BC.items():
-
-        bytesout = bindata[i:i + bytecount]
-        converted = int.from_bytes(bytesout, byteorder="big", signed=True)
-
-        if name in ("events", "null_indication"):
-            converted = format(converted, "b")
-
-        if name == "rainfall":
-            converted = converted / 100
-
-        if name in ("temperature",
-                    "dew_point",
-                    "air_pressure",
-                    "sea_air_pressure",
-                    "visibility",
-                    "air_speed",
-                    "snowfall",
-                    "cloud_pct"):
-            converted = converted / 10
-
-        measurement[name] = converted
-        i += bytecount
-
-    return measurement
-
-
 def decode_field(field, bindata):
     bytesout = bindata[0:PROTOCOL_FORMAT_BC[field]]
     decoded = int.from_bytes(bytesout, byteorder="big", signed=True)
@@ -138,21 +71,40 @@ def decode_field(field, bindata):
     return decoded
 
 
-def search_by_field(bindata, field, value):
-    datalen = len(bindata)
-    startbyte = PROTOCOL_FORMAT_BS[field]
-    bytecount = PROTOCOL_FORMAT_BC[field]
+def decode_wsmc_measurement(bindata):
+    measurement = OrderedDict()
+    i = 0
 
-    i = startbyte
+    for field, bytecount in PROTOCOL_FORMAT_BC.items():
+        measurement[field] = decode_field(field, bindata[i:])
+        i += bytecount
+
+    return measurement
+
+
+def search_by_field(bindata, sfield, value, rfield=None):
+    datalen = len(bindata)
+    field_startbyte = PROTOCOL_FORMAT_BS[sfield]
+    bytecount = PROTOCOL_FORMAT_BC[sfield]
+
+    i = field_startbyte
 
     while i < datalen:
-        rvalue = bindata[i:i + bytecount]
-        decoded = decode_field(field, rvalue)
+        svalue = bindata[i:i + bytecount]
+        decoded = decode_field(sfield, svalue)
 
         if decoded == value:
-            measurementdata = bindata[i:i + MEASUREMENT_BYTE_COUNT]
-            measurement = decode_wsmc_measurement(measurementdata)
-            yield measurement
+            m_startbyte = i - field_startbyte
+
+            if rfield:
+                """ Return decoded value for field """
+                m_field_startbyte = m_startbyte + PROTOCOL_FORMAT_BS[rfield]
+                field_data = bindata[m_field_startbyte:m_field_startbyte + PROTOCOL_FORMAT_BC[rfield]]
+                yield decode_field(rfield, field_data)
+            else:
+                """ Return decoded measurement """
+                measurement_data = bindata[m_startbyte:m_startbyte + MEASUREMENT_BYTE_COUNT]
+                yield decode_wsmc_measurement(measurement_data)
 
         i += MEASUREMENT_BYTE_COUNT
 
@@ -165,43 +117,34 @@ def read_wsmc_file(filepath, bytecount=None):
             return f.read()
 
 
-def find_all_stations_by_id_not_decoding_all_measurements():
+def find_all_stations_by_id_return_measurement():
     filepath = os.path.join(const.MEASUREMENTS_DIR, "pizza.wsmc")
     data = read_wsmc_file(filepath, ACTUAL_CHUNK_SIZE)
-    measurements = list(search_by_field(data, 'station_id', 743700))
+
+    measurements = list(search_by_field(data, "station_id", 743700))
+    print("first 5 items:", measurements[:5])
     print("measurements:", len(measurements))
 
 
-def find_all_stations_by_id_decoding_all_measurements():
+def find_all_stations_by_id_return_only_temperatures():
     filepath = os.path.join(const.MEASUREMENTS_DIR, "pizza.wsmc")
     data = read_wsmc_file(filepath, ACTUAL_CHUNK_SIZE)
-    measurements = []
-    for measurement in decode_wsmc(data):
-        if measurement["station_id"] == 743700:
-            measurements.append(measurement)
-    print("measurements:", len(measurements))
+
+    temperatures = list(search_by_field(data, "station_id", 743700, "temperature"))
+    print("first 5 items:", temperatures[:5])
+    print("temperatures:", len(temperatures))
 
 
 if __name__ == "__main__":
-    print("Alle stations met specifiek ID zoeken waarbij ik steeds station ID vergelijk en dan de bytes skip naar de volgende meting.")
-    print(timeit.timeit("find_all_stations_by_id_not_decoding_all_measurements()", number=1, setup="from __main__ import find_all_stations_by_id_not_decoding_all_measurements"))
-    print("Alle stations met specifiek ID zoeken waarbij ik steeds de meting decode, en dan het station ID vergelijk.")
-    print(timeit.timeit("find_all_stations_by_id_decoding_all_measurements()", number=1, setup="from __main__ import find_all_stations_by_id_decoding_all_measurements"))
+    print(
+        "Alle stations met specifiek ID zoeken waarbij ik steeds station ID vergelijk en dan de bytes skip naar de volgende meting. Return volledige measurement")
+    print(timeit.timeit("find_all_stations_by_id_return_measurement()", number=1,
+                        setup="from __main__ import find_all_stations_by_id_return_measurement"))
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    print(
+        "Alle stations met specifiek ID zoeken waarbij ik steeds station ID vergelijk en dan de bytes skip naar de volgende meting. Return alleen temperatuur")
+    print(timeit.timeit("find_all_stations_by_id_return_only_temperatures()", number=1,
+                        setup="from __main__ import find_all_stations_by_id_return_only_temperatures"))
 
 #
 # def find_measurements_by_station_id(station_id=None):
