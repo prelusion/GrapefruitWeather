@@ -4,6 +4,11 @@ from datetime import datetime, timedelta
 from app import const
 import os
 import re
+from collections import OrderedDict
+from functools import reduce
+from app import util
+from pprint import pprint
+
 
 RACING_TRACKS = [
     {
@@ -243,11 +248,70 @@ def get_average_measurements(stations, interval, dt1, dt2):
 
 
 def _retrieve_measurements_from_fs(station_id=None, dt1=None, dt2=None):
-    files = os.listdir(os.path.join(const.DATA_DIR, "measurements"))
+    files = os.listdir(const.MEASUREMENTS_DIR)
     files.sort(key=lambda name: int(re.sub('\D', '', name)))
     files = list((name.split(".wsmc")[0] for name in files if ".wsmc" in name))
     print(files)
 
 
+def _decode_wsmc(binarydata):
+    protocolformat = OrderedDict({
+        "station_identifier": 3,
+        "timestamp": 4,
+        "null_indication": 2,
+        "temperature": 3,
+        "dew_point": 3,
+        "air_pressure": 3,
+        "sea_air_pressure": 3,
+        "visibility": 2,
+        "air_speed": 2,
+        "rainfall": 3,
+        "snowfall": 2,
+        "events": 1,
+        "cloud_pct": 2,
+        "wind_direction": 2,
+    })
+
+    measurements = []
+    i = 0
+    while i < len(binarydata):
+        measurement = OrderedDict()
+        for name, bytecount in protocolformat.items():
+            bytesout = binarydata[i:i + bytecount]
+            converted = int.from_bytes(bytesout, byteorder="big", signed=True)
+
+            if name in ("events", "null_indication"):
+                converted = format(converted, "b")
+
+            if name == "rainfall":
+                converted = converted / 100
+
+            if name in ("temperature",
+                        "dew_point",
+                        "air_pressure",
+                        "sea_air_pressure",
+                        "visibility",
+                        "air_speed",
+                        "snowfall",
+                        "cloud_pct"):
+                converted = converted / 10
+
+            measurement[name] = converted
+            i += bytecount
+
+        measurements.append(measurement)
+
+    pprint(measurements)
+
+
+def _read_binary_file(filepath):
+    with open(filepath, "rb") as f:
+        return f.read()
+
+
 if __name__ == "__main__":
-    _retrieve_measurements_from_fs()
+    data = _read_binary_file(os.path.join(const.MEASUREMENTS_DIR, "100350.wsmc"))
+
+    # data = bytes.fromhex("01DD8A5E2709C90000FFFFDDFFFFDD00284C002869003B002F000006000000020500E4")
+    # print(hexdata)
+    _decode_wsmc(data)

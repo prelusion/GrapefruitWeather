@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 from typing import TypedDict, List
+from bisect import bisect_left
 
 
 def avg(lst):
@@ -33,3 +34,11 @@ def split_by_interval(array: List[SortedTimestampedArray], interval: int):
         else:
             values += el["value"]
             count += 1
+
+
+def binary_search(array, value):
+    i = bisect_left(array, value)
+    if i != len(a) and array[i] == value:
+        return i
+    else:
+        return -1
