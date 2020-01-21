@@ -19,3 +19,20 @@ def get_racing_tracks():
         "offset": 0,
         "limit": 50,
     })
+
+@api_bp.route('/stations')
+def get_stations():
+    station_id = request.args.get("id")
+    longitude = request.args.get("longitude")
+    latitude = request.args.get("latitude")
+    radius = request.args.get("radius")
+    country = request.args.get("country")
+
+    stations = db.get_stations(station_id, longitude, latitude, radius, country)
+
+    return jsonify({
+        "data": stations,
+        "total": len(stations),
+        "offset": 0,
+        "limit": 50,
+    })
