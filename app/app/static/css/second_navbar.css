@@ -1,12 +1,28 @@
 .main_wrapper {
+}
+
+.main_wrapper .dropdown {
     background-color: red;
-    height: 50px;
     display: none;
 }
 
 @media only screen and (max-width: 1200px) {
-    .main_wrapper{
+    .main_wrapper .dropdown{
         display: block;
-
     }
+}
+
+.main_wrapper .dropdown :hover {
+    background-color: brown;
+}
+
+.main_wrapper .dropdown .unfold_txt {
+    text-align: center;
+    margin-bottom: 0px;
+}
+
+.main_wrapper .menu_items {
+    height: 200px;
+    background-color: blue;
+    display: none;
 }
