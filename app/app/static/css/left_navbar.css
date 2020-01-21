@@ -3,7 +3,7 @@
     height: 94vh;   
     background-color: #091e49;
     background-image: linear-gradient(to bottom left, #091e49,#091e49,  #e2063b);
-    width: 12%;
+    width: 250px;
     border: 1px solid black;
 }
 
@@ -11,6 +11,28 @@
     width: 80%;
     color: yellow;
     padding: 5px;
+}
+
+@media only screen and (max-width: 1200px) and (min-width: 992px) {
+    .left_navbar {
+        visibility: hidden;
+    }
+}
+
+@media only screen and (max-width: 992px) and (min-width: 768px) {
+    .left_navbar {
+        visibility: hidden;
+    }
+}
+@media only screen and (max-width: 768px) and (min-width: 576px) {
+    .left_navbar {
+        visibility: hidden;
+    }
+}
+@media only screen and (max-width: 576px) {
+    .left_navbar {
+        visibility: hidden;
+    }
 }
 
 .left_navbar .track_container {
@@ -24,3 +46,5 @@
 .left_navbar .track_container:hover {
     background-color: white;
 }
+
+
