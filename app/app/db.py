@@ -230,6 +230,6 @@ def get_stations(station_id=None, longitude=None, latitude=None, radius=None, co
 
 
 def get_error(message="Unspecified"):
-    return  {
+    return {
         "error": message
     }
