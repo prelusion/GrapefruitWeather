@@ -37,14 +37,27 @@
 
 .left_navbar .track_container {
     padding: 5px;
-    height: 40px;
+    height: 2em;
     width: 90%;
     cursor: pointer;
     background-color: none;
+    color: #848689 ;
+    overflow: hidden;
 }
 
 .left_navbar .track_container:hover {
-    background-color: white;
+    color: #e2063b;
+    border: 1px solid gold;
+    border-radius: 5px;
+    margin-left: 5px;
 }
 
+.left_navbar .open_tracks {
+    color: #e2063b;
+    cursor: pointer;
+}
 
+    color: #e2063b;
+    cursor: pointer;
+.left_navbar .open_tracks {
+}
