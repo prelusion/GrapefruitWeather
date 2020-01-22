@@ -67,29 +67,17 @@ def decode_field(field, data):
 
     if field == "station_id":
         return decoded
-
     if field == "timestamp":
         return datetime.datetime.utcfromtimestamp(decoded)
-
     if field == "rainfall":
         return decoded / 100
-
     if field == "wind_direction":
         return decoded
-
     if field == "events" or field == "null_indication":
         return format(decoded, "b")
-
-    if field in ("temperature",
-                 "dew_point",
-                 "air_pressure",
-                 "sea_air_pressure",
-                 "visibility",
-                 "air_speed",
-                 "snowfall",
-                 "cloud_pct"):
+    if field in ("temperature", "dew_point", "air_pressure", "sea_air_pressure",
+                 "visibility", "air_speed", "snowfall", "cloud_pct"):
         return decoded / 10
-
     else:
         raise ValueError("Unnown field")
 

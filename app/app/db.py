@@ -1,4 +1,5 @@
 from copy import deepcopy
+from app import wsmc
 from typing import TypedDict, List
 from datetime import datetime, timedelta
 from app import const
@@ -206,6 +207,9 @@ def get_racing_tracks(track_id=None, name=None, city=None, country=None):
 
     return racing_tracks
 
+
+def get_most_recent_air_pressure(seconds=120):
+    list(wsmc.filter_measurements_by_timestamp(dataread, 743700, test1_dt1, test1_dt2))
 
 def get_measurements(station_id=None, dt1=None, dt2=None, limit=None, offset=None):
     pass
