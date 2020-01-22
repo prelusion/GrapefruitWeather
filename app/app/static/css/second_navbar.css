@@ -1,0 +1,12 @@
+.main_wrapper {
+    background-color: red;
+    height: 50px;
+    display: none;
+}
+
+@media only screen and (max-width: 1200px) {
+    .main_wrapper{
+        display: block;
+
+    }
+}
