@@ -57,9 +57,14 @@ def read_test_file():
 def read_file(filepath, bytecount=None):
     with open(filepath, "rb") as f:
         if bytecount:
-            return f.read(bytecount)
+            data = f.read(bytecount)
         else:
-            return f.read()
+            data = f.read()
+
+    if len(dataread) % MEASUREMENT_BYTE_COUNT != 0:
+        raise Exception("wsmc file is corrupt")
+
+    return data
 
 
 def decode_field(field, data):
@@ -130,9 +135,6 @@ def filter_measurements_by_timestamp(data, station_id, dt1, dt2):
 
 if __name__ == "__main__":
     dataread = read_test_file()
-
-    if len(dataread) % MEASUREMENT_BYTE_COUNT != 0:
-        raise Exception("wsmc file is corrupt")
 
     test1_dt1 = datetime.datetime(2020, 1, 21, 14, 56, 38)
     test1_dt2 = datetime.datetime(2020, 1, 21, 14, 57, 38)
