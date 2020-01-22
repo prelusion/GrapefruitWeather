@@ -229,8 +229,9 @@ def get_stations(station_id=None, longitude=None, latitude=None, radius=None, co
     return stations
 
 
-def get_most_recent_air_pressure(seconds=120):
-    list(wsmc.filter_measurements_by_timestamp(wsmc.read_test_file(), 743700, test1_dt1, test1_dt2))
+def get_most_recent_air_pressure(station_id, seconds=120):
+    return list(wsmc.filter_most_recent_measurements(wsmc.read_test_file(), station_id, seconds))
+
 
 def get_measurements(station_id=None, dt1=None, dt2=None, limit=None, offset=None):
     pass

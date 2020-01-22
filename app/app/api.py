@@ -57,6 +57,7 @@ def get_measurement_average(field):
         "limit": limit,
     })
 
+
 @api_bp.route('/stations')
 def get_stations():
     station_id = request.args.get("id")
@@ -72,4 +73,19 @@ def get_stations():
         "total": len(stations),
         "offset": 0,
         "limit": 50,
+    })
+
+
+@api_bp.route('/airpressure')
+def get_most_recent_air_pressure():
+    station = request.args.get("station", 743700)
+    seconds = request.args.get("seconds", 120)
+
+    measurements = db.get_most_recent_air_pressure(station, seconds)
+
+    return jsonify({
+        "data": measurements,
+        "total": len(measurements),
+        "offset": 0,
+        "limit": 0,
     })

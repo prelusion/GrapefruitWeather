@@ -61,7 +61,7 @@ def read_file(filepath, bytecount=None):
         else:
             data = f.read()
 
-    if len(dataread) % MEASUREMENT_BYTE_COUNT != 0:
+    if len(data) % MEASUREMENT_BYTE_COUNT != 0:
         raise Exception("wsmc file is corrupt")
 
     return data
@@ -133,23 +133,48 @@ def filter_measurements_by_timestamp(data, station_id, dt1, dt2):
             break
 
 
+def filter_most_recent_measurements(data, station_id, seconds):
+    fieldaddr = PROTOCOL_FORMAT_BS["timestamp"]
+    field_bc = PROTOCOL_FORMAT_BC["timestamp"]
+
+    first = None
+
+    for measurementbytes in filter_measurements_by_field(data, "station_id", station_id):
+        bytevalue = measurementbytes[fieldaddr:fieldaddr + field_bc]
+        timestamp = decode_field("timestamp", bytevalue)
+
+        if not first:
+            first = timestamp
+
+        if timestamp < first - datetime.timedelta(seconds=seconds):
+            break
+
+        yield decode_measurement(measurementbytes)
+
+
 if __name__ == "__main__":
     dataread = read_test_file()
 
-    test1_dt1 = datetime.datetime(2020, 1, 21, 14, 56, 38)
-    test1_dt2 = datetime.datetime(2020, 1, 21, 14, 57, 38)
-
     print(timeit.timeit(
-        "print(len(list(filter_measurements_by_timestamp(dataread, 743700, test1_dt1, test1_dt2))))",
+        "print(len(list(filter_most_recent_measurements(dataread, 743700, 120))))",
         number=1,
         globals=globals()
     ))
 
-    test2_dt1 = datetime.datetime(2020, 1, 21, 14, 59, 30)
-    test2_dt2 = datetime.datetime(2020, 1, 21, 15, 1, 30)
-
-    print(timeit.timeit(
-        "print(len(list(filter_measurements_by_timestamp(dataread, 743700, test2_dt1, test2_dt2))))",
-        number=1,
-        globals=globals()
-    ))
+    # test1_dt1 = datetime.datetime(2020, 1, 21, 14, 56, 38)
+    # test1_dt2 = datetime.datetime(2020, 1, 21, 14, 57, 38)
+    #
+    # print(timeit.timeit(
+    #     "print(len(list(filter_measurements_by_timestamp(dataread, 743700, test1_dt1, test1_dt2))))",
+    #     number=1,
+    #     globals=globals()
+    # ))
+    #
+    # test2_dt1 = datetime.datetime(2020, 1, 21, 14, 59, 30)
+    # test2_dt2 = datetime.datetime(2020, 1, 21, 15, 1, 30)
+    #
+    # print(timeit.timeit(
+    #     "print(len(list(filter_measurements_by_timestamp(dataread, 743700, test2_dt1, test2_dt2))))",
+    #     number=1,
+    #     globals=globals()
+    # ))
