@@ -1,4 +1,5 @@
 $(document).ready(function() {
+
     function check_window_size(){
         var windowsize = $(window).width();
         if(windowsize <= 1185){
