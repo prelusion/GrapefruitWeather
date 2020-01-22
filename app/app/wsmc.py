@@ -128,29 +128,18 @@ def read_wsmc_file(filepath, bytecount=None):
             return f.read()
 
 
-def find_all_stations_by_id_return_measurement():
-    filepath = os.path.join(const.MEASUREMENTS_DIR, "pizza.wsmc")
-    data = read_wsmc_file(filepath, ACTUAL_CHUNK_SIZE)
-
+def find_all_stations_by_id_return_measurement(data):
     measurements = list(search_by_field(data, "station_id", 743700))
-    print("first 5 items:", measurements[:5])
     print("measurements:", len(measurements))
 
 
-def find_all_stations_by_id_return_only_temperatures():
-    filepath = os.path.join(const.MEASUREMENTS_DIR, "pizza.wsmc")
-    data = read_wsmc_file(filepath, ACTUAL_CHUNK_SIZE)
-
+def find_all_stations_by_id_return_only_temperatures(data):
     temperatures = list(search_by_field(data, "station_id", 743700, rfield="temperature"))
-    print("first 5 items:", temperatures[:5])
     print("temperatures:", len(temperatures))
 
 
-def find_all_stations_by_id_return_only_temperatures_and_skip_60():
-    filepath = os.path.join(const.MEASUREMENTS_DIR, "pizza.wsmc")
-    data = read_wsmc_file(filepath, ACTUAL_CHUNK_SIZE)
+def find_all_stations_by_id_return_only_temperatures_and_skip_60(data):
     temperatures = list(search_by_field(data, "station_id", 743700, rfield="temperature", skip=50))
-    print("first 5 items:", temperatures[:5])
     print("temperatures:", len(temperatures))
 
 
@@ -164,23 +153,13 @@ def read_test_wsmc_file():
     return read_wsmc_file(filepath, ACTUAL_CHUNK_SIZE)
 
 
-def search_by_field_threaded(pool, data, datalength):
+def search_by_field_threaded(pool, cpucount, data, workerbytes):
     manager = mp.Manager()
     sharedlist = manager.list()
     i = 0
     jobs = []
 
-    if datalength % MEASUREMENT_BYTE_COUNT != 0:
-        raise Exception("Corrupted wsmc file")
-
-    measurements = int(datalength / MEASUREMENT_BYTE_COUNT)
-    if measurements % mp.cpu_count() != 0:
-        raise Exception("Can not divide work to CPUs")
-
-    measurements_per_worker = int(measurements / mp.cpu_count())
-    workerbytes = measurements_per_worker*MEASUREMENT_BYTE_COUNT
-
-    for p in range(mp.cpu_count()):
+    for p in range(cpucount):
         workerdata = data[i:i+workerbytes]
         p = pool.apply_async(
             search_by_field_to_list,
@@ -191,32 +170,34 @@ def search_by_field_threaded(pool, data, datalength):
 
     [job.wait() for job in jobs]
 
-    print(sharedlist)
-    print("total measureents:", sum(sharedlist))
+    print("temperatures:", sum(sharedlist))
 
 
 if __name__ == "__main__":
-    # print(
-    #     "Alle stations met specifiek ID zoeken waarbij ik steeds station ID vergelijk en dan de bytes skip naar de volgende meting. Return volledige measurement")
-    # print(timeit.timeit("find_all_stations_by_id_return_measurement()", number=1,
-    #                     setup="from __main__ import find_all_stations_by_id_return_measurement"))
-    #
-    # print(
-    #     "Alle stations met specifiek ID zoeken waarbij ik steeds station ID vergelijk en dan de bytes skip naar de volgende meting. Return alleen temperatuur")
-    # print(timeit.timeit("find_all_stations_by_id_return_only_temperatures()", number=1,
-    #                     setup="from __main__ import find_all_stations_by_id_return_only_temperatures"))
-    #
-    # print(
-    #     "Alle stations met specifiek ID zoeken waarbij ik steeds station ID vergelijk en dan de bytes skip naar de volgende meting. Return alleen temperatuur en skip steeds 60 measurements")
-    # print(timeit.timeit("find_all_stations_by_id_return_only_temperatures_and_skip_60()", number=1,
-    #                     setup="from __main__ import find_all_stations_by_id_return_only_temperatures_and_skip_60"))
+    data = read_test_wsmc_file()
+    datalength = len(data)
 
-    with mp.Pool(mp.cpu_count()) as pool:
-        data = read_test_wsmc_file()
-        datalength = len(data)
+    print("Find all stations by ID, return temperatures")
+    print(timeit.timeit(
+        "find_all_stations_by_id_return_only_temperatures(data)",
+        number=1,
+        globals=globals()
+    ))
+
+    cpucount = mp.cpu_count()
+    with mp.Pool(cpucount) as pool:
+        if datalength % MEASUREMENT_BYTE_COUNT != 0:
+            raise Exception("Corrupted wsmc file")
+
+        measurements = int(datalength / MEASUREMENT_BYTE_COUNT)
+        if measurements % cpucount != 0:
+            raise Exception("Can not divide work to CPUs")
+
+        measurements_per_worker = int(measurements / cpucount)
+        workerbytes = measurements_per_worker*MEASUREMENT_BYTE_COUNT
 
         print(timeit.timeit(
-            "search_by_field_threaded(pool, data, datalength)",
+            "search_by_field_threaded(pool, cpucount, data, workerbytes)",
             number=1,
             globals=globals()
         ))
