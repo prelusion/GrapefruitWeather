@@ -82,12 +82,12 @@ def decode_field(field, data):
         raise ValueError("Unnown field")
 
 
-def decode_wsmc_measurement(bindata):
+def decode_measurement(bindata):
     measurement = OrderedDict()
     i = 0
 
     for field, bytecount in PROTOCOL_FORMAT_BC.items():
-        measurement[field] = decode_field(field, bindata[i:])
+        measurement[field] = decode_field(field, bindata[i:i+bytecount])
         i += bytecount
 
     return measurement
@@ -124,7 +124,7 @@ def search_by_field(bindata, sfield, value, rfield=None, skip=None):
             else:
                 """ Return decoded measurement """
                 measurement_data = bindata[m_startbyte:m_startbyte + MEASUREMENT_BYTE_COUNT]
-                yield decode_wsmc_measurement(measurement_data)
+                yield decode_measurement(measurement_data)
 
         i += MEASUREMENT_BYTE_COUNT
 
@@ -185,18 +185,34 @@ def search_by_field_threaded(pool, cpucount, data, workerbytes):
 
 def iterate_dataset_left(data, fieldname):
     """ Each iteration the value of the given fieldname is yielded. """
-    field_startbyte = PROTOCOL_FORMAT_BS[fieldname]
-    field_bytecount = PROTOCOL_FORMAT_BC[fieldname]
-
     i = len(data)
-
     while i > 0:
         measurementaddr = (i - MEASUREMENT_BYTE_COUNT)
-        # fieldaddr = measurementaddr + field_startbyte
-        # bytevalue = data[fieldaddr:fieldaddr + field_bytecount]
         yield data[measurementaddr:measurementaddr + MEASUREMENT_BYTE_COUNT]
         i -= MEASUREMENT_BYTE_COUNT
-        # decode_field(fieldname, bytevalue),
+
+
+def filter_measurements_by_field(data, fieldname, value):
+    fieldaddr = PROTOCOL_FORMAT_BS[fieldname]
+    field_bc = PROTOCOL_FORMAT_BC[fieldname]
+
+    for measurementbytes in iterate_dataset_left(data, "station_id"):
+        bytevalue = measurementbytes[fieldaddr:fieldaddr + field_bc]
+        decoded = decode_field(fieldname, bytevalue)
+
+        if decoded == value:
+            yield measurementbytes
+
+
+def filter_measurements_by_timestamp(data, station_id, dt1, dt2):
+    fieldaddr = PROTOCOL_FORMAT_BS["timestamp"]
+    field_bc = PROTOCOL_FORMAT_BC["timestamp"]
+
+    for measurementbytes in filter_measurements_by_field(data, "station_id", station_id):
+        bytevalue = measurementbytes[fieldaddr:fieldaddr + field_bc]
+        timestamp = decode_field("timestamp", bytevalue)
+        if dt1 <= timestamp <= dt2:
+            yield decode_measurement(bytevalue)
 
 
 def iterate_dataset_left_to_list(sharedlist, data, fieldname):
@@ -224,15 +240,6 @@ def iterate_dataset_left_threaded(pool, cpucount, data, workerbytes, fieldname):
     print("temperatures:", sum(sharedlist))
 
 
-def get_air_pressure(data, station_id):
-    i = 0
-    for measurementbytes in iterate_dataset_left(data, "station_id"):
-        if i == 10:
-            break
-        print("measurement", measurementbytes)
-        i += 1
-
-
 if __name__ == "__main__":
     data = read_test_wsmc_file()
     datalength = len(data)
@@ -240,12 +247,26 @@ if __name__ == "__main__":
     if datalength % MEASUREMENT_BYTE_COUNT != 0:
         raise Exception("wsmc file is corrupt")
 
-    # get_air_pressure(data, 743700)
+    # Should return 8 measurements
+    dt1 = datetime.datetime(2020, 1, 21, 14, 56, 38)
+    dt2 = datetime.datetime(2020, 1, 21, 14, 56, 45)
     print(timeit.timeit(
-        "print(len(list(iterate_dataset_left(data, 'station_id'))))",
+        "print(len(list(filter_measurements_by_timestamp(data, 743700, dt1, dt2))))",
         number=1,
         globals=globals()
     ))
+
+    # print(timeit.timeit(
+    #     "print(len(list(filter_measurements_by_field(data, 'station_id', 743700))))",
+    #     number=1,
+    #     globals=globals()
+    # ))
+
+    # print(timeit.timeit(
+    #     "print(len(list(iterate_dataset_left(data, 'station_id'))))",
+    #     number=1,
+    #     globals=globals()
+    # ))
 
     # cpucount = mp.cpu_count()
     # with mp.Pool(cpucount) as pool:
