@@ -1,10 +1,10 @@
-
-import sys
-import math
-import os
-import timeit
-from collections import OrderedDict
 import multiprocessing as mp
+import os
+import sys
+import timeit
+import math
+from collections import OrderedDict
+import datetime
 from app import const
 
 PREFERRED_CHUNK_SIZE = 104857600  # +- 100 MB
@@ -50,15 +50,20 @@ CHUNKS = math.trunc(PREFERRED_CHUNK_SIZE / MEASUREMENT_BYTE_COUNT)
 ACTUAL_CHUNK_SIZE = CHUNKS * MEASUREMENT_BYTE_COUNT
 
 
-def decode_field(field, bindata):
-    bytesout = bindata[0:PROTOCOL_FORMAT_BC[field]]
-    decoded = int.from_bytes(bytesout, byteorder="big", signed=True)
+def decode_field(field, data):
+    decoded = int.from_bytes(data, byteorder="big", signed=True)
 
-    if field in ("events", "null_indication"):
-        decoded = format(decoded, "b")
+    if field == "station_id":
+        return decoded
+
+    if field == "timestamp":
+        return datetime.datetime.utcfromtimestamp(decoded)
 
     if field == "rainfall":
-        decoded = decoded / 100
+        return decoded / 100
+
+    if field == "events" or field == "null_indication":
+        return format(decoded, "b")
 
     if field in ("temperature",
                  "dew_point",
@@ -68,9 +73,10 @@ def decode_field(field, bindata):
                  "air_speed",
                  "snowfall",
                  "cloud_pct"):
-        decoded = decoded / 10
+        return decoded / 10
 
-    return decoded
+    else:
+        raise ValueError("Unnown field")
 
 
 def decode_wsmc_measurement(bindata):
@@ -130,7 +136,8 @@ def read_wsmc_file(filepath, bytecount=None):
 
 def find_all_stations_by_id_return_measurement(data):
     measurements = list(search_by_field(data, "station_id", 743700))
-    print("measurements:", len(measurements))
+    # print("measurements:", len(measurements))
+    print(measurements[0])
 
 
 def find_all_stations_by_id_return_only_temperatures(data):
@@ -160,7 +167,7 @@ def search_by_field_threaded(pool, cpucount, data, workerbytes):
     jobs = []
 
     for p in range(cpucount):
-        workerdata = data[i:i+workerbytes]
+        workerdata = data[i:i + workerbytes]
         p = pool.apply_async(
             search_by_field_to_list,
             (sharedlist, workerdata, "station_id", 743700, "temperature")
@@ -173,40 +180,63 @@ def search_by_field_threaded(pool, cpucount, data, workerbytes):
     print("temperatures:", sum(sharedlist))
 
 
+def iterate_dataset_backwards(data, fieldname):
+    """ Each iteration the value of the given fieldname is yielded. """
+    field_startbyte = PROTOCOL_FORMAT_BS[fieldname]
+    field_bytecount = PROTOCOL_FORMAT_BC[fieldname]
+
+    i = len(data)
+
+    while i > 0:
+        fieldaddr = (i - MEASUREMENT_BYTE_COUNT) + field_startbyte
+        bytevalue = data[fieldaddr:fieldaddr + field_bytecount]
+        yield decode_field(fieldname, bytevalue)
+        i -= MEASUREMENT_BYTE_COUNT
+
+
 if __name__ == "__main__":
     data = read_test_wsmc_file()
     datalength = len(data)
 
-    print("Find all stations by ID, return temperatures")
+    if datalength % MEASUREMENT_BYTE_COUNT != 0:
+        raise Exception("wsmc file is corrupt")
+
     print(timeit.timeit(
-        "find_all_stations_by_id_return_only_temperatures(data)",
+        "print(len(list(iterate_dataset_backwards(data, 'station_id'))))",
         number=1,
         globals=globals()
     ))
 
-    cpucount = mp.cpu_count()
-    with mp.Pool(cpucount) as pool:
-        if datalength % MEASUREMENT_BYTE_COUNT != 0:
-            raise Exception("Corrupted wsmc file")
+    # print("Find all stations by ID, return temperatures")
+    # print(timeit.timeit(
+    #     "find_all_stations_by_id_return_only_temperatures(data)",
+    #     number=1,
+    #     globals=globals()
+    # ))
 
-        measurements = int(datalength / MEASUREMENT_BYTE_COUNT)
-        if measurements % cpucount != 0:
-            raise Exception("Can not divide work to CPUs")
-
-        measurements_per_worker = int(measurements / cpucount)
-        workerbytes = measurements_per_worker*MEASUREMENT_BYTE_COUNT
-
-        print(timeit.timeit(
-            "search_by_field_threaded(pool, cpucount, data, workerbytes)",
-            number=1,
-            globals=globals()
-        ))
-
-
-
-
-
-
+    # print("Find all stations by ID, return measurements")
+    # print(timeit.timeit(
+    #     "find_all_stations_by_id_return_measurement(data)",
+    #     number=1,
+    #     globals=globals()
+    # ))
+    #
+    # cpucount = mp.cpu_count()
+    # with mp.Pool(cpucount) as pool:
+    #
+    #
+    #     measurements = int(datalength / MEASUREMENT_BYTE_COUNT)
+    #     if measurements % cpucount != 0:
+    #         raise Exception("Can not divide work to CPUs")
+    #
+    #     measurements_per_worker = int(measurements / cpucount)
+    #     workerbytes = measurements_per_worker * MEASUREMENT_BYTE_COUNT
+    #
+    #     print(timeit.timeit(
+    #         "search_by_field_threaded(pool, cpucount, data, workerbytes)",
+    #         number=1,
+    #         globals=globals()
+    #     ))
 
 # def _retrieve_measurements_from_fs(station_id=None, dt1=None, dt2=None):
 #     files = os.listdir(const.MEASUREMENTS_DIR)
