@@ -207,12 +207,14 @@ def filter_measurements_by_field(data, fieldname, value):
 def filter_measurements_by_timestamp(data, station_id, dt1, dt2):
     fieldaddr = PROTOCOL_FORMAT_BS["timestamp"]
     field_bc = PROTOCOL_FORMAT_BC["timestamp"]
-
     for measurementbytes in filter_measurements_by_field(data, "station_id", station_id):
         bytevalue = measurementbytes[fieldaddr:fieldaddr + field_bc]
         timestamp = decode_field("timestamp", bytevalue)
-        if dt1 <= timestamp <= dt2:
+
+        if dt1 < timestamp <= dt2:
             yield decode_measurement(bytevalue)
+        elif timestamp < dt1:
+            break
 
 
 def iterate_dataset_left_to_list(sharedlist, data, fieldname):
@@ -247,9 +249,18 @@ if __name__ == "__main__":
     if datalength % MEASUREMENT_BYTE_COUNT != 0:
         raise Exception("wsmc file is corrupt")
 
-    # Should return 8 measurements
     dt1 = datetime.datetime(2020, 1, 21, 14, 56, 38)
-    dt2 = datetime.datetime(2020, 1, 21, 14, 56, 45)
+    dt2 = datetime.datetime(2020, 1, 21, 14, 57, 38)
+
+    print(timeit.timeit(
+        "print(len(list(filter_measurements_by_timestamp(data, 743700, dt1, dt2))))",
+        number=1,
+        globals=globals()
+    ))
+
+    dt1 = datetime.datetime(2020, 1, 21, 14, 59, 30)
+    dt2 = datetime.datetime(2020, 1, 21, 15, 1, 30)
+
     print(timeit.timeit(
         "print(len(list(filter_measurements_by_timestamp(data, 743700, dt1, dt2))))",
         number=1,
