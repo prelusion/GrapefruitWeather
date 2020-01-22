@@ -191,10 +191,12 @@ def iterate_dataset_backwards(data, fieldname):
     i = len(data)
 
     while i > 0:
-        fieldaddr = (i - MEASUREMENT_BYTE_COUNT) + field_startbyte
-        bytevalue = data[fieldaddr:fieldaddr + field_bytecount]
-        yield decode_field(fieldname, bytevalue)
+        measurementaddr = (i - MEASUREMENT_BYTE_COUNT)
+        # fieldaddr = measurementaddr + field_startbyte
+        # bytevalue = data[fieldaddr:fieldaddr + field_bytecount]
+        yield data[measurementaddr:measurementaddr + MEASUREMENT_BYTE_COUNT]
         i -= MEASUREMENT_BYTE_COUNT
+        # decode_field(fieldname, bytevalue),
 
 
 def iterate_dataset_backwards_to_list(sharedlist, data, fieldname):
@@ -222,6 +224,15 @@ def iterate_dataset_backwards_threaded(pool, cpucount, data, workerbytes, fieldn
     print("temperatures:", sum(sharedlist))
 
 
+def get_air_pressure(data, station_id):
+    i = 0
+    for measurementbytes in iterate_dataset_backwards(data, "station_id"):
+        if i == 10:
+            break
+        print("measurement", measurementbytes)
+        i += 1
+
+
 if __name__ == "__main__":
     data = read_test_wsmc_file()
     datalength = len(data)
@@ -229,27 +240,27 @@ if __name__ == "__main__":
     if datalength % MEASUREMENT_BYTE_COUNT != 0:
         raise Exception("wsmc file is corrupt")
 
+    # get_air_pressure(data, 743700)
     print(timeit.timeit(
         "print(len(list(iterate_dataset_backwards(data, 'station_id'))))",
         number=1,
         globals=globals()
     ))
 
-    cpucount = mp.cpu_count()
-
-    with mp.Pool(cpucount) as pool:
-        measurements = int(datalength / MEASUREMENT_BYTE_COUNT)
-        if measurements % cpucount != 0:
-            raise Exception("Can not divide work to CPUs")
-
-        measurements_per_worker = int(measurements / cpucount)
-        workerbytes = measurements_per_worker * MEASUREMENT_BYTE_COUNT
-
-        print(timeit.timeit(
-            "iterate_dataset_backwards_threaded(pool, cpucount, data, workerbytes, 'temperature')",
-            number=1,
-            globals=globals()
-        ))
+    # cpucount = mp.cpu_count()
+    # with mp.Pool(cpucount) as pool:
+    #     measurements = int(datalength / MEASUREMENT_BYTE_COUNT)
+    #     if measurements % cpucount != 0:
+    #         raise Exception("Can not divide work to CPUs")
+    #
+    #     measurements_per_worker = int(measurements / cpucount)
+    #     workerbytes = measurements_per_worker * MEASUREMENT_BYTE_COUNT
+    #
+    #     print(timeit.timeit(
+    #         "iterate_dataset_backwards_threaded(pool, cpucount, data, workerbytes, 'temperature')",
+    #         number=1,
+    #         globals=globals()
+    #     ))
 
     # cpucount = mp.cpu_count()
     # with mp.Pool(cpucount) as pool:
