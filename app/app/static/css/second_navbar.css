@@ -1,12 +1,29 @@
-.main_wrapper {
+.container_second_navbar {
+}
+
+.container_second_navbar .dropdown_second_navbar {
     background-color: red;
-    height: 50px;
     display: none;
 }
 
 @media only screen and (max-width: 1200px) {
-    .main_wrapper{
+    .container_second_navbar .dropdown_second_navbar {
         display: block;
-
     }
+}
+
+.container_second_navbar .dropdown_second_navbar :hover {
+    background-color: brown;
+}
+
+.container_second_navbar .dropdown_second_navbar .unfold_txt {
+    text-align: center;
+    margin-bottom: 0px;
+    font-weight: bold;
+}
+
+.container_second_navbar .menu_second_navbar {
+    height: 200px;
+    background-color: blue;
+    display: none;
 }
