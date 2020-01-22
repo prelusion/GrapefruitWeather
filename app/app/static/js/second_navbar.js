@@ -1,14 +1,13 @@
 $(document).ready(function() {
 
     function check_window_size(){
-        var windowsize = window.innerWidth;
-        if(windowsize <= 1200){
+        if(window.innerWidth <= 1200){
             $(".dropdown_second_navbar").css("display", "block");
         }else {
             $(".dropdown_second_navbar").css("display", "none");
         }
 
-        if(windowsize >= 1200 && ($(".menu_second_navbar").css("display") == "block")){
+        if(window.innerWidth >= 1200 && ($(".menu_second_navbar").css("display") == "block")){
             $(".menu_second_navbar").css("display", "none");
         }
     }
