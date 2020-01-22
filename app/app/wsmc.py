@@ -183,7 +183,7 @@ def search_by_field_threaded(pool, cpucount, data, workerbytes):
     print("temperatures:", sum(sharedlist))
 
 
-def iterate_dataset_backwards(data, fieldname):
+def iterate_dataset_left(data, fieldname):
     """ Each iteration the value of the given fieldname is yielded. """
     field_startbyte = PROTOCOL_FORMAT_BS[fieldname]
     field_bytecount = PROTOCOL_FORMAT_BC[fieldname]
@@ -199,12 +199,12 @@ def iterate_dataset_backwards(data, fieldname):
         # decode_field(fieldname, bytevalue),
 
 
-def iterate_dataset_backwards_to_list(sharedlist, data, fieldname):
-    temperatures = list(iterate_dataset_backwards(data, fieldname))
+def iterate_dataset_left_to_list(sharedlist, data, fieldname):
+    temperatures = list(iterate_dataset_left(data, fieldname))
     sharedlist.append(len(temperatures))
 
 
-def iterate_dataset_backwards_threaded(pool, cpucount, data, workerbytes, fieldname):
+def iterate_dataset_left_threaded(pool, cpucount, data, workerbytes, fieldname):
     manager = mp.Manager()
     sharedlist = manager.list()
     i = 0
@@ -213,7 +213,7 @@ def iterate_dataset_backwards_threaded(pool, cpucount, data, workerbytes, fieldn
     for p in range(cpucount):
         workerdata = data[i:i + workerbytes]
         p = pool.apply_async(
-            iterate_dataset_backwards_to_list,
+            iterate_dataset_left_to_list,
             (sharedlist, workerdata, fieldname)
         )
         jobs.append(p)
@@ -226,7 +226,7 @@ def iterate_dataset_backwards_threaded(pool, cpucount, data, workerbytes, fieldn
 
 def get_air_pressure(data, station_id):
     i = 0
-    for measurementbytes in iterate_dataset_backwards(data, "station_id"):
+    for measurementbytes in iterate_dataset_left(data, "station_id"):
         if i == 10:
             break
         print("measurement", measurementbytes)
@@ -242,7 +242,7 @@ if __name__ == "__main__":
 
     # get_air_pressure(data, 743700)
     print(timeit.timeit(
-        "print(len(list(iterate_dataset_backwards(data, 'station_id'))))",
+        "print(len(list(iterate_dataset_left(data, 'station_id'))))",
         number=1,
         globals=globals()
     ))
