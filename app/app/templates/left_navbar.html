@@ -5,7 +5,7 @@
     <div class="tracks_container" style="display: none;">
         {% for track in racing_tracks %}
         <div class="track_container">
-            {{ track.title }}
+            <p latitude="{{ track.latitude }}" longitude="{{ track.longitude }}">{{ track.title }} </p>
         </div>
         {% endfor %}
     </div>
