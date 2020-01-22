@@ -13,5 +13,7 @@ $(document).ready(function() {
     $(".track_container").on('click', function() {
         map.invalidateSize();
         map.setView([$(this).children("p").attr("latitude"), $(this).children("p").attr("longitude")], 13);
+
+        
     });
 });
