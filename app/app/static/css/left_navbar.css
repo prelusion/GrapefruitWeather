@@ -48,13 +48,15 @@
     margin-left: 5px;
 }
 
-.left_navbar .open_tracks {
+.left_navbar .open_container {
     color: #e2063b;
     cursor: pointer;
+    margin-top: 5px;
 }
 
-.left_navbar .close_tracks {
+.left_navbar .close_container {
     color: #e2063b;
     cursor: pointer;
+    margin-top: 5px;
     display: none;
 }

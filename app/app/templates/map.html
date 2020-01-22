@@ -28,12 +28,10 @@
     var jsonArray = {{ weather_stations|tojson|safe }};
     for(var index in jsonArray) {
         if(index % 12 == 2) {
-
             L.marker([jsonArray[index][3], jsonArray[index][4]], {icon: greenIcon}).addTo(map)
                 .bindPopup("ID:" + jsonArray[index][0] + ", City:" + jsonArray[index][1] + ", Country: " +  jsonArray[index][2])
                 .openPopup();
         }
-
     }
 </script>
 
