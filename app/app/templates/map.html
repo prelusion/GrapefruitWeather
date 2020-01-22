@@ -1,3 +1,17 @@
 <div class="map">
+    <div id="mapid" style="width: 100%; height: 40vh; border-radius: 5px;">
 
+    </div>
 </div>
+
+
+<script src="{{ url_for('static', filename='js/map.js') }}"></script>
+<script>
+    var jsonArray = {{ racing_tracks|tojson|safe }};
+    for(var index in jsonArray) {       
+        L.marker([jsonArray[index].latitude.toFixed(2), jsonArray[index].longitude.toFixed(2)]).addTo(map)
+            .bindPopup("City:" + jsonArray[index].city + ", Country: " +  jsonArray[index].country + ", Title: " + jsonArray[index].title)
+            .openPopup();
+    }    
+</script>
+
