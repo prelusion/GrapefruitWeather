@@ -149,24 +149,26 @@ def find_all_stations_by_id_return_only_temperatures():
 def find_all_stations_by_id_return_only_temperatures_and_skip_60():
     filepath = os.path.join(const.MEASUREMENTS_DIR, "pizza.wsmc")
     data = read_wsmc_file(filepath, ACTUAL_CHUNK_SIZE)
-
     temperatures = list(search_by_field(data, "station_id", 743700, rfield="temperature", skip=50))
     print("first 5 items:", temperatures[:5])
     print("temperatures:", len(temperatures))
 
 
-def find_all_stations_by_id_return_only_temperatures_with_multiprocessing():
+def search_by_field_to_list(sharedlist, data, sfield, value, rfield=None, skip=None):
+    temperatures = list(search_by_field(data, sfield, value, rfield))
+    sharedlist.append(len(temperatures))
 
-    def search_by_field_to_list(sharedlist, bindata, sfield, value, rfield=None, skip=None):
-        sharedlist.append(1)
 
-        # result = list(search_by_field(bindata, sfield, value, rfield, skip))
-        # sharedlist.append(result)
-
+def read_test_wsmc_file():
     filepath = os.path.join(const.MEASUREMENTS_DIR, "pizza.wsmc")
-    data = read_wsmc_file(filepath, ACTUAL_CHUNK_SIZE)
-    datalength = len(data)
-    print(datalength)
+    return read_wsmc_file(filepath, ACTUAL_CHUNK_SIZE)
+
+
+def search_by_field_threaded(pool, data, datalength):
+    manager = mp.Manager()
+    sharedlist = manager.list()
+    i = 0
+    jobs = []
 
     if datalength % MEASUREMENT_BYTE_COUNT != 0:
         raise Exception("Corrupted wsmc file")
@@ -176,33 +178,21 @@ def find_all_stations_by_id_return_only_temperatures_with_multiprocessing():
         raise Exception("Can not divide work to CPUs")
 
     measurements_per_worker = int(measurements / mp.cpu_count())
-    print(measurements_per_worker)
+    workerbytes = measurements_per_worker*MEASUREMENT_BYTE_COUNT
 
-    i = 0
-    jobs = []
-    manager = mp.Manager()
-    sharedlist = manager.list()
-    for i in range(mp.cpu_count()):
-        p = mp.Process(target=search_by_field_to_list, args=(sharedlist, data[i:i+measurements_per_worker], "station_id", 743700, "temperature"))
+    for p in range(mp.cpu_count()):
+        workerdata = data[i:i+workerbytes]
+        p = pool.apply_async(
+            search_by_field_to_list,
+            (sharedlist, workerdata, "station_id", 743700, "temperature")
+        )
         jobs.append(p)
-        p.start()
-    for proc in jobs:
-        proc.join()
+        i += workerbytes
+
+    [job.wait() for job in jobs]
+
     print(sharedlist)
-
-
-    # with mp.Pool(mp.cpu_count()) as pool:
-    #     for p in range(mp.cpu_count()):
-    #         print("add to pool map")
-    #         p = pool.apply_async(search_by_field_to_list, (sharedlist, data[i:i+measurements_per_worker], "station_id", 743700, "temperature"))
-    #         jobs.append(p)
-    #         i += measurements_per_worker
-    #     for job in jobs:
-    #         job.wait()
-    #     print(sharedlist)
-    # temperatures = list(search_by_field(data, "station_id", 743700, rfield="temperature", skip=50))
-    # print("first 5 items:", temperatures[:5])
-    # print("temperatures:", len(temperatures))
+    print("total measureents:", sum(sharedlist))
 
 
 if __name__ == "__main__":
@@ -221,23 +211,20 @@ if __name__ == "__main__":
     # print(timeit.timeit("find_all_stations_by_id_return_only_temperatures_and_skip_60()", number=1,
     #                     setup="from __main__ import find_all_stations_by_id_return_only_temperatures_and_skip_60"))
 
-    print(
-        "Alle stations met specifiek ID zoeken waarbij ik steeds station ID vergelijk en dan de bytes skip naar de volgende meting. Return alleen temperatuur. Met multiprocessing")
-    print(timeit.timeit("find_all_stations_by_id_return_only_temperatures_with_multiprocessing()", number=1,
-                        setup="from __main__ import find_all_stations_by_id_return_only_temperatures_with_multiprocessing"))
+    with mp.Pool(mp.cpu_count()) as pool:
+        data = read_test_wsmc_file()
+        datalength = len(data)
 
-#
-# def find_measurements_by_station_id(station_id=None):
-#     filepath = os.path.join(const.MEASUREMENTS_DIR, "pizza.wsmc")
-#
-#     print("start reading")
-#     data = read_wsmc_file(filepath, ACTUAL_CHUNK_SIZE)
-#     print("start decoding")
-#     measurements = list(decode_wsmc(data))
-#     print("measurements:", measurements)
-#     # for measurement in decode_wsmc(data):
-#     #     print("measurement:", measurement)
-#     # print(data)
+        print(timeit.timeit(
+            "search_by_field_threaded(pool, data, datalength)",
+            number=1,
+            globals=globals()
+        ))
+
+
+
+
+
 
 
 # def _retrieve_measurements_from_fs(station_id=None, dt1=None, dt2=None):
