@@ -9,7 +9,6 @@
 <script>
     var jsonArray = {{ racing_tracks|tojson|safe }};
     for(var index in jsonArray) {       
-        console.log(jsonArray[index]);
         L.marker([jsonArray[index].latitude.toFixed(2), jsonArray[index].longitude.toFixed(2)]).addTo(map)
             .bindPopup("City:" + jsonArray[index].city + ", Country: " +  jsonArray[index].country + ", Title: " + jsonArray[index].title)
             .openPopup();
