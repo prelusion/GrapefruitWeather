@@ -13,23 +13,19 @@
     padding: 5px;
 }
 
-@media only screen and (max-width: 1200px) and (min-width: 992px) {
-    .left_navbar {
-        visibility: hidden;
-    }
+.left_navbar .btn_container {
+    width: 90%;
+    margin-left: 5px;
+    border: 1px solid gold;
+    border-radius: 5px;
+    padding: 5px;
 }
 
-@media only screen and (max-width: 992px) and (min-width: 768px) {
-    .left_navbar {
-        visibility: hidden;
-    }
+.left_navbar .btn_container:hover {
+    background-color: #072768;
 }
-@media only screen and (max-width: 768px) and (min-width: 576px) {
-    .left_navbar {
-        visibility: hidden;
-    }
-}
-@media only screen and (max-width: 576px) {
+
+@media only screen and (max-width: 1200px) {
     .left_navbar {
         visibility: hidden;
     }
@@ -52,12 +48,15 @@
     margin-left: 5px;
 }
 
-.left_navbar .open_tracks {
+.left_navbar .open_container {
     color: #e2063b;
     cursor: pointer;
+    margin-top: 5px;
 }
 
+.left_navbar .close_container {
     color: #e2063b;
     cursor: pointer;
-.left_navbar .open_tracks {
+    margin-top: 5px;
+    display: none;
 }

@@ -1,7 +1,3 @@
-.top_navbar {
-    
-}
-
 .top_navbar .navbar {
     background-color:#091e49;
 }
@@ -10,3 +6,13 @@
     max-height: 70px;
 }
 
+
+.top_navbar .navbar .form-inline .btn {
+    color: #e2063b !important;
+    border: 1px solid #e2063b !important;
+}
+
+.top_navbar .navbar .form-inline .btn:hover {
+    color: #091e49 !important;
+    background-color: #e2063b !important;
+}

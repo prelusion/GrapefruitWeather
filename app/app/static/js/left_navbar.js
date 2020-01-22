@@ -1,10 +1,10 @@
 $(document).ready(function() {
-    $(".open_tracks").on('click', function() {
+    $(".open_container").on('click', function() {
         $(this).hide();
         $(this).next().show();      
         $(this).next().next().show();
     });
-    $(".close_tracks").on('click', function() {
+    $(".close_container").on('click', function() {
         $(this).prev().show();
         $(this).hide();
         $(this).next().hide();
@@ -13,5 +13,7 @@ $(document).ready(function() {
     $(".track_container").on('click', function() {
         map.invalidateSize();
         map.setView([$(this).children("p").attr("latitude"), $(this).children("p").attr("longitude")], 13);
+
+        
     });
 });
