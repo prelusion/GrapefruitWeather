@@ -3,7 +3,7 @@
     height: 94vh;   
     background-color: #091e49;
     background-image: linear-gradient(to bottom left, #091e49,#091e49,  #e2063b);
-    width: 12%;
+    width: 250px;
     border: 1px solid black;
 }
 
@@ -13,14 +13,50 @@
     padding: 5px;
 }
 
+.left_navbar .btn_container {
+    width: 90%;
+    margin-left: 5px;
+    border: 1px solid gold;
+    border-radius: 5px;
+    padding: 5px;
+}
+
+.left_navbar .btn_container:hover {
+    background-color: #072768;
+}
+
+@media only screen and (max-width: 1200px) {
+    .left_navbar {
+        visibility: hidden;
+    }
+}
+
 .left_navbar .track_container {
     padding: 5px;
-    height: 40px;
+    height: 2em;
     width: 90%;
     cursor: pointer;
     background-color: none;
+    color: #848689 ;
+    overflow: hidden;
 }
 
 .left_navbar .track_container:hover {
-    background-color: white;
+    color: #e2063b;
+    border: 1px solid gold;
+    border-radius: 5px;
+    margin-left: 5px;
+}
+
+.left_navbar .open_container {
+    color: #e2063b;
+    cursor: pointer;
+    margin-top: 5px;
+}
+
+.left_navbar .close_container {
+    color: #e2063b;
+    cursor: pointer;
+    margin-top: 5px;
+    display: none;
 }

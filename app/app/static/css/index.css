@@ -4,7 +4,7 @@ body {
 }
 
 .maincontainer {
-    margin-top: 50px;
+    margin-top: 40qpx;
     max-height: 80vh;
     margin-left: 25%;
 }
@@ -12,35 +12,74 @@ body {
 .maincontainer .row {
     max-height: 40vh;
     min-height: 40vh;
+    margin-top: 24px;
 }
 
-.maincontainer .row .col {
+.maincontainer .row .columns {
     border: 1px solid black;
     border-radius: 4px;
+    padding: 0px;
 }
 
 @media only screen and (max-width: 1200px) {
     .maincontainer {
-
+        margin-left: 25%;
     }
+
+    .maincontainer .row {
+        max-height: 40vh;
+        min-height: 40vh;
+    }
+    
 }
+
 @media only screen and (max-width: 1200px) and (min-width: 992px) {
     .maincontainer {
+        margin-left: 10%;
+    }
+    
+    .maincontainer .row {
+        max-height: 40vh;
+        min-height: 40vh;
+    }
 
+    .maincontainer .row .columns {
+        margin-top: 20px;
     }
 }
+
 @media only screen and (max-width: 992px) and (min-width: 768px) {
     .maincontainer {
-
+        margin-left: 10%;
+        min-width: 80%;
     }
+
+    .maincontainer .row {
+        max-height: 80vh;
+        min-height: 80vh;
+        margin-top: 100px;
+    }
+
+    .maincontainer .row .columns {
+        margin-top: 20px;
+    }
+    
 }
-@media only screen and (max-width: 768px) and (min-width: 576px) {
-    .maincontainer {
 
-    }
-}
-@media only screen and (max-width: 576px) {
+@media only screen and (max-width: 768px) {
     .maincontainer {
-
+        min-width: 90%;
+        margin-left: 5%;
     }
+
+    .maincontainer .row {
+        max-height: 80vh;
+        min-height: 80vh;
+        margin-top: 100px;
+    }
+
+    .maincontainer .row .columns {
+        margin-top: 20px;
+    }
+    
 }

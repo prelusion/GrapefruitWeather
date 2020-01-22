@@ -1,4 +1,6 @@
+import os
 from copy import deepcopy
+from geopy import distance
 from app import wsmc
 from typing import TypedDict, List
 from datetime import datetime, timedelta
@@ -10,6 +12,7 @@ from functools import reduce
 from app import util
 from pprint import pprint
 
+from app import fileaccess
 
 RACING_TRACKS = [
     {
@@ -206,6 +209,24 @@ def get_racing_tracks(track_id=None, name=None, city=None, country=None):
         racing_tracks = list(filter(lambda track: track["country"].lower() == country.lower(), racing_tracks))
 
     return racing_tracks
+
+
+def get_stations(station_id=None, longitude=None, latitude=None, radius=None, country=None):
+    stations = fileaccess.get_stations_db()
+
+    if radius is not None or latitude is not None or longitude is not None:
+        if radius is None or latitude is None or longitude is None:
+            return None #//TODO Implement error handling
+
+    if station_id is not None:
+        stations = list(filter(lambda station: int(station[0]) == int(station_id), stations))
+    if longitude is not None and latitude is not None and radius is not None:
+        target_location = [float(latitude), float(longitude)]
+        stations = list(filter(lambda station: distance.distance([float(station[3]), float(station[4])], target_location).km < float(radius), stations))
+    if country is not None:
+        stations = list(filter(lambda station: station[2].lower() == country.lower(), stations))
+
+    return stations
 
 
 def get_most_recent_air_pressure(seconds=120):
