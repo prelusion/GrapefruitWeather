@@ -1,9 +1,9 @@
 $(document).ready(function(){
-    $(".dropdown").click(function(){
-        if( $(".menu_items").css("display") == "none"){
-            $(".menu_items").slideDown();
+    $(".dropdown_second_navbar").click(function(){
+        if( $(".menu_second_navbar").css("display") == "none"){
+            $(".menu_second_navbar").slideDown();
         }else{
-            $(".menu_items").slideUp();
+            $(".menu_second_navbar").slideUp();
         }
     });
 });
