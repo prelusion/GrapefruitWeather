@@ -62,6 +62,9 @@ def decode_field(field, data):
     if field == "rainfall":
         return decoded / 100
 
+    if field == "wind_direction":
+        return decoded
+
     if field == "events" or field == "null_indication":
         return format(decoded, "b")
 
@@ -194,6 +197,31 @@ def iterate_dataset_backwards(data, fieldname):
         i -= MEASUREMENT_BYTE_COUNT
 
 
+def iterate_dataset_backwards_to_list(sharedlist, data, fieldname):
+    temperatures = list(iterate_dataset_backwards(data, fieldname))
+    sharedlist.append(len(temperatures))
+
+
+def iterate_dataset_backwards_threaded(pool, cpucount, data, workerbytes, fieldname):
+    manager = mp.Manager()
+    sharedlist = manager.list()
+    i = 0
+    jobs = []
+
+    for p in range(cpucount):
+        workerdata = data[i:i + workerbytes]
+        p = pool.apply_async(
+            iterate_dataset_backwards_to_list,
+            (sharedlist, workerdata, fieldname)
+        )
+        jobs.append(p)
+        i += workerbytes
+
+    [job.wait() for job in jobs]
+
+    print("temperatures:", sum(sharedlist))
+
+
 if __name__ == "__main__":
     data = read_test_wsmc_file()
     datalength = len(data)
@@ -206,6 +234,37 @@ if __name__ == "__main__":
         number=1,
         globals=globals()
     ))
+
+    cpucount = mp.cpu_count()
+
+    with mp.Pool(cpucount) as pool:
+        measurements = int(datalength / MEASUREMENT_BYTE_COUNT)
+        if measurements % cpucount != 0:
+            raise Exception("Can not divide work to CPUs")
+
+        measurements_per_worker = int(measurements / cpucount)
+        workerbytes = measurements_per_worker * MEASUREMENT_BYTE_COUNT
+
+        print(timeit.timeit(
+            "iterate_dataset_backwards_threaded(pool, cpucount, data, workerbytes, 'temperature')",
+            number=1,
+            globals=globals()
+        ))
+
+    # cpucount = mp.cpu_count()
+    # with mp.Pool(cpucount) as pool:
+    #     measurements = int(datalength / MEASUREMENT_BYTE_COUNT)
+    #     if measurements % cpucount != 0:
+    #         raise Exception("Can not divide work to CPUs")
+    #
+    #     measurements_per_worker = int(measurements / cpucount)
+    #     workerbytes = measurements_per_worker * MEASUREMENT_BYTE_COUNT
+    #
+    #     print(timeit.timeit(
+    #         "search_by_field_threaded(pool, cpucount, data, workerbytes)",
+    #         number=1,
+    #         globals=globals()
+    #     ))
 
     # print("Find all stations by ID, return temperatures")
     # print(timeit.timeit(
@@ -220,23 +279,6 @@ if __name__ == "__main__":
     #     number=1,
     #     globals=globals()
     # ))
-    #
-    # cpucount = mp.cpu_count()
-    # with mp.Pool(cpucount) as pool:
-    #
-    #
-    #     measurements = int(datalength / MEASUREMENT_BYTE_COUNT)
-    #     if measurements % cpucount != 0:
-    #         raise Exception("Can not divide work to CPUs")
-    #
-    #     measurements_per_worker = int(measurements / cpucount)
-    #     workerbytes = measurements_per_worker * MEASUREMENT_BYTE_COUNT
-    #
-    #     print(timeit.timeit(
-    #         "search_by_field_threaded(pool, cpucount, data, workerbytes)",
-    #         number=1,
-    #         globals=globals()
-    #     ))
 
 # def _retrieve_measurements_from_fs(station_id=None, dt1=None, dt2=None):
 #     files = os.listdir(const.MEASUREMENTS_DIR)
