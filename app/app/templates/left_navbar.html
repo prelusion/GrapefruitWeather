@@ -1,11 +1,11 @@
 <div class="left_navbar">
 
-    <div class="open_tracks" style="color: red; cursor: pointer;">Show tracks</div>
-    <div class="close_tracks" style="display: none; color: red; cursor: pointer;">Close tracks</div>
+    <div class="open_tracks btn_container">Show tracks</div>
+    <div class="close_tracks btn_container">Close tracks</div>
     <div class="tracks_container" style="display: none;">
         {% for track in racing_tracks %}
         <div class="track_container">
-            <p latitude="{{ track.latitude }}" longitude="{{ track.longitude }}">{{ track.title }} </p>
+            <p latitude="{{ track.latitude }}" longitude="{{ track.longitude }}">- {{ track.title }} </p>
         </div>
         {% endfor %}
     </div>

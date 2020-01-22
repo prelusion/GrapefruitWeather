@@ -1,5 +1,6 @@
 <div class="map">
-    <div id="mapid" style="width: 100%; height: 40vh; border-radius: 5px;">
+    Map with tracks & stations
+    <div class="footer_container" id="mapid">
 
     </div>
 </div>
@@ -8,10 +9,31 @@
 <script src="{{ url_for('static', filename='js/map.js') }}"></script>
 <script>
     var jsonArray = {{ racing_tracks|tojson|safe }};
-    for(var index in jsonArray) {       
+    for(var index in jsonArray) { 
+        console.log("Track " + jsonArray[index]);      
         L.marker([jsonArray[index].latitude.toFixed(2), jsonArray[index].longitude.toFixed(2)]).addTo(map)
             .bindPopup("City:" + jsonArray[index].city + ", Country: " +  jsonArray[index].country + ", Title: " + jsonArray[index].title)
             .openPopup();
     }    
+    var greenIcon = new L.Icon({
+        iconUrl: 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
+        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34],
+        shadowSize: [41, 41]
+    });
+
+
+    var jsonArray = {{ weather_stations|tojson|safe }};
+    for(var index in jsonArray) {
+        if(index % 12 == 2) {
+
+            L.marker([jsonArray[index][3], jsonArray[index][4]], {icon: greenIcon}).addTo(map)
+                .bindPopup("ID:" + jsonArray[index][0] + ", City:" + jsonArray[index][1] + ", Country: " +  jsonArray[index][2])
+                .openPopup();
+        }
+
+    }
 </script>
 
