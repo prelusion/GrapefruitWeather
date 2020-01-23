@@ -1,5 +1,6 @@
 import csv
 import os
+
 from app import const
 
 _stations_data = None

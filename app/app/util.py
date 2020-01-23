@@ -1,18 +1,12 @@
-from datetime import datetime, timedelta
-from typing import TypedDict, List
 from bisect import bisect_left
+from datetime import timedelta
 
 
 def avg(lst):
     return sum(lst) / len(lst)
 
 
-class SortedTimestampedArray(TypedDict):
-    timestamp: datetime
-    value: int
-
-
-def split_by_interval(array: List[SortedTimestampedArray], interval: int):
+def split_by_interval(array, interval: int):
     """ This function splits a sorted timestamped array into averages for each interval.
 
         :param array: array of objects containing a timestamp and a value property defined by value_field

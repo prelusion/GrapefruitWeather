@@ -1,6 +1,5 @@
 import os
 
-
 SRC_DIR = os.path.dirname(os.path.abspath(__file__))
 ROOT_DIR = os.path.dirname(SRC_DIR)
 REPO_DIR = os.path.dirname(ROOT_DIR)

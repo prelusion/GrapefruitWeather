@@ -1,18 +1,9 @@
-import os
 from copy import deepcopy
+
 from geopy import distance
-from app import wsmc
-from typing import TypedDict, List
-from datetime import datetime, timedelta
-from app import const
-import os
-import re
-from collections import OrderedDict
-from functools import reduce
-from app import util
-from pprint import pprint
 
 from app import fileaccess
+from app import wsmc
 
 DEFAULT_LIMIT = 50
 
@@ -224,7 +215,6 @@ def get_stations(station_id=None,
                  timezone=None,
                  offset=None
                  ):
-
     stations = deepcopy(fileaccess.get_stations_db())
 
     if radius is not None and (latitude is not None or longitude is not None):
@@ -242,7 +232,9 @@ def get_stations(station_id=None,
 
         if longitude is not None and latitude is not None:
             target_location = [float(latitude), float(longitude)]
-            station["distance"] = round(distance.distance([float(station["latitude"]), float(station["longitude"])], target_location).km)
+            station["distance"] = round(
+                distance.distance([float(station["latitude"]), float(station["longitude"])],
+                                  target_location).km)
 
     if longitude is not None and latitude is not None:
         stations.sort(key=lambda station: station["distance"])
@@ -272,10 +264,6 @@ def limit_and_offset(dataset, limit, offset):
             break;
         new_data_set.append(dataset[i + offset])
     return new_data_set
-
-
-
-
 
 
 def get_most_recent_air_pressure(station_id, seconds=120):
@@ -320,12 +308,3 @@ def get_average_measurements(stations, interval, dt1, dt2):
     
     return averages
     """
-
-
-
-
-
-
-
-
-
