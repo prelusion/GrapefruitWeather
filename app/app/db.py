@@ -14,6 +14,8 @@ from pprint import pprint
 
 from app import fileaccess
 
+DEFAULT_LIMIT = 50
+
 RACING_TRACKS = [
     {
         "id": 1,
@@ -194,7 +196,7 @@ RACING_TRACKS = [
 ]
 
 
-def get_racing_tracks(track_id=None, name=None, city=None, country=None):
+def get_racing_tracks(track_id=None, name=None, city=None, country=None, limit=None, offset=None):
     racing_tracks = deepcopy(RACING_TRACKS)
 
     if track_id is not None:
@@ -208,25 +210,70 @@ def get_racing_tracks(track_id=None, name=None, city=None, country=None):
     if country is not None:
         racing_tracks = list(filter(lambda track: track["country"].lower() == country.lower(), racing_tracks))
 
-    return racing_tracks
+    racing_tracks = limit_and_offset(racing_tracks, limit, offset)
+
+    return True, racing_tracks
 
 
-def get_stations(station_id=None, longitude=None, latitude=None, radius=None, country=None):
-    stations = fileaccess.get_stations_db()
+def get_stations(station_id=None,
+                 longitude=None,
+                 latitude=None,
+                 radius=None,
+                 country=None,
+                 limit=50,
+                 timezone=None,
+                 offset=None
+                 ):
 
-    if radius is not None or latitude is not None or longitude is not None:
-        if radius is None or latitude is None or longitude is None:
-            return None #//TODO Implement error handling
+    stations = deepcopy(fileaccess.get_stations_db())
+
+    if radius is not None and (latitude is not None or longitude is not None):
+        return False, "Latitude or longitude not set."
 
     if station_id is not None:
-        stations = list(filter(lambda station: int(station[0]) == int(station_id), stations))
-    if longitude is not None and latitude is not None and radius is not None:
-        target_location = [float(latitude), float(longitude)]
-        stations = list(filter(lambda station: distance.distance([float(station[3]), float(station[4])], target_location).km < float(radius), stations))
-    if country is not None:
-        stations = list(filter(lambda station: station[2].lower() == country.lower(), stations))
+        stations = list(filter(lambda station: int(station["id"]) == int(station_id), stations))
 
-    return stations
+    if country is not None:
+        stations = list(filter(lambda station: station["country-id"].lower() == country.lower(), stations))
+
+    for station in stations:
+        if not timezone:
+            station.pop("timezone")
+
+        if longitude is not None and latitude is not None:
+            target_location = [float(latitude), float(longitude)]
+            station["distance"] = round(distance.distance([float(station["latitude"]), float(station["longitude"])], target_location).km)
+
+    if longitude is not None and latitude is not None:
+        stations.sort(key=lambda station: station["distance"])
+
+    stations = limit_and_offset(stations, limit, offset)
+
+    if longitude is not None and latitude is not None and radius is not None:
+        stations = list(filter(lambda station: station["distance"] < float(radius), stations))
+
+    return True, stations
+
+
+def limit_and_offset(dataset, limit, offset):
+    if limit is None:
+        limit = DEFAULT_LIMIT
+    else:
+        limit = int(limit)
+
+    if offset is None:
+        offset = 0
+    else:
+        offset = int(offset)
+
+    new_data_set = []
+    for i in range(limit + offset):
+        new_data_set.append(dataset[i + offset])
+    return new_data_set
+
+
+
+
 
 
 def get_most_recent_air_pressure(station_id, seconds=120):
