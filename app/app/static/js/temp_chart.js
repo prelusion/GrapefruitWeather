@@ -1,7 +1,8 @@
-timestamplist = [];
-templist = [];
 
 $(document).ready(function(){
+    timestamplist = [];
+    templist = [];
+
 
 
     function plot(timestamps, pressure){

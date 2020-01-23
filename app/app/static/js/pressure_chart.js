@@ -1,7 +1,10 @@
-timestamplist = [];
-pressurelist = [];
-
 $(document).ready(function(){
+
+    timestamplist = [];
+    pressurelist = [];
+    stations = [93590,589210];
+    var plottime = null;
+    var plotdata = null;
 
 
     function plot(timestamps, pressure){
@@ -29,25 +32,10 @@ $(document).ready(function(){
         });
     }
 
-
-
-setInterval(function() {
-
-    var hours = new Date().getHours();
-    var minutes = new Date().getMinutes();
-    var seconds = new Date().getSeconds();
-
-    function convert_time(input){
-        if(input < 10){
-            return "0" + input;
-        } else {
-            return ""+ input;
-        }
+    function set_stations(stationlist){
+        this.stations = stationlist;
     }
 
-    function createTimeStamp(){
-        return convert_time(hours) + ":" + convert_time(minutes) + ":" + convert_time(seconds);
-    }
 
     function list_generator(list, data) {
         if(list.length == 6){
@@ -60,12 +48,25 @@ setInterval(function() {
         } 
     } 
 
+    setInterval(function() {
 
-    var time = list_generator(timestamplist, createTimeStamp()); 
-    var data = list_generator(pressurelist, Math.floor((Math.random() * 50) + 1008));
-    plot(time, data);
+        function get_data() {
+            ur = stations.join();
+            $.get("http://127.0.0.1:5000/api/airpressure?limit=1&stations=" + ur, function(result) {
+                for(index in result.data){
+                    var jsontime = "" + result.data[index][0].substring(17,25);
+                    var jsondata = result.data[index][1];
 
 
-}, 1000);
+                    plottime = list_generator(timestamplist, jsontime); 
+                    plotdata = list_generator(pressurelist, jsondata);
+                }
+                    
+            });
+        }
+
+        get_data();
+        plot(plottime, plotdata);
+    }, 1000);
 
 });
