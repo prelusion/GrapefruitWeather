@@ -20,7 +20,10 @@ def get_racing_tracks(track_id=None, name=None, city=None, country=None, limit=N
     if country is not None:
         racing_tracks = list(filter(lambda track: track["country"].lower() == country.lower(), racing_tracks))
 
-    racing_tracks = limit_and_offset(racing_tracks, limit, offset)
+    try:
+        racing_tracks = limit_and_offset(racing_tracks, limit, offset)
+    except ValueError:
+        return False, "Invalid limit given."
 
     return True, racing_tracks
 
@@ -34,6 +37,11 @@ def get_stations(station_id=None,
                  timezone=None,
                  offset=None
                  ):
+
+    for local in locals():
+        if local == "":
+            local = None
+
     stations = deepcopy(fileaccess.get_stations_db())
 
     if radius is not None and (latitude is not None or longitude is not None):
@@ -61,7 +69,10 @@ def get_stations(station_id=None,
     if longitude is not None and latitude is not None and radius is not None:
         stations = list(filter(lambda station: station["distance"] < float(radius), stations))
 
-    stations = limit_and_offset(stations, limit, offset)
+    try:
+        stations = limit_and_offset(stations, limit, offset)
+    except ValueError:
+        return False, "Invalid limit given."
 
     return True, stations
 

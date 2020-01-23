@@ -3,6 +3,8 @@ services:
     app:
         build:
             context: .
+        ports:
+          - "5000:5000"
         volumes:
             - "./measurements:/database/measurements"
     nfs:
