@@ -102,15 +102,15 @@ def format_data(data):
 @api_bp.route('/airpressure')
 def get_most_recent_air_pressure():
     stations = request.args.get("stations",  [743700, 93590, 589210])
-    seconds = request.args.get("seconds", 120)
     interval = request.args.get("interval", 1)
+    limit = request.args.get("limit", 120)
 
-    measurements = db.get_most_recent_air_pressure_average(stations, seconds, interval)
+    measurements = db.get_most_recent_air_pressure_average(stations, limit, interval)
 
     return jsonify({
         "params": {
             "stations": stations,
-            "seconds": seconds,
+            "limit": limit,
             "interval": interval,
         },
         "data": measurements,
