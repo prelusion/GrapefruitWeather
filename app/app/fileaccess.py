@@ -5,6 +5,7 @@ from app import const, util
 
 _stations_data = None
 _tracks_data = None
+_countries_data = None
 
 
 def get_stations():
@@ -45,3 +46,19 @@ def get_tracks():
             _tracks_data = list(map(_convert_track, _tracks_data))
 
     return _tracks_data
+
+
+def _convert_country(country):
+    country["id"] = int(country["id"])
+    return country
+
+
+def get_countries():
+    global _countries_data
+
+    if not _countries_data:
+        with open(os.path.join(const.DATA_DIR, "countries.csv")) as f:
+            _countries_data = util.csv_to_array_of_dicts(f)
+            _countries_data = list(map(_convert_country, _countries_data))
+
+    return _countries_data
