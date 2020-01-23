@@ -1,9 +1,8 @@
 import datetime
 import math
 import os
-import timeit
 from collections import OrderedDict
-from pprint import pprint
+
 from app import const
 from app import util
 
@@ -108,7 +107,7 @@ def iterate_dataset_left(data):
         i -= MEASUREMENT_BYTE_COUNT
 
 
-def filter_measurements_by_field(measurementbytes_generator, fieldname, values):
+def filter_by_field(measurementbytes_generator, fieldname, values):
     fieldaddr = PROTOCOL_FORMAT_BS[fieldname]
     field_bc = PROTOCOL_FORMAT_BC[fieldname]
 
@@ -120,7 +119,7 @@ def filter_measurements_by_field(measurementbytes_generator, fieldname, values):
             yield measurementbytes
 
 
-def filter_measurements_by_timestamp(measurementbytes_generator, dt1, dt2):
+def filter_by_timestamp(measurementbytes_generator, dt1, dt2):
     fieldaddr = PROTOCOL_FORMAT_BS["timestamp"]
     field_bc = PROTOCOL_FORMAT_BC["timestamp"]
 
@@ -134,10 +133,9 @@ def filter_measurements_by_timestamp(measurementbytes_generator, dt1, dt2):
             break
 
 
-def filter_most_recent_measurements(measurementbytes_generator, seconds):
+def filter_most_recent(measurementbytes_generator, seconds):
     fieldaddr = PROTOCOL_FORMAT_BS["timestamp"]
     field_bc = PROTOCOL_FORMAT_BC["timestamp"]
-
     first = None
 
     for measurementbytes in measurementbytes_generator:
@@ -147,48 +145,33 @@ def filter_most_recent_measurements(measurementbytes_generator, seconds):
         if not first:
             first = timestamp
 
-        if timestamp <= first - datetime.timedelta(seconds=seconds):
+        if timestamp < first - datetime.timedelta(seconds=seconds):
             break
 
-        yield decode_measurement(measurementbytes)
+        yield measurementbytes
 
 
-def filter_most_recent_measurements_group_by_interval(measurementbytes_generator, totaltime, interval):
-    fieldaddr = PROTOCOL_FORMAT_BS["timestamp"]
-    field_bc = PROTOCOL_FORMAT_BC["timestamp"]
-
-    first = None
+def group_by_timestamp(measurementbytes_generator, interval):
     measurements = []
     currtimestamp = None
 
     for measurementbytes in measurementbytes_generator:
-        bytevalue = measurementbytes[fieldaddr:fieldaddr + field_bc]
-        timestamp = decode_field("timestamp", bytevalue)
-
-        if not first:
-            first = timestamp
+        measurement = decode_measurement(measurementbytes)
+        timestamp = measurement["timestamp"]
 
         if not currtimestamp:
             currtimestamp = timestamp
 
-        if timestamp < first - datetime.timedelta(seconds=totaltime):
-            break
-
         if currtimestamp - timestamp < datetime.timedelta(seconds=interval):
-            measurements.append(decode_measurement(measurementbytes))
+            measurements.append(measurement)
             continue
         else:
             currtimestamp = timestamp
             yield measurements
-            measurements = [decode_measurement(measurementbytes)]
+            measurements = [measurement]
 
 
-def get_most_recent_measurements_averages(fieldname, measurement_generator):
+def groups_to_average(fieldname, measurement_generator):
     for measurements in measurement_generator:
         temperatures = [measurement[fieldname] for measurement in measurements]
         yield measurements[0]["timestamp"], round(util.avg(temperatures), 2)
-
-
-if __name__ == "__main__":
-    pass
-    # print(timeit.timeit("composed()", number=1, globals=globals()))
