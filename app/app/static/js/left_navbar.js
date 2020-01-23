@@ -9,7 +9,6 @@ $(document).ready(function() {
         $(this).hide();
         $(this).next().hide();
     });
-
     $(".track_container").on('click', function() { 
         setMapView($(this).children("p").attr("latitude"), $(this).children("p").attr("longitude"));
         $("#track option:eq("+($(this).children("p").attr("trackID")-1)+")").prop("selected", true);
@@ -17,9 +16,8 @@ $(document).ready(function() {
         $("#longitude").val($(this).children("p").attr("longitude"));
         $("#country").val($(this).children("p").attr("country"));
     });
-
-    function setMapView(latitude, longitude) {
-        map.invalidateSize();
-        map.setView([latitude, longitude], 13);
-    }
 }); 
+function setMapView(latitude, longitude) {
+    map.invalidateSize();
+    map.setView([latitude, longitude], 13);
+}
