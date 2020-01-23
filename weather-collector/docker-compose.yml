@@ -1,0 +1,20 @@
+version: '3.2'
+services:
+    weatherstation:
+        build:
+            context: .
+        container_name: weather-collector
+        ports:
+            - "7789:7789"
+        volumes:
+            - type: volume
+              source: nfsmount
+              target: /measurements
+              volume:
+                  nocopy: true
+volumes:
+    nfsmount:
+        driver_opts:
+            type: nfs
+            o: addr=40.68.169.51,nolock,soft,rw,nfsvers=4
+            device: ":/"
