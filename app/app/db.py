@@ -186,7 +186,7 @@ RACING_TRACKS = [
 ]
 
 
-def get_racing_tracks(track_id=None, name=None, city=None, country=None):
+def get_racing_tracks(track_id=None, name=None, city=None, country=None, limit=None, offset=None):
     racing_tracks = deepcopy(RACING_TRACKS)
 
     if track_id is not None:
@@ -198,15 +198,22 @@ def get_racing_tracks(track_id=None, name=None, city=None, country=None):
     if country is not None:
         racing_tracks = list(filter(lambda track: track["country"].lower() == country.lower(), racing_tracks))
 
+    racing_tracks = limit_and_offset(racing_tracks, limit, offset)
+
     return True, racing_tracks
 
 
-def get_stations(station_id=None, longitude=None, latitude=None, radius=None, country=None, limit=50, timezone=None):
+def get_stations(station_id=None,
+                 longitude=None,
+                 latitude=None,
+                 radius=None,
+                 country=None,
+                 limit=50,
+                 timezone=None,
+                 offset=None
+                 ):
 
-    if limit is None:
-        limit = DEFAULT_LIMIT
-
-    stations = fileaccess.get_stations_db()
+    stations = deepcopy(fileaccess.get_stations_db())
 
     if radius is not None and (latitude is not None or longitude is not None):
         return False, "Latitude or longitude not set."
@@ -228,15 +235,30 @@ def get_stations(station_id=None, longitude=None, latitude=None, radius=None, co
     if longitude is not None and latitude is not None:
         stations.sort(key=lambda station: station["distance"])
 
-    new_stations = []
-    for i in range(limit):
-        new_stations.append(stations[i])
-    stations = new_stations
+    stations = limit_and_offset(stations, limit, offset)
 
     if longitude is not None and latitude is not None and radius is not None:
         stations = list(filter(lambda station: station["distance"] < float(radius), stations))
 
     return True, stations
+
+
+def limit_and_offset(dataset, limit, offset):
+    if limit is None:
+        limit = DEFAULT_LIMIT
+    else:
+        limit = int(limit)
+
+    if offset is None:
+        offset = 0
+    else:
+        offset = int(offset)
+
+    new_data_set = []
+    for i in range(limit + offset):
+        new_data_set.append(dataset[i + offset])
+    return new_data_set
+
 
 
 
