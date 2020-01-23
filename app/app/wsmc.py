@@ -98,7 +98,7 @@ def decode_measurement(bindata):
     return measurement
 
 
-def iterate_dataset_left(data, fieldname):
+def iterate_dataset_left(data):
     """ Each iteration the value of the given fieldname is yielded. """
     i = len(data)
     while i > 0:
@@ -111,7 +111,7 @@ def filter_measurements_by_field(data, fieldname, value):
     fieldaddr = PROTOCOL_FORMAT_BS[fieldname]
     field_bc = PROTOCOL_FORMAT_BC[fieldname]
 
-    for measurementbytes in iterate_dataset_left(data, "station_id"):
+    for measurementbytes in iterate_dataset_left(data):
         bytevalue = measurementbytes[fieldaddr:fieldaddr + field_bc]
         decoded = decode_field(fieldname, bytevalue)
 
@@ -133,13 +133,13 @@ def filter_measurements_by_timestamp(data, station_id, dt1, dt2):
             break
 
 
-def filter_most_recent_measurements(data, station_id, seconds):
+def filter_most_recent_measurements(data, fieldname, value, seconds):
     fieldaddr = PROTOCOL_FORMAT_BS["timestamp"]
     field_bc = PROTOCOL_FORMAT_BC["timestamp"]
 
     first = None
 
-    for measurementbytes in filter_measurements_by_field(data, "station_id", station_id):
+    for measurementbytes in filter_measurements_by_field(data, fieldname, value):
         bytevalue = measurementbytes[fieldaddr:fieldaddr + field_bc]
         timestamp = decode_field("timestamp", bytevalue)
 
@@ -156,7 +156,7 @@ if __name__ == "__main__":
     dataread = read_test_file()
 
     print(timeit.timeit(
-        "print(len(list(filter_most_recent_measurements(dataread, 743700, 120))))",
+        "print(len(list(filter_most_recent_measurements(dataread, 'station_id', 743700, 120))))",
         number=1,
         globals=globals()
     ))

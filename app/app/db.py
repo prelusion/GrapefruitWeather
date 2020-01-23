@@ -267,7 +267,7 @@ def limit_and_offset(dataset, limit, offset):
 
 
 def get_most_recent_air_pressure(station_id, seconds=120):
-    return list(wsmc.filter_most_recent_measurements(wsmc.read_test_file(), station_id, seconds))
+    return list(wsmc.filter_most_recent_measurements(wsmc.read_test_file(), "station_id", station_id, seconds))
 
 
 def get_measurements(station_id=None, dt1=None, dt2=None, limit=None, offset=None):
