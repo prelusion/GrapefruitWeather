@@ -1,5 +1,4 @@
 $(document).ready(function() {
-
     function check_window_size(){
         if(window.innerWidth <= 1200){
             $(".dropdown_second_navbar").css("display", "block");
@@ -11,9 +10,8 @@ $(document).ready(function() {
             $(".menu_second_navbar").css("display", "none");
         }
     }
-
+    
     check_window_size();
-
     $(window).resize(function(){
         check_window_size();
     });

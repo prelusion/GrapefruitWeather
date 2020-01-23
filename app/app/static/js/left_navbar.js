@@ -10,10 +10,16 @@ $(document).ready(function() {
         $(this).next().hide();
     });
 
-    $(".track_container").on('click', function() {
-        map.invalidateSize();
-        map.setView([$(this).children("p").attr("latitude"), $(this).children("p").attr("longitude")], 13);
-
-        
+    $(".track_container").on('click', function() { 
+        setMapView($(this).children("p").attr("latitude"), $(this).children("p").attr("longitude"));
+        $("#track option:eq("+($(this).children("p").attr("trackID")-1)+")").prop("selected", true);
+        $("#latitude").val($(this).children("p").attr("latitude"));
+        $("#longitude").val($(this).children("p").attr("longitude"));
+        $("#country").val($(this).children("p").attr("country"));
     });
-});
+
+    function setMapView(latitude, longitude) {
+        map.invalidateSize();
+        map.setView([latitude, longitude], 13);
+    }
+}); 
