@@ -1,6 +1,6 @@
 $(document).ready(function(){
 
-    timestamplist = [];
+    timelist = [];
     pressurelist = [];
     stations = [93590,589210];
     var plottime = null;
@@ -58,7 +58,7 @@ $(document).ready(function(){
                     var jsondata = result.data[index][1];
 
 
-                    plottime = list_generator(timestamplist, jsontime); 
+                    plottime = list_generator(timelist, jsontime); 
                     plotdata = list_generator(pressurelist, jsondata);
                 }
                     
