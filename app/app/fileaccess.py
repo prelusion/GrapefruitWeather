@@ -1,4 +1,6 @@
 import csv
+import os
+from app import const
 
 _stations_data = None
 
@@ -8,7 +10,7 @@ def get_stations_db():
 
     if not _stations_data:
         _stations_data = []
-        with open("../database/stations.csv") as csvfile:
+        with open(os.path.join(const.DATA_DIR, "stations.csv")) as csvfile:
             reader = csv.reader(csvfile)
             for row in reader:
                 _stations_data.append({
