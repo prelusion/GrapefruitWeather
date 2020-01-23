@@ -26,8 +26,10 @@ def get_stations():
     latitude = request.args.get("latitude")
     radius = request.args.get("radius")
     country = request.args.get("country")
+    limit = request.args.get("limit")
+    timezone = request.args.get("timezone")
 
-    success, result = db.get_stations(station_id, longitude, latitude, radius, country)
+    success, result = db.get_stations(station_id, longitude, latitude, radius, country, limit, timezone)
 
     if success is False:
         return create_error(result)
