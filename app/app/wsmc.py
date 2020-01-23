@@ -5,6 +5,7 @@ import timeit
 from collections import OrderedDict
 from pprint import pprint
 from app import const
+from app import util
 
 PREFERRED_CHUNK_SIZE = 104857600  # +- 100 MB
 
@@ -152,7 +153,7 @@ def filter_most_recent_measurements(data, fieldname, values, seconds):
         yield decode_measurement(measurementbytes)
 
 
-def filter_most_recent_measurements_by_interval(data, fieldname, values, totaltime, interval):
+def filter_most_recent_measurements_group_by_interval(data, fieldname, values, totaltime, interval):
     fieldaddr = PROTOCOL_FORMAT_BS["timestamp"]
     field_bc = PROTOCOL_FORMAT_BC["timestamp"]
 
@@ -182,14 +183,27 @@ def filter_most_recent_measurements_by_interval(data, fieldname, values, totalti
             measurements = [decode_measurement(measurementbytes)]
 
 
+def get_most_recent_measurements_averages(fieldname, measurement_generator):
+    for measurements in measurement_generator:
+        temperatures = [measurement[fieldname] for measurement in measurements]
+        yield round(util.avg(temperatures), 2)
+
+
 if __name__ == "__main__":
     dataread = read_test_file()
 
-    print(timeit.timeit(
-        "pprint(list(filter_most_recent_measurements_by_interval(dataread, 'station_id', [743700, 93590, 589210], 10, 1)))",
-        number=1,
-        globals=globals()
-    ))
+    print(list(get_most_recent_measurements_averages(
+        "temperature",
+        filter_most_recent_measurements_group_by_interval(dataread, 'station_id',
+                                                          [743700, 93590, 589210],
+                                                          10, 1)
+    )))
+
+    # print(timeit.timeit(
+    #     "pprint(list(filter_most_recent_measurements_group_by_interval(dataread, 'station_id', [743700, 93590, 589210], 10, 1)))",
+    #     number=1,
+    #     globals=globals()
+    # ))
 
     # test1_dt1 = datetime.datetime(2020, 1, 21, 14, 56, 38)
     # test1_dt2 = datetime.datetime(2020, 1, 21, 14, 57, 38)
