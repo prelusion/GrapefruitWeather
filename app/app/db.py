@@ -249,13 +249,15 @@ def limit_and_offset(dataset, limit, offset):
     else:
         limit = int(limit)
 
-    if offset is None:
+    if offset is None or l:
         offset = 0
     else:
         offset = int(offset)
 
     new_data_set = []
     for i in range(limit + offset):
+        if (i + offset + 1) > len(dataset):
+            break;
         new_data_set.append(dataset[i + offset])
     return new_data_set
 
