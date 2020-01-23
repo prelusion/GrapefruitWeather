@@ -30,8 +30,7 @@ $(document).ready(function(){
     }
 
 
-
-setInterval(function() {
+    setInterval(function() {
 
     var hours = new Date().getHours();
     var minutes = new Date().getMinutes();
@@ -60,6 +59,10 @@ setInterval(function() {
         } 
     } 
 
+
+    function get_data() {
+
+    }
 
     var time = list_generator(timestamplist, createTimeStamp()); 
     var data = list_generator(templist, Math.floor((Math.random() * 30) + 0));
