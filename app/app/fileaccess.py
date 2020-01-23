@@ -1,6 +1,6 @@
 import csv
 import os
-from pprint import pprint
+
 from app import const, util
 
 _stations_data = None
@@ -32,6 +32,7 @@ def _convert_track(track):
     track["id"] = int(track["id"])
     track["latitude"] = float(track["latitude"])
     track["longitude"] = float(track["longitude"])
+    track["country_id"] = int(track["country_id"])
     return track
 
 

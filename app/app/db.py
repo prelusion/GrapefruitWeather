@@ -8,7 +8,7 @@ from app.util import limit_and_offset
 
 
 def get_racing_tracks(track_id=None, name=None, city=None, country=None, limit=None, offset=None):
-    racing_tracks = deepcopy(fileaccess.get_tracks())
+    racing_tracks = fileaccess.get_tracks()
 
     if track_id is not None:
         racing_tracks = list(filter(lambda track: track["id"] == int(track_id), racing_tracks))
