@@ -30,10 +30,12 @@ def get_stations():
 
 
 def _convert_track(track):
+    countries = get_countries()
     track["id"] = int(track["id"])
     track["latitude"] = float(track["latitude"])
     track["longitude"] = float(track["longitude"])
     track["country_id"] = int(track["country_id"])
+    track["country"] = countries[track["country_id"]]["name"]
     return track
 
 
