@@ -1,0 +1,21 @@
+.container_second_navbar {
+    text-align: center;
+
+}
+
+.container_second_navbar .dropdown_second_navbar {
+    background-color: red;
+    display: none;
+}
+
+
+.container_second_navbar .dropdown_second_navbar :hover {
+    background-color: brown;
+}
+
+.container_second_navbar .menu_second_navbar {
+    height: 200px;
+    background-color: blue;
+    display: none;
+}
+
