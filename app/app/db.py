@@ -1,7 +1,17 @@
 import os
 from copy import deepcopy
 from geopy import distance
+from app import wsmc
+from typing import TypedDict, List
+from datetime import datetime, timedelta
+from app import const
 import os
+import re
+from collections import OrderedDict
+from functools import reduce
+from app import util
+from pprint import pprint
+
 from app import fileaccess
 
 DEFAULT_LIMIT = 50
@@ -194,7 +204,9 @@ def get_racing_tracks(track_id=None, name=None, city=None, country=None, limit=N
     if name is not None:
         racing_tracks = list(filter(lambda track: track["title"].lower() == name.lower(), racing_tracks))
     if city is not None:
-        racing_tracks = list(filter(lambda track: track["city"] is not None and track["city"].lower() == city.lower(), racing_tracks))
+        racing_tracks = list(
+            filter(lambda track: track["city"] is not None and track["city"].lower() == city.lower(),
+                   racing_tracks))
     if country is not None:
         racing_tracks = list(filter(lambda track: track["country"].lower() == country.lower(), racing_tracks))
 
@@ -258,6 +270,59 @@ def limit_and_offset(dataset, limit, offset):
     for i in range(limit + offset):
         new_data_set.append(dataset[i + offset])
     return new_data_set
+
+
+
+
+
+
+def get_most_recent_air_pressure(station_id, seconds=120):
+    return list(wsmc.filter_most_recent_measurements(wsmc.read_test_file(), station_id, seconds))
+
+
+def get_measurements(station_id=None, dt1=None, dt2=None, limit=None, offset=None):
+    pass
+
+
+def get_average_measurements(stations, interval, dt1, dt2):
+    """ Returns an array of measurements averaged by the following conditions:
+        - All measurements within each interval are averaged per station
+        - The averages for each station are taken as an average per interval
+
+        This results in an array of averages per interval which are averages
+        of multiple stations and multiple measurements.
+
+        :returns [{ "timestamp": "", "field": "", "value": ""], total
+    """
+
+    """
+    PSEUDOCODE:
+    
+    # Get average per interval for each station
+    station_results = []
+    for station_id in stations:
+        measurements = _retrieve_measurements_from_fs(station_id, dt1, dt2)
+        measurements_per_interval = split_by_interval(measurements)
+        average_per_interval = map(avg(measurements), measurements_per_interval)
+        station_results.append(average_per_interval)
+    
+    # Get average per interval of all stations
+    station_count = len(stations)
+    interval_count = len(stations[0])
+    averages = []
+    for i in range(interval_count):
+        value = 0
+        for j in range(station_count):
+            value += station_results[j][i]
+        averages.append(value / station_count)
+    
+    return averages
+    """
+
+
+
+
+
 
 
 
