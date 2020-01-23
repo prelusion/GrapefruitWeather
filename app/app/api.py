@@ -101,9 +101,12 @@ def format_data(data):
 
 @api_bp.route('/airpressure')
 def get_most_recent_air_pressure():
-    stations = request.args.get("stations",  [743700, 93590, 589210])
-    interval = request.args.get("interval", 1)
-    limit = request.args.get("limit", 120)
+    """
+    Example: http://127.0.0.1:5000/api/airpressure?limit=120&stations=93590,589210
+    """
+    stations = list(map(int, request.args.get("stations",  [743700, 93590, 589210]).split(",")))
+    interval = int(request.args.get("interval", 1))
+    limit = int(request.args.get("limit", 120))
 
     measurements = db.get_most_recent_air_pressure_average(stations, limit, interval)
 
