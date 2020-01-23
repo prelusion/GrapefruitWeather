@@ -38,9 +38,11 @@ def get_stations(station_id=None,
                  offset=None
                  ):
 
-    for local in locals():
-        if local == "":
-            local = None
+    parameters = locals()
+    for local in parameters:
+        if local is not None:
+            if local == "":
+                local = None
 
     stations = deepcopy(fileaccess.get_stations_db())
 
