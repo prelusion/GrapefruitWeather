@@ -146,7 +146,7 @@ def filter_most_recent_measurements(data, station_id, seconds):
         if not first:
             first = timestamp
 
-        if timestamp < first - datetime.timedelta(seconds=seconds):
+        if timestamp <= first - datetime.timedelta(seconds=seconds):
             break
 
         yield decode_measurement(measurementbytes)
