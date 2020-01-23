@@ -2,6 +2,7 @@
     text-align: center; 
     color: gold;
     border-radius: 5px;
+    background-color: #091e49; 
 }
 
 .air .footer_container {
@@ -10,4 +11,5 @@
     height: 39vh;
     margin-top: 1vh;
     border-radius: 5px;
+    background-color: white;
 }
