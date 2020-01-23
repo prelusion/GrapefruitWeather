@@ -108,11 +108,11 @@ def iterate_dataset_left(data):
         i -= MEASUREMENT_BYTE_COUNT
 
 
-def filter_measurements_by_field(data, fieldname, values):
+def filter_measurements_by_field(measurementbytes_generator, fieldname, values):
     fieldaddr = PROTOCOL_FORMAT_BS[fieldname]
     field_bc = PROTOCOL_FORMAT_BC[fieldname]
 
-    for measurementbytes in iterate_dataset_left(data):
+    for measurementbytes in measurementbytes_generator:
         bytevalue = measurementbytes[fieldaddr:fieldaddr + field_bc]
         decoded = decode_field(fieldname, bytevalue)
 
@@ -120,11 +120,11 @@ def filter_measurements_by_field(data, fieldname, values):
             yield measurementbytes
 
 
-def filter_measurements_by_timestamp(data, station_id, dt1, dt2):
+def filter_measurements_by_timestamp(measurementbytes_generator, dt1, dt2):
     fieldaddr = PROTOCOL_FORMAT_BS["timestamp"]
     field_bc = PROTOCOL_FORMAT_BC["timestamp"]
 
-    for measurementbytes in filter_measurements_by_field(data, "station_id", station_id):
+    for measurementbytes in measurementbytes_generator:
         bytevalue = measurementbytes[fieldaddr:fieldaddr + field_bc]
         timestamp = decode_field("timestamp", bytevalue)
 
@@ -134,13 +134,13 @@ def filter_measurements_by_timestamp(data, station_id, dt1, dt2):
             break
 
 
-def filter_most_recent_measurements(data, fieldname, values, seconds):
+def filter_most_recent_measurements(measurementbytes_generator, seconds):
     fieldaddr = PROTOCOL_FORMAT_BS["timestamp"]
     field_bc = PROTOCOL_FORMAT_BC["timestamp"]
 
     first = None
 
-    for measurementbytes in filter_measurements_by_field(data, fieldname, values):
+    for measurementbytes in measurementbytes_generator:
         bytevalue = measurementbytes[fieldaddr:fieldaddr + field_bc]
         timestamp = decode_field("timestamp", bytevalue)
 
@@ -153,7 +153,7 @@ def filter_most_recent_measurements(data, fieldname, values, seconds):
         yield decode_measurement(measurementbytes)
 
 
-def filter_most_recent_measurements_group_by_interval(data, fieldname, values, totaltime, interval):
+def filter_most_recent_measurements_group_by_interval(measurementbytes_generator, totaltime, interval):
     fieldaddr = PROTOCOL_FORMAT_BS["timestamp"]
     field_bc = PROTOCOL_FORMAT_BC["timestamp"]
 
@@ -161,7 +161,7 @@ def filter_most_recent_measurements_group_by_interval(data, fieldname, values, t
     measurements = []
     currtimestamp = None
 
-    for measurementbytes in filter_measurements_by_field(data, fieldname, values):
+    for measurementbytes in measurementbytes_generator:
         bytevalue = measurementbytes[fieldaddr:fieldaddr + field_bc]
         timestamp = decode_field("timestamp", bytevalue)
 
@@ -171,7 +171,7 @@ def filter_most_recent_measurements_group_by_interval(data, fieldname, values, t
         if not currtimestamp:
             currtimestamp = timestamp
 
-        if timestamp <= first - datetime.timedelta(seconds=totaltime):
+        if timestamp < first - datetime.timedelta(seconds=totaltime):
             break
 
         if currtimestamp - timestamp < datetime.timedelta(seconds=interval):
@@ -186,39 +186,9 @@ def filter_most_recent_measurements_group_by_interval(data, fieldname, values, t
 def get_most_recent_measurements_averages(fieldname, measurement_generator):
     for measurements in measurement_generator:
         temperatures = [measurement[fieldname] for measurement in measurements]
-        yield round(util.avg(temperatures), 2)
+        yield measurements[0]["timestamp"], round(util.avg(temperatures), 2)
 
 
 if __name__ == "__main__":
-    dataread = read_test_file()
-
-    print(list(get_most_recent_measurements_averages(
-        "temperature",
-        filter_most_recent_measurements_group_by_interval(dataread, 'station_id',
-                                                          [743700, 93590, 589210],
-                                                          10, 1)
-    )))
-
-    # print(timeit.timeit(
-    #     "pprint(list(filter_most_recent_measurements_group_by_interval(dataread, 'station_id', [743700, 93590, 589210], 10, 1)))",
-    #     number=1,
-    #     globals=globals()
-    # ))
-
-    # test1_dt1 = datetime.datetime(2020, 1, 21, 14, 56, 38)
-    # test1_dt2 = datetime.datetime(2020, 1, 21, 14, 57, 38)
-    #
-    # print(timeit.timeit(
-    #     "print(len(list(filter_measurements_by_timestamp(dataread, 743700, test1_dt1, test1_dt2))))",
-    #     number=1,
-    #     globals=globals()
-    # ))
-    #
-    # test2_dt1 = datetime.datetime(2020, 1, 21, 14, 59, 30)
-    # test2_dt2 = datetime.datetime(2020, 1, 21, 15, 1, 30)
-    #
-    # print(timeit.timeit(
-    #     "print(len(list(filter_measurements_by_timestamp(dataread, 743700, test2_dt1, test2_dt2))))",
-    #     number=1,
-    #     globals=globals()
-    # ))
+    pass
+    # print(timeit.timeit("composed()", number=1, globals=globals()))

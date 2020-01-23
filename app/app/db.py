@@ -266,8 +266,16 @@ def limit_and_offset(dataset, limit, offset):
     return new_data_set
 
 
-def get_most_recent_air_pressure(station_id, seconds=120):
-    return list(wsmc.filter_most_recent_measurements(wsmc.read_test_file(), "station_id", station_id, seconds))
+def get_most_recent_air_pressure_average(station_ids, seconds, interval):
+    rawdata = wsmc.read_test_file()
+    measurementbytes_generator = wsmc.iterate_dataset_left(rawdata)
+    measurementbytes_generator = wsmc.filter_measurements_by_field(
+        measurementbytes_generator, "station_id", station_ids)
+    measurement_generator = wsmc.filter_most_recent_measurements_group_by_interval(
+        measurementbytes_generator, seconds, interval)
+    avg_temperatures = list(
+        wsmc.get_most_recent_measurements_averages("temperature", measurement_generator))
+    return avg_temperatures
 
 
 def get_measurements(station_id=None, dt1=None, dt2=None, limit=None, offset=None):
