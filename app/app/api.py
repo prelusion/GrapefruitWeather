@@ -1,4 +1,5 @@
 from flask import Blueprint, jsonify, request
+
 from app import db
 
 api_bp = Blueprint('api_bp', __name__)
@@ -17,7 +18,6 @@ def get_racing_tracks():
         return create_error(result)
     else:
         return format_data(result)
-
 
 
 @api_bp.route('/measurements')
