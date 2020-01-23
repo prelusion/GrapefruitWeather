@@ -37,8 +37,9 @@ def binary_search(array, value):
     else:
         return -1
 
+
 def limit_and_offset(dataset, limit, offset):
-    if limit is None:
+    if limit is None or "":
         from app.const import DEFAULT_LIMIT
         limit = DEFAULT_LIMIT
     else:
