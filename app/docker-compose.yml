@@ -1,0 +1,25 @@
+version: '3'
+services:
+    app:
+        build:
+            context: .
+        ports:
+          - "5000:5000"
+        volumes:
+            - "./measurements:/database/measurements"
+    nfs:
+        image: erichough/nfs-server:2.2.1
+        privileged: true
+        environment:
+            - NFS_EXPORT_0=/nfsshare *(fsid=0,rw)
+        ports:
+            - "111:111"
+            - "111:111/udp"
+            - "2049:2049"
+            - "2049:2049/udp"
+            - "32765:32765"
+            - "32765:32765/udp"
+            - "32767:32767"
+            - "32767:32767/udp"
+        volumes:
+            - "./measurements:/nfsshare"

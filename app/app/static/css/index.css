@@ -21,6 +21,19 @@ body {
     padding: 0px;
 }
 
+
+.error_container {
+    position: absolute;
+    right: 25px;
+    color: red;
+    text-align: center;
+    font-size: 14px;
+    width: 15%;
+    margin-right: 2%;
+    height: 40vh;
+    bottom: 35px;    
+}
+
 @media only screen and (max-width: 1200px) {
     .maincontainer {
         margin-left: 25%;
@@ -29,6 +42,13 @@ body {
     .maincontainer .row {
         max-height: 40vh;
         min-height: 40vh;
+    }
+    
+    .error_container {
+        width: 15%;
+        margin-right: 5%;
+        height: 40vh;
+        bottom: 25px;
     }
     
 }
@@ -45,6 +65,13 @@ body {
 
     .maincontainer .row .columns {
         margin-top: 20px;
+    }
+    
+    .error_container {
+        width: 6%;
+        margin-right: 2%;
+        height: 40vh;
+        bottom: 25px;
     }
 }
 
@@ -64,6 +91,12 @@ body {
         margin-top: 20px;
     }
     
+    .error_container {
+        width: 6%;
+        margin-right: 2%;
+        height: 80vh;
+        bottom: 25px;
+    }
 }
 
 @media only screen and (max-width: 768px) {
@@ -81,5 +114,10 @@ body {
     .maincontainer .row .columns {
         margin-top: 20px;
     }
-    
+
+    .error_container {
+        width: 5%;
+        height: 80vh;
+        bottom: 25px;
+    }
 }
