@@ -3,8 +3,7 @@ import os
 SRC_DIR = os.path.dirname(os.path.abspath(__file__))
 ROOT_DIR = os.path.dirname(SRC_DIR)
 REPO_DIR = os.path.dirname(ROOT_DIR)
-print(REPO_DIR)
-DATA_DIR = os.path.join((REPO_DIR + "/app/"), "data")
+DATA_DIR = os.path.join(ROOT_DIR, "data")
 MEASUREMENTS_DIR = os.path.join(DATA_DIR, "measurements")
 DEFAULT_LIMIT = 50
 
