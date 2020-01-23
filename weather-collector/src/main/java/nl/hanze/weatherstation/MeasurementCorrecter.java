@@ -3,20 +3,21 @@ package nl.hanze.weatherstation;
 import com.google.common.collect.EvictingQueue;
 import lombok.val;
 import nl.hanze.weatherstation.models.Measurement;
+import org.slf4j.Logger;
 
-import java.util.HashMap;
-import java.util.Objects;
-import java.util.OptionalDouble;
-import java.util.Queue;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
-public class MeasurementCorrecterImpl implements Runnable {
-    private Queue<Measurement> measurementQueue;
-    private Queue<Measurement> measurementSaveQueue;
-    private HashMap<Integer, Queue<Measurement>> measurementHistory;
+public class MeasurementCorrecter implements Runnable {
+    private final Logger logger;
+    private final Queue<Measurement> measurementQueue;
+    private final Queue<Measurement> measurementSaveQueue;
+    private final HashMap<Integer, Queue<Measurement>> measurementHistory;
 
-    public MeasurementCorrecterImpl(Queue<Measurement> measurementQueue, Queue<Measurement> measurementSaveQueue, HashMap<Integer, Queue<Measurement>> measurementHistory) {
+    public MeasurementCorrecter(Logger logger, Queue<Measurement> measurementQueue, Queue<Measurement> measurementSaveQueue, HashMap<Integer, Queue<Measurement>> measurementHistory) {
+        this.logger = logger;
         this.measurementQueue = measurementQueue;
         this.measurementSaveQueue = measurementSaveQueue;
         this.measurementHistory = measurementHistory;
@@ -30,8 +31,13 @@ public class MeasurementCorrecterImpl implements Runnable {
             return OptionalDouble.empty();
         }
 
-        // TODO exponential moving average.
-        return measurementQueue.stream().map(measurementFunction).filter(Objects::nonNull).mapToDouble(m -> m).average();
+        val values = measurementQueue.stream().map(measurementFunction).filter(Objects::nonNull).collect(Collectors.toList());
+
+        for (int i = 0; i < values.size(); i++) {
+            values.set(i, Math.pow(0.5, (values.size() - i)) * values.get(i));
+        }
+
+        return OptionalDouble.of(values.stream().mapToDouble(m -> m).sum());
     }
 
     /**
@@ -63,7 +69,7 @@ public class MeasurementCorrecterImpl implements Runnable {
         val expectedTemperature = calculateExpectedResult(measurement.getStationId(), Measurement::getTemperature);
 
         if (expectedTemperature.isPresent()) {
-            if (measurement.getTemperature() == null/*|| 20% difference*/) {
+            if (measurement.getTemperature() == null || ((expectedTemperature.getAsDouble() - measurement.getTemperature()) / expectedTemperature.getAsDouble() * 100) > 20) {
                 measurement.setTemperature(expectedTemperature.getAsDouble());
             }
         }
@@ -89,6 +95,7 @@ public class MeasurementCorrecterImpl implements Runnable {
     public void run() {
         while (true) {
             if (Thread.currentThread().isInterrupted()) {
+                logger.info(String.format("%s interrupted", this.getClass().toString()));
                 return;
             }
 

@@ -3,17 +3,20 @@ package nl.hanze.weatherstation;
 import lombok.val;
 import lombok.var;
 import nl.hanze.weatherstation.models.Measurement;
+import org.slf4j.Logger;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Queue;
 
-public class MeasurementProcessorImpl implements Runnable {
-    private Queue<String> rawDataQueue;
-    private Queue<Measurement> measurementQueue;
+public class MeasurementProcessor implements Runnable {
+    private final Logger logger;
+    private final Queue<String> rawDataQueue;
+    private final Queue<Measurement> measurementQueue;
 
-    public MeasurementProcessorImpl(Queue<String> rawDataQueue, Queue<Measurement> measurementQueue) {
+    public MeasurementProcessor(Logger logger, Queue<String> rawDataQueue, Queue<Measurement> measurementQueue) {
+        this.logger = logger;
         this.rawDataQueue = rawDataQueue;
         this.measurementQueue = measurementQueue;
     }
@@ -100,6 +103,7 @@ public class MeasurementProcessorImpl implements Runnable {
     public void run() {
         while (true) {
             if (Thread.currentThread().isInterrupted()) {
+                logger.info(String.format("%s interrupted", this.getClass().toString()));
                 return;
             }
 

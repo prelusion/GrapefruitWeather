@@ -4,13 +4,17 @@ import lombok.val;
 import nl.hanze.weatherstation.models.Measurement;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Objects;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
 
 public class WeatherStation {
     public static void main(String[] args) throws IOException {
@@ -25,11 +29,13 @@ public class WeatherStation {
         Queue<Measurement> measurementSaveQueue = new ConcurrentLinkedQueue<>();
 
         // This map holds 30 measurements per weather station so an average can be calculated when a result is missing.
-        HashMap<Integer, Queue<Measurement>> measurementHistory = new HashMap<>();
+        val measurementHistory = new HashMap<Integer, Queue<Measurement>>();
 
-        Thread measurementProcessorThread = new Thread(new MeasurementProcessorImpl(rawDataQueue, measurementQueue));
-        Thread measurementCorrectorThread = new Thread(new MeasurementCorrecterImpl(measurementQueue, measurementSaveQueue, measurementHistory));
-        Thread measurementSaverThread = new Thread(new FileMeasurementSaver(measurementSaveQueue));
+        val fileMeasurementSaverInitializer = new FileMeasurementSaverInitializer();
+
+        val measurementProcessorThread = new Thread(new MeasurementProcessor(LoggerFactory.getLogger(MeasurementProcessor.class), rawDataQueue, measurementQueue));
+        val measurementCorrectorThread = new Thread(new MeasurementCorrecter(LoggerFactory.getLogger(MeasurementCorrecter.class), measurementQueue, measurementSaveQueue, measurementHistory));
+        val measurementSaverThread = new Thread(fileMeasurementSaverInitializer.initialize(LoggerFactory.getLogger(FileMeasurementSaver.class), measurementSaveQueue, new MeasurementConverter()));
 
         measurementProcessorThread.start();
         measurementCorrectorThread.start();
@@ -45,7 +51,7 @@ public class WeatherStation {
             healthLogger.info("Raw data queue size: {}, Measurement queue size: {}, Measurement save queue size: {}", rawDataQueueSize, measurementQueueSize, measurementSaveQueueSize);
         }, 0, 5, TimeUnit.SECONDS);
 
-        Server server = new Server(7789, rawDataQueue);
+        Server server = new Server(LoggerFactory.getLogger(Server.class), 7789, rawDataQueue);
         server.listen();
     }
 }
