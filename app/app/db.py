@@ -253,7 +253,7 @@ def limit_and_offset(dataset, limit, offset):
     else:
         limit = int(limit)
 
-    if offset is None or l:
+    if offset is None:
         offset = 0
     else:
         offset = int(offset)
