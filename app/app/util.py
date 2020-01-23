@@ -1,6 +1,8 @@
 from bisect import bisect_left
 from datetime import timedelta
 
+from flask import jsonify
+
 
 def avg(lst):
     return sum(lst) / len(lst)
@@ -56,3 +58,16 @@ def limit_and_offset(dataset, limit, offset):
             break;
         new_data_set.append(dataset[i + offset])
     return new_data_set
+
+
+def http_format_error(message):
+    return jsonify({"error": message})
+
+
+def http_format_data(data, params=None):
+    response = {"data": data}
+
+    for param, value in params.items():
+        response[param] = value
+
+    return jsonify(response)

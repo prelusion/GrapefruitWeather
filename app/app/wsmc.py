@@ -1,10 +1,10 @@
 import datetime
 import math
 import os
-import timeit
 from collections import OrderedDict
 
 from app import const
+from app import util
 
 PREFERRED_CHUNK_SIZE = 104857600  # +- 100 MB
 
@@ -98,7 +98,7 @@ def decode_measurement(bindata):
     return measurement
 
 
-def iterate_dataset_left(data, fieldname):
+def iterate_dataset_left(data):
     """ Each iteration the value of the given fieldname is yielded. """
     i = len(data)
     while i > 0:
@@ -107,23 +107,23 @@ def iterate_dataset_left(data, fieldname):
         i -= MEASUREMENT_BYTE_COUNT
 
 
-def filter_measurements_by_field(data, fieldname, value):
+def filter_by_field(measurementbytes_generator, fieldname, values):
     fieldaddr = PROTOCOL_FORMAT_BS[fieldname]
     field_bc = PROTOCOL_FORMAT_BC[fieldname]
 
-    for measurementbytes in iterate_dataset_left(data, "station_id"):
+    for measurementbytes in measurementbytes_generator:
         bytevalue = measurementbytes[fieldaddr:fieldaddr + field_bc]
         decoded = decode_field(fieldname, bytevalue)
 
-        if decoded == value:
+        if decoded in values:
             yield measurementbytes
 
 
-def filter_measurements_by_timestamp(data, station_id, dt1, dt2):
+def filter_by_timestamp(measurementbytes_generator, dt1, dt2):
     fieldaddr = PROTOCOL_FORMAT_BS["timestamp"]
     field_bc = PROTOCOL_FORMAT_BC["timestamp"]
 
-    for measurementbytes in filter_measurements_by_field(data, "station_id", station_id):
+    for measurementbytes in measurementbytes_generator:
         bytevalue = measurementbytes[fieldaddr:fieldaddr + field_bc]
         timestamp = decode_field("timestamp", bytevalue)
 
@@ -133,13 +133,12 @@ def filter_measurements_by_timestamp(data, station_id, dt1, dt2):
             break
 
 
-def filter_most_recent_measurements(data, station_id, seconds):
+def filter_most_recent(measurementbytes_generator, seconds):
     fieldaddr = PROTOCOL_FORMAT_BS["timestamp"]
     field_bc = PROTOCOL_FORMAT_BC["timestamp"]
-
     first = None
 
-    for measurementbytes in filter_measurements_by_field(data, "station_id", station_id):
+    for measurementbytes in measurementbytes_generator:
         bytevalue = measurementbytes[fieldaddr:fieldaddr + field_bc]
         timestamp = decode_field("timestamp", bytevalue)
 
@@ -149,32 +148,30 @@ def filter_most_recent_measurements(data, station_id, seconds):
         if timestamp < first - datetime.timedelta(seconds=seconds):
             break
 
-        yield decode_measurement(measurementbytes)
+        yield measurementbytes
 
 
-if __name__ == "__main__":
-    dataread = read_test_file()
+def group_by_timestamp(measurementbytes_generator, interval):
+    measurements = []
+    currtimestamp = None
 
-    print(timeit.timeit(
-        "print(len(list(filter_most_recent_measurements(dataread, 743700, 120))))",
-        number=1,
-        globals=globals()
-    ))
+    for measurementbytes in measurementbytes_generator:
+        measurement = decode_measurement(measurementbytes)
+        timestamp = measurement["timestamp"]
 
-    # test1_dt1 = datetime.datetime(2020, 1, 21, 14, 56, 38)
-    # test1_dt2 = datetime.datetime(2020, 1, 21, 14, 57, 38)
-    #
-    # print(timeit.timeit(
-    #     "print(len(list(filter_measurements_by_timestamp(dataread, 743700, test1_dt1, test1_dt2))))",
-    #     number=1,
-    #     globals=globals()
-    # ))
-    #
-    # test2_dt1 = datetime.datetime(2020, 1, 21, 14, 59, 30)
-    # test2_dt2 = datetime.datetime(2020, 1, 21, 15, 1, 30)
-    #
-    # print(timeit.timeit(
-    #     "print(len(list(filter_measurements_by_timestamp(dataread, 743700, test2_dt1, test2_dt2))))",
-    #     number=1,
-    #     globals=globals()
-    # ))
+        if not currtimestamp:
+            currtimestamp = timestamp
+
+        if currtimestamp - timestamp < datetime.timedelta(seconds=interval):
+            measurements.append(measurement)
+            continue
+        else:
+            currtimestamp = timestamp
+            yield measurements
+            measurements = [measurement]
+
+
+def groups_to_average(fieldname, measurement_generator):
+    for measurements in measurement_generator:
+        temperatures = [measurement[fieldname] for measurement in measurements]
+        yield measurements[0]["timestamp"], round(util.avg(temperatures), 2)

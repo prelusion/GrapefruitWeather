@@ -1,5 +1,7 @@
 from copy import deepcopy
+
 from geopy import distance
+
 from app import fileaccess
 from app import wsmc
 from app.const import RACING_TRACKS
@@ -37,7 +39,7 @@ def get_stations(station_id=None,
                  timezone=None,
                  offset=None
                  ):
-
+  
     parameters = locals()
     for local in parameters:
         if local is not None:
@@ -79,45 +81,15 @@ def get_stations(station_id=None,
     return True, stations
 
 
-def get_most_recent_air_pressure(station_id, seconds=120):
-    return list(wsmc.filter_most_recent_measurements(wsmc.read_test_file(), station_id, seconds))
-
-
-def get_measurements(station_id=None, dt1=None, dt2=None, limit=None, offset=None):
-    pass
-
-
-def get_average_measurements(stations, interval, dt1, dt2):
-    """ Returns an array of measurements averaged by the following conditions:
-        - All measurements within each interval are averaged per station
-        - The averages for each station are taken as an average per interval
-
-        This results in an array of averages per interval which are averages
-        of multiple stations and multiple measurements.
-
-        :returns [{ "timestamp": "", "field": "", "value": ""], total
-    """
-
-    """
-    PSEUDOCODE:
-    
-    # Get average per interval for each station
-    station_results = []
-    for station_id in stations:
-        measurements = _retrieve_measurements_from_fs(station_id, dt1, dt2)
-        measurements_per_interval = split_by_interval(measurements)
-        average_per_interval = map(avg(measurements), measurements_per_interval)
-        station_results.append(average_per_interval)
-    
-    # Get average per interval of all stations
-    station_count = len(stations)
-    interval_count = len(stations[0])
-    averages = []
-    for i in range(interval_count):
-        value = 0
-        for j in range(station_count):
-            value += station_results[j][i]
-        averages.append(value / station_count)
-    
-    return averages
-    """
+def get_most_recent_air_pressure_average(station_ids, seconds, interval):
+    rawdata = wsmc.read_test_file()
+    measurementbytes_generator = wsmc.iterate_dataset_left(rawdata)
+    measurementbytes_generator = wsmc.filter_by_field(
+        measurementbytes_generator, "station_id", station_ids)
+    measurementbytes_generator = wsmc.filter_most_recent(
+        measurementbytes_generator, seconds)
+    measurement_generator = wsmc.group_by_timestamp(
+        measurementbytes_generator, interval)
+    avg_temperatures = list(
+        wsmc.groups_to_average("air_pressure", measurement_generator))
+    return avg_temperatures

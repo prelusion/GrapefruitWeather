@@ -1,6 +1,7 @@
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, request
 
 from app import db
+from app.util import http_format_error, http_format_data
 
 api_bp = Blueprint('api_bp', __name__)
 
@@ -14,47 +15,14 @@ def get_racing_tracks():
 
     success, result = db.get_racing_tracks(track_id, name, city, country)
 
+    params = {
+        "total": len(result),
+    }
+
     if success is False:
-        return create_error(result)
+        return http_format_error(result)
     else:
-        return format_data(result)
-
-
-@api_bp.route('/measurements')
-def get_measurements():
-    station_id = request.args.get("station")
-    dt1 = request.args.get("dt1")
-    dt2 = request.args.get("dt2")
-    limit = request.args.get("limit")
-    offset = request.args.get("offset")
-
-    measurements, total = db.get_measurements(station_id, dt1, dt2, limit, offset)
-
-    return jsonify({
-        "data": measurements,
-        "total": total,
-        "offset": offset,
-        "limit": limit,
-    })
-
-
-@api_bp.route('/measurements/<string:field>/average')
-def get_measurement_average(field):
-    stations = request.args.get("stations").split(",")
-    interval = request.args.get("interval")
-    dt1 = request.args.get("dt1")
-    dt2 = request.args.get("dt2")
-    offset = request.args.get("offset")
-    limit = request.args.get("limit")
-
-    measurements, total = db.get_average_measurements(stations, interval, dt1, dt2)
-
-    return jsonify({
-        "data": measurements,
-        "total": total,
-        "offset": offset,
-        "limit": limit,
-    })
+        return http_format_data(result, params)
 
 
 @api_bp.route('/stations')
@@ -78,37 +46,34 @@ def get_stations():
                                       timezone=timezone
                                       )
 
+    params = {
+        "total": len(result),
+        "limit": limit,
+        "offset": limit,
+    }
+
     if success is False:
-        return create_error(result)
+        return http_format_error(result)
     else:
-        return format_data(result)
-
-
-def create_error(message):
-    return jsonify({
-        "error": message
-    })
-
-
-def format_data(data):
-    return jsonify({
-        "data": data,
-        "total": len(data),
-        "offset": 0,
-        "limit": 50,
-    })
+        return http_format_data(result, params)
 
 
 @api_bp.route('/airpressure')
 def get_most_recent_air_pressure():
-    station = request.args.get("station", 743700)
-    seconds = request.args.get("seconds", 120)
+    """
+    Example: http://127.0.0.1:5000/api/airpressure?limit=120&stations=93590,589210
+    """
+    stations = list(map(int, request.args.get("stations", [743700, 93590, 589210]).split(",")))
+    interval = int(request.args.get("interval", 1))
+    limit = int(request.args.get("limit", 120))
 
-    measurements = db.get_most_recent_air_pressure(station, seconds)
+    measurements = db.get_most_recent_air_pressure_average(stations, limit, interval)
 
-    return jsonify({
-        "data": measurements,
+    params = {
         "total": len(measurements),
-        "offset": 0,
-        "limit": 0,
-    })
+        "limit": limit,
+        "interval": interval,
+        "stations": stations,
+    }
+
+    return http_format_data(measurements, params)
