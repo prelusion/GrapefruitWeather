@@ -3,7 +3,7 @@ import math
 import os
 import timeit
 from collections import OrderedDict
-
+from pprint import pprint
 from app import const
 
 PREFERRED_CHUNK_SIZE = 104857600  # +- 100 MB
@@ -107,7 +107,7 @@ def iterate_dataset_left(data):
         i -= MEASUREMENT_BYTE_COUNT
 
 
-def filter_measurements_by_field(data, fieldname, value):
+def filter_measurements_by_field(data, fieldname, values):
     fieldaddr = PROTOCOL_FORMAT_BS[fieldname]
     field_bc = PROTOCOL_FORMAT_BC[fieldname]
 
@@ -115,7 +115,7 @@ def filter_measurements_by_field(data, fieldname, value):
         bytevalue = measurementbytes[fieldaddr:fieldaddr + field_bc]
         decoded = decode_field(fieldname, bytevalue)
 
-        if decoded == value:
+        if decoded in values:
             yield measurementbytes
 
 
@@ -133,13 +133,13 @@ def filter_measurements_by_timestamp(data, station_id, dt1, dt2):
             break
 
 
-def filter_most_recent_measurements(data, fieldname, value, seconds):
+def filter_most_recent_measurements(data, fieldname, values, seconds):
     fieldaddr = PROTOCOL_FORMAT_BS["timestamp"]
     field_bc = PROTOCOL_FORMAT_BC["timestamp"]
 
     first = None
 
-    for measurementbytes in filter_measurements_by_field(data, fieldname, value):
+    for measurementbytes in filter_measurements_by_field(data, fieldname, values):
         bytevalue = measurementbytes[fieldaddr:fieldaddr + field_bc]
         timestamp = decode_field("timestamp", bytevalue)
 
@@ -152,11 +152,41 @@ def filter_most_recent_measurements(data, fieldname, value, seconds):
         yield decode_measurement(measurementbytes)
 
 
+def filter_most_recent_measurements_by_interval(data, fieldname, values, totaltime, interval):
+    fieldaddr = PROTOCOL_FORMAT_BS["timestamp"]
+    field_bc = PROTOCOL_FORMAT_BC["timestamp"]
+
+    first = None
+    measurements = []
+    currtimestamp = None
+
+    for measurementbytes in filter_measurements_by_field(data, fieldname, values):
+        bytevalue = measurementbytes[fieldaddr:fieldaddr + field_bc]
+        timestamp = decode_field("timestamp", bytevalue)
+
+        if not first:
+            first = timestamp
+
+        if not currtimestamp:
+            currtimestamp = timestamp
+
+        if timestamp <= first - datetime.timedelta(seconds=totaltime):
+            break
+
+        if currtimestamp - timestamp < datetime.timedelta(seconds=interval):
+            measurements.append(decode_measurement(measurementbytes))
+            continue
+        else:
+            currtimestamp = timestamp
+            yield measurements
+            measurements = [decode_measurement(measurementbytes)]
+
+
 if __name__ == "__main__":
     dataread = read_test_file()
 
     print(timeit.timeit(
-        "print(len(list(filter_most_recent_measurements(dataread, 'station_id', 743700, 120))))",
+        "pprint(list(filter_most_recent_measurements_by_interval(dataread, 'station_id', [743700, 93590, 589210], 10, 1)))",
         number=1,
         globals=globals()
     ))
