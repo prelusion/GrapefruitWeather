@@ -1,3 +1,4 @@
+import csv
 from bisect import bisect_left
 from datetime import timedelta
 
@@ -71,3 +72,8 @@ def http_format_data(data, params=None):
         response[param] = value
 
     return jsonify(response)
+
+
+def csv_to_array_of_dicts(f):
+    return [{k: v for k, v in row.items()}
+            for row in csv.DictReader(f, skipinitialspace=True)]
