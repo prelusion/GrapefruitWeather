@@ -11,13 +11,11 @@ $(document).ready(function() {
     });
     $(".track_container").on('click', function() { 
         setMapView($(this).children("p").attr("latitude"), $(this).children("p").attr("longitude"));
+        updateMarker(($(this).children("p").attr("trackID")-1));
         $("#track option:eq("+($(this).children("p").attr("trackID")-1)+")").prop("selected", true);
         $("#latitude").val($(this).children("p").attr("latitude"));
         $("#longitude").val($(this).children("p").attr("longitude"));
         $("#country").val($(this).children("p").attr("country"));
+        getStationsFilter();
     });
 }); 
-function setMapView(latitude, longitude) {
-    map.invalidateSize();
-    map.setView([latitude, longitude], 13);
-}

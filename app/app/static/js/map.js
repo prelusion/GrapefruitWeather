@@ -1,16 +1,123 @@
 $(document).ready(function() {
     map = L.map('mapid').setView([51.505, -0.09], 13);
+    markers = L.featureGroup().addTo(map).on("click", markerClick);
+    stations = [];
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-    }).addTo(map);
-
-    greenIcon = new L.Icon({
-        iconUrl: 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
+    }).addTo(map);  
+     
+    racetrackIconSelected = new L.Icon({
+        iconUrl: '/static/resources/images/racetrack_marker.gif',
         shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
-        iconSize: [25, 41],
+        iconSize: [48, 48],
         iconAnchor: [12, 41],
         popupAnchor: [1, -34],
-        shadowSize: [41, 41]
+        shadowSize: [61, 61]
     });
+
+    racetrackIcon = new L.Icon({
+        iconUrl: '/static/resources/images/racetrack_marker.png',
+        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+        iconSize: [48, 48],
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34],
+        shadowSize: [61, 61]
+    });
+    
+    
+    weatherstationIcon = new L.Icon({
+        iconUrl: '/static/resources/images/weatherstation_marker.png',
+        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+        iconSize: [48, 48],
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34],
+        shadowSize: [61, 61]
+    });
+
+    weatherstationIconSelected = new L.Icon({
+        iconUrl: '/static/resources/images/weatherstation_marker.gif',
+        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+        iconSize: [48, 48],
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34],
+        shadowSize: [61, 61]
+    });  
 });
+
+function markerClick(event) {
+    if(event.layer.highlighted) {
+        if(event.layer.profile === "track") {
+            event.layer.setIcon(racetrackIcon);
+        } else {
+            event.layer.setIcon(weatherstationIcon);
+        }
+        event.layer.highlighted = false;
+    } else {
+        if(event.layer.profile === "track") {
+            event.layer.setIcon(racetrackIconSelected);
+            console.log(event.layer);
+            getStationsFilter(true, event.layer.latitude, event.layer.longitude);        
+        } else {
+            event.layer.setIcon(weatherstationIconSelected);
+        }  
+        event.layer.highlighted = true;
+    }
+}
+
+//Can be more effcient!!
+function updateMarker(marker_id) {
+    deselectMarkers();
+    for(mark in markers._layers) {
+        if(markers._layers[mark].profile === "track" && markers._layers[mark].track_id === marker_id) {
+            if(markers._layers[mark].highlighted) { 
+                markers._layers[mark].setIcon(racetrackIcon);
+                markers._layers[mark].highlighted = false;
+            } else {
+                markers._layers[mark].setIcon(racetrackIconSelected);
+                markers._layers[mark].highlighted = true;
+            }
+        } else if(markers._layers[mark].profile === "station" && markers._layers[mark].station_id === marker_id) {
+            if(markers._layers[mark].highlighted) {
+                markers._layers[mark].setIcon(weatherstationIcon);
+                markers._layers[mark].highlighted = false;
+            } else {
+                markers._layers[mark].setIcon(weatherstationIconSelected); 
+                markers._layers[mark].highlighted = true;
+            }
+        }    
+    }
+}
+
+function deselectMarkers() {
+    for(mark in markers._layers) {
+        markers._layers[mark].highlighted = false;        
+        if(markers._layers[mark].profile === "track") {    
+            markers._layers[mark].setIcon(racetrackIcon); 
+        } else {
+            markers._layers[mark].setIcon(weatherstationIcon); 
+        }
+    }
+}
+
+function createStations(result) {
+    for(station in result.data) {
+        if(!stations.includes(result.data[station].id)){
+            stations.push(result.data[station].id);
+
+            var marker = L.marker([result.data[station].latitude, result.data[station].longitude], {icon: weatherstationIcon} ).addTo(markers)
+            .bindPopup("Name:" + result.data[station].name);
+            marker.highlighted = false;
+            marker.profile = "station";     
+            marker.distance = result.data[station].distance;
+            marker.station_id = result.data[station].id-1;
+            marker.latitude = result.data[station].latitude;
+            marker.longitude = result.data[station].longitude;
+        }
+    }
+}
+
+function setMapView(latitude, longitude) {
+    map.invalidateSize();
+    map.setView([latitude, longitude], map.getZoom());
+}
