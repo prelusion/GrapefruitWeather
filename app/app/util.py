@@ -4,6 +4,8 @@ from datetime import timedelta
 
 from flask import jsonify
 
+from app.db import get_timezone_offset_by_timezone_id
+
 
 def avg(lst):
     return sum(lst) / len(lst)
@@ -78,5 +80,9 @@ def csv_to_array_of_dicts(f):
     return [{k: v for k, v in row.items()}
             for row in csv.DictReader(f, skipinitialspace=True)]
 
-def convert_measurement_timezone(measurements, dest_timezone_id):
-    pass
+
+def convert_tz(dt, source_tz, dest_tz):
+    source_delta = get_timezone_offset_by_timezone_id(source_tz) * -1
+    dest_delta = get_timezone_offset_by_timezone_id(dest_tz)
+
+    dt + 

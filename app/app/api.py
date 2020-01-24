@@ -1,7 +1,7 @@
 from flask import Blueprint, request
 
 from app import db
-from app.util import http_format_error, http_format_data
+from app.util import http_format_error, http_format_data, convert_measurement_timezone
 
 api_bp = Blueprint('api_bp', __name__)
 
@@ -64,6 +64,8 @@ def get_airpressure_measurements():
     Example: http://127.0.0.1:5000/api/measurements/airpressure?limit=120&stations=93590,589210
     """
     stations = request.args.get("stations", [743700, 93590, 589210])
+    timezone = request.args.get("tz")
+
     try:
         stations = stations.split(",")
     except IndexError:
@@ -106,4 +108,3 @@ def get_timezone():
         return http_format_error("Invalid input")
     else:
         return http_format_data(result)
-
