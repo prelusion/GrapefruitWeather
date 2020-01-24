@@ -2,6 +2,8 @@ $(document).ready(function() {
     map = L.map('mapid').setView([51.505, -0.09], 13);
     markers = L.featureGroup().addTo(map).on("click", markerClick);
     stations = [];
+    selectedAirStations = [];
+    selectedTemperatureStations = [];
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -48,21 +50,34 @@ $(document).ready(function() {
 function markerClick(event) {
     if(event.layer.highlighted) {
         if(event.layer.profile === "track") {
+            deselectMarkers();
             event.layer.setIcon(racetrackIcon);
         } else {
             event.layer.setIcon(weatherstationIcon);
+            selectedAirStations = removeValueOutArray(selectedAirStations, event.layer.station_id);
         }
         event.layer.highlighted = false;
     } else {
         if(event.layer.profile === "track") {
+            deselectMarkers();
             event.layer.setIcon(racetrackIconSelected);
-            console.log(event.layer);
-            getStationsFilter(true, event.layer.latitude, event.layer.longitude);        
+            getStationsFilter("temperature", true, event.layer.latitude, event.layer.longitude, event.layer.country_id);      
+            event.layer.highlighted = true;   
         } else {
             event.layer.setIcon(weatherstationIconSelected);
+            event.layer.highlighted = true;
+            selectedAirStations.push(event.layer.station_id);
         }  
-        event.layer.highlighted = true;
     }
+    console.log(selectedAirStations);
+}
+
+function removeValueOutArray(array, value) {
+    const index = array.indexOf(value);
+    if (index > -1) {
+        array.splice(index, 1);
+    }
+    return array;
 }
 
 //Can be more effcient!!
@@ -70,26 +85,18 @@ function updateMarker(marker_id) {
     deselectMarkers();
     for(mark in markers._layers) {
         if(markers._layers[mark].profile === "track" && markers._layers[mark].track_id === marker_id) {
-            if(markers._layers[mark].highlighted) { 
-                markers._layers[mark].setIcon(racetrackIcon);
-                markers._layers[mark].highlighted = false;
-            } else {
-                markers._layers[mark].setIcon(racetrackIconSelected);
-                markers._layers[mark].highlighted = true;
-            }
+            markers._layers[mark].setIcon(racetrackIconSelected);
+            markers._layers[mark].highlighted = true;
         } else if(markers._layers[mark].profile === "station" && markers._layers[mark].station_id === marker_id) {
-            if(markers._layers[mark].highlighted) {
-                markers._layers[mark].setIcon(weatherstationIcon);
-                markers._layers[mark].highlighted = false;
-            } else {
-                markers._layers[mark].setIcon(weatherstationIconSelected); 
-                markers._layers[mark].highlighted = true;
-            }
+            markers._layers[mark].setIcon(weatherstationIconSelected); 
+            markers._layers[mark].highlighted = true;
         }    
     }
 }
 
 function deselectMarkers() {
+    selectedAirStations = [];
+    selectedTemperatureStations = [];
     for(mark in markers._layers) {
         markers._layers[mark].highlighted = false;        
         if(markers._layers[mark].profile === "track") {    
@@ -100,24 +107,50 @@ function deselectMarkers() {
     }
 }
 
-function createStations(result) {
+function markOrCreateStations(result) {
     for(station in result.data) {
+        selectedAirStations.push(result.data[station].id);
         if(!stations.includes(result.data[station].id)){
             stations.push(result.data[station].id);
 
-            var marker = L.marker([result.data[station].latitude, result.data[station].longitude], {icon: weatherstationIcon} ).addTo(markers)
+            var marker = L.marker([result.data[station].latitude, result.data[station].longitude], {icon: weatherstationIconSelected} ).addTo(markers)
             .bindPopup("Name:" + result.data[station].name);
-            marker.highlighted = false;
+            marker.highlighted = true;
             marker.profile = "station";     
             marker.distance = result.data[station].distance;
-            marker.station_id = result.data[station].id-1;
+            marker.station_id = result.data[station].id;
             marker.latitude = result.data[station].latitude;
             marker.longitude = result.data[station].longitude;
+        } else {
+            for(index in markers._layers) {
+                if(markers._layers[index].station_id === result.data[station].id) {
+                    var marker = markers._layers[index];
+                    marker.setIcon(weatherstationIconSelected);
+                    marker.highlighted = true;
+                }
+            }
         }
     }
+    console.log("air stations ", selectedAirStations);
 }
 
-function setMapView(latitude, longitude) {
+function setMapView(latitude, longitude, zoom) {
     map.invalidateSize();
-    map.setView([latitude, longitude], map.getZoom());
+    map.setView([latitude, longitude], zoom);
+}
+
+function getAirStations() {
+    return selectedAirStations;
+}
+function getTemperatureStations() {
+    return selectedTemperatureStations;
+}
+
+function setTemperatureStations(result) {
+    for(station in result.data) {
+        if(!selectedAirStations.includes(result.data[station].id)) {
+            selectedTemperatureStations.push(result.data[station].id);
+        }
+    }
+    console.log("temperature stations ", selectedTemperatureStations);
 }
