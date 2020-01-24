@@ -8,10 +8,6 @@ from collections import OrderedDict
 from app import const
 from app import util
 
-PREFERRED_CHUNK_SIZE = 104857600  # +- 100 MB
-# PREFERRED_CHUNK_SIZE = 97181735  # +- 100 MB
-
-
 # Byte count for each field within a measurement
 PROTOCOL_FORMAT_BC = OrderedDict({
     "station_id": 3,
@@ -49,34 +45,37 @@ PROTOCOL_FORMAT_BS = OrderedDict({
 })
 
 MEASUREMENT_BYTE_COUNT = sum(PROTOCOL_FORMAT_BC.values())
-CHUNKS = math.trunc(PREFERRED_CHUNK_SIZE / MEASUREMENT_BYTE_COUNT)
-ACTUAL_CHUNK_SIZE = CHUNKS * MEASUREMENT_BYTE_COUNT
 
 
-def load_data_fake(offset=0, chunksize=ACTUAL_CHUNK_SIZE):
-    return []
+def determine_chunksize(prefsize=500000):
+    chunks = math.trunc(prefsize / MEASUREMENT_BYTE_COUNT)
+    return chunks * MEASUREMENT_BYTE_COUNT
 
 
-def load_all_data():
-    datalen = 100
+def load_all_data_test():
+    data = [1]
     i = 0
-    while datalen != 0:
-        del datalen
-        datalen = len(load_data(offset=i))
+    while len(data) != 0:
+        del data
+        data = _load_data(offset=i)
         i += 1
-        print("data len:", datalen)
+        print("iteration", i)
     return i
 
 
-def load_data(offset=0, chunksize=ACTUAL_CHUNK_SIZE):
+def load_data(chunksize, offset):
     """ Loads wsmc data from the file system.
 
     Data is loaded backwards, which implies that the newest data is loaded first.
 
     :param offset: amount of chunks skipped when loading into memory
-    :param chunksize: amount of bytes loaded into memory
+    :param chunksize: preferred amount of bytes loaded into memory
     :return: data in bytes
     """
+    return _load_data(determine_chunksize(chunksize), offset)
+
+
+def _load_data(chunksize, offset):
     datadir = const.MEASUREMENTS_DIR
     skipbytes = offset * chunksize
     spaceleft = chunksize
