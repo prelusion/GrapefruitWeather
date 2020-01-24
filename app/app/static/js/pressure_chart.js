@@ -3,8 +3,8 @@ $(document).ready(function(){
     timelist = [];
     pressurelist = [];
     stations = [93590,589210];
-    var plottime = null;
-    var plotdata = null;
+    var timeInterval = 120;
+    var limit = 120;
 
 
     function plot(timestamps, pressure){
@@ -28,45 +28,41 @@ $(document).ready(function(){
                 },
                 animation: false
 
+
             }
         });
+        $("#time_label").text("Time(realtime): " + timelist[timelist.length-1]);
+        $("#pressure_label").text("Airpressure(realtime): " + pressurelist[pressurelist.length-1]);
+        $(".air .footer_container").css("background-color", "white");
     }
 
-    function set_stations(stationlist){
-        this.stations = stationlist;
-    }
 
-
-    function list_generator(list, data) {
-        if(list.length == 6){
-            list.shift();
-            list[5] = data;
-            return list;
-        } else {
-            list.push(data);
-            return list;
-        } 
-    } 
 
     setInterval(function() {
 
         function get_data() {
             ur = stations.join();
-            $.get("http://127.0.0.1:5000/api/airpressure?limit=1&stations=" + ur, function(result) {
-                for(index in result.data){
-                    var jsontime = "" + result.data[index][0].substring(17,25);
-                    var jsondata = result.data[index][1];
+            $.get("http://127.0.0.1:5000/api/airpressure?limit=" + limit +"&stations=" + ur, function(result) {
+                if(timelist.length == 0){
+                    for(x = timeInterval - 1; x >= 0; x--){
+                        timelist.push(("" + result.data[x][0].substring(17,25)));
+                        pressurelist.push(result.data[x][1]);
+                    }
+                } else {
+                        limit = 1;
+                        timelist.shift();
+                        timelist[timelist.length] = ("" + result.data[0][0].substring(17,25));
 
-
-                    plottime = list_generator(timelist, jsontime); 
-                    plotdata = list_generator(pressurelist, jsondata);
-                }
-                    
-            });
+                        pressurelist.shift();
+                        pressurelist[pressurelist.length] = result.data[0][1];
+                }       
+            });        
         }
 
         get_data();
-        plot(plottime, plotdata);
+        plot(timelist, pressurelist);
+
+
     }, 1000);
 
 });
