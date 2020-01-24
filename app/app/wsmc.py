@@ -57,6 +57,17 @@ def load_data_fake(offset=0, chunksize=ACTUAL_CHUNK_SIZE):
     return []
 
 
+def load_all_data():
+    datalen = 100
+    i = 0
+    while datalen != 0:
+        del datalen
+        datalen = len(load_data(offset=i))
+        i += 1
+        print("data len:", datalen)
+    return i
+
+
 def load_data(offset=0, chunksize=ACTUAL_CHUNK_SIZE):
     """ Loads wsmc data from the file system.
 
@@ -87,6 +98,7 @@ def load_data(offset=0, chunksize=ACTUAL_CHUNK_SIZE):
         if skipbytes > size:
             skipbytes -= size
         else:
+            print("file:", currentfile)
             data = read_file(
                 os.path.join(datadir, currentfile),
                 bytecount=spaceleft, skipbytes=skipbytes)
@@ -234,4 +246,4 @@ def groups_to_average(fieldname, measurement_generator):
 
 
 if __name__ == "__main__":
-    print(timeit.timeit('print(len(load_data()))', number=1, globals=globals()))
+    print(timeit.timeit('print(load_all_data())', number=1, globals=globals()))
