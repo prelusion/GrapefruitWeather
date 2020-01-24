@@ -1,11 +1,4 @@
-import os
-
-SRC_DIR = os.path.dirname(os.path.abspath(__file__))
-ROOT_DIR = os.path.dirname(SRC_DIR)
-REPO_DIR = os.path.dirname(ROOT_DIR)
-DATA_DIR = os.path.join(ROOT_DIR, "data")
-MEASUREMENTS_DIR = os.path.join(DATA_DIR, "measurements")
-DEFAULT_LIMIT = 50
+import csv
 
 RACING_TRACKS = [
     {
@@ -185,3 +178,14 @@ RACING_TRACKS = [
         "longitude": 54.615285,
     },
 ]
+
+
+def write_dict_array_to_csv(filename, arraydict):
+    keys = arraydict[0].keys()
+    with open(filename, 'w') as output_file:
+        dict_writer = csv.DictWriter(output_file, keys)
+        dict_writer.writeheader()
+        dict_writer.writerows(arraydict)
+
+
+write_dict_array_to_csv('tracks.csv', RACING_TRACKS)

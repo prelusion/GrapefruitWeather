@@ -4,12 +4,11 @@ from geopy import distance
 
 from app import fileaccess
 from app import wsmc
-from app.const import RACING_TRACKS
 from app.util import limit_and_offset
 
 
 def get_racing_tracks(track_id=None, name=None, city=None, country=None, limit=None, offset=None):
-    racing_tracks = deepcopy(RACING_TRACKS)
+    racing_tracks = fileaccess.get_tracks()
 
     if track_id is not None:
         racing_tracks = list(filter(lambda track: track["id"] == int(track_id), racing_tracks))
@@ -39,11 +38,14 @@ def get_stations(station_id=None,
                  timezone=None,
                  offset=None
                  ):
-    for local in locals():
-        if local == "":
-            local = None
+  
+    parameters = locals()
+    for local in parameters:
+        if local is not None:
+            if local == "":
+                local = None
 
-    stations = deepcopy(fileaccess.get_stations_db())
+    stations = deepcopy(fileaccess.get_stations())
 
     if radius is not None and (latitude is not None or longitude is not None):
         return False, "Latitude or longitude not set."
