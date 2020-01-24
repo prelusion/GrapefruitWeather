@@ -77,3 +77,9 @@ def get_most_recent_air_pressure():
     }
 
     return http_format_data(measurements, params)
+
+
+@api_bp.route('/timezone')
+def get_timezone_by_station():
+    station = request.args.get("stations")
+    
