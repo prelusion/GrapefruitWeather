@@ -11,21 +11,16 @@
     $(document).ready(function() {
         jsonArray = {{ racing_tracks|tojson|safe }};
         for(var index in jsonArray) { 
-            console.log("Track " + jsonArray[index].id + " index " + index);      
-            L.marker([jsonArray[index].latitude.toFixed(2), jsonArray[index].longitude.toFixed(2)]).addTo(map)
-                .bindPopup("City:" + jsonArray[index].city + ", Country: " +  jsonArray[index].country + ", Title: " + jsonArray[index].title)
-                .openPopup();
-        }    
-
-
-        // var jsonArray = {{ weather_stations|tojson|safe }};
-        // for(var index in jsonArray) {
-        //     if(index % 12 == 2) {
-        //         L.marker([jsonArray[index][3], jsonArray[index][4]], {icon: greenIcon}).addTo(map)
-        //             .bindPopup("ID:" + jsonArray[index][0] + ", City:" + jsonArray[index][1] + ", Country: " +  jsonArray[index][2])
-        //             .openPopup();
-        //     }
-        // }
+            console.log("Track " + jsonArray[index].id + " index " + index);    
+            var marker = L.marker([jsonArray[index].latitude.toFixed(2), jsonArray[index].longitude.toFixed(2)], {icon: racetrackIcon} ).addTo(markers)
+                .bindPopup("City:" + jsonArray[index].city + ", Country: " +  jsonArray[index].country + ", Title: " + jsonArray[index].title);
+            marker.highlighted = false;
+            marker.profile = "track";
+            marker.track_id = jsonArray[index].id-1;
+            marker.latitude = jsonArray[index].latitude;
+            marker.longitude = jsonArray[index].longitude;
+            marker.country_id = jsonArray[index].country_id;
+        }   
     });
 </script>
 
