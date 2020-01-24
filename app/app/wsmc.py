@@ -2,12 +2,15 @@ import datetime
 import math
 import os
 import re
+import timeit
 from collections import OrderedDict
 
 from app import const
 from app import util
 
 PREFERRED_CHUNK_SIZE = 104857600  # +- 100 MB
+# PREFERRED_CHUNK_SIZE = 97181735  # +- 100 MB
+
 
 # Byte count for each field within a measurement
 PROTOCOL_FORMAT_BC = OrderedDict({
@@ -50,6 +53,10 @@ CHUNKS = math.trunc(PREFERRED_CHUNK_SIZE / MEASUREMENT_BYTE_COUNT)
 ACTUAL_CHUNK_SIZE = CHUNKS * MEASUREMENT_BYTE_COUNT
 
 
+def load_data_fake(offset=0, chunksize=ACTUAL_CHUNK_SIZE):
+    return []
+
+
 def load_data(offset=0, chunksize=ACTUAL_CHUNK_SIZE):
     """ Loads wsmc data from the file system.
 
@@ -83,6 +90,7 @@ def load_data(offset=0, chunksize=ACTUAL_CHUNK_SIZE):
             data = read_file(
                 os.path.join(datadir, currentfile),
                 bytecount=spaceleft, skipbytes=skipbytes)
+
             skipbytes = 0
             spaceleft -= len(data)
             totaldata.extend(data)
@@ -226,5 +234,4 @@ def groups_to_average(fieldname, measurement_generator):
 
 
 if __name__ == "__main__":
-    data_read = load_data(0)
-    print("total data read", len(data_read))
+    print(timeit.timeit('print(len(load_data()))', number=1, globals=globals()))
