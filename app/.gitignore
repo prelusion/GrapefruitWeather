@@ -11,7 +11,7 @@ venv
 instance/*
 !instance/.gitignore
 .webassets-cache
-
+data/measurements-multiple
 ### Flask.Python Stack ###
 # Byte-compiled / optimized / DLL files
 __pycache__/
