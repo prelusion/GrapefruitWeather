@@ -83,8 +83,22 @@ def get_most_recent_air_pressure():
 def get_timezone():
     station_id = request.args.get("station_id")
     track_id = request.args.get("track_id")
-    gmt_offset = request.args.get("gmt_offset")
+    timezone_id = request.args.get("timezone_id")
 
-    if station_id is not None or "":
-        return http_format_data(db.get_timezone_by_station_id(station_id))
+    success = False
+    result = None
+
+    if station_id is not None and station_id is not "":
+        success, result = db.get_timezone_by_station_id(station_id)
+
+    if (track_id is not None) and (track_id is not "") and result is None:
+        success, result = db.get_timezone_by_track_id(track_id)
+
+    if (timezone_id is not None) and (timezone_id is not "") and result is None:
+        success, result = db.get_timezone_offset_by_timezone_id(timezone_id)
+
+    if success is False:
+        return http_format_error("Invalid input")
+    else:
+        return http_format_data(result)
 

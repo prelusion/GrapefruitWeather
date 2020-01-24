@@ -97,15 +97,23 @@ def get_most_recent_air_pressure_average(station_ids, seconds, interval):
 
 
 def get_timezone_by_station_id(station_id):
-    station = get_stations(station_id=station_id, timezone=True)
-    if len(station[1]) > 1:
-        return False
-    return datetime.datetime.now(pytz.timezone(station[1][0]["timezone"])).strftime('%z')
+    stations = get_stations(station_id=station_id, timezone=True)
+    if len(stations[1]) != 1:
+        return False, "Invalid station returned."
+    return True, stations[1][0]["timezone"]
 
 
 def get_timezone_by_track_id(track_id):
-    pass
+
+    tracks = get_racing_tracks(track_id=track_id)
+    if len(tracks[1]) != 1:
+        return False, "Invalid track returned."
+    return True, tracks[1][0]["timezone"]
 
 
-def get_timezone_by_gmt_offset(gmt_offset):
-    pass
+def get_timezone_offset_by_timezone_id(timezone_id):
+    timezones = fileaccess.get_timezones()
+    for timezone in timezones:
+        if timezone_id == timezone["id"]:
+            return True, timezone
+    return False, "ID not found."

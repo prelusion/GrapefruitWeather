@@ -71,8 +71,14 @@ def get_timezones():
     global _timezones_data
 
     if not _timezones_data:
-        with open(os.path.join(const.DATA_DIR, "timezones.csv")) as f:
-            _timezones_data = util.csv_to_array_of_dicts(f)
-            _timezones_data = list(map(_convert_country, _timezones_data))
-
+        _timezones_data = []
+        with open(os.path.join(const.DATA_DIR, "timezones.csv")) as csvfile:
+            reader = csv.reader(csvfile)
+            for row in reader:
+                _timezones_data.append({
+                    "id": row[0],
+                    "name": row[1],
+                    "offset": row[2],
+                }
+                )
     return _timezones_data
