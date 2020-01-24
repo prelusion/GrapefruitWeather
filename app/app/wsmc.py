@@ -8,7 +8,9 @@ from app import const
 from app import util
 
 # PREFERRED_CHUNK_SIZE = 104857600  # +- 100 MB
-PREFERRED_CHUNK_SIZE = 57181735
+# PREFERRED_CHUNK_SIZE = 27181735
+# PREFERRED_CHUNK_SIZE = 5531225
+PREFERRED_CHUNK_SIZE = 300
 
 # Byte count for each field within a measurement
 PROTOCOL_FORMAT_BC = OrderedDict({
@@ -67,7 +69,7 @@ def load_data(offset=0, chunksize=ACTUAL_CHUNK_SIZE):
 
     files = list((name for name in files if ".wsmc" in name))
 
-    index = len(files)-1
+    index = len(files) - 1
     if index < 0:
         raise ValueError(f"Unable to retrieve data with offset: {offset}")
 
@@ -86,10 +88,17 @@ def load_data(offset=0, chunksize=ACTUAL_CHUNK_SIZE):
     else:
         currentfile = files[index]
         size = os.path.getsize(os.path.join(datadir, currentfile))
-        print(size)
+        skipbytes = offset * chunksize
+
+        # File is larger than chunk size
+        if size - skipbytes > chunksize:
+            return read_file(
+                os.path.join(datadir, currentfile),
+                bytecount=chunksize, skipbytes=skipbytes)
+        return []
 
 
-def read_file(filepath, bytecount=None):
+def read_file(filepath, bytecount=None, skipbytes=None):
     """ Reads a .wsmc file into memory.
 
     This function also checks that the file does not include corrupt measurements.
@@ -99,6 +108,8 @@ def read_file(filepath, bytecount=None):
     :return: data in bytes
     """
     with open(filepath, "rb") as f:
+        if skipbytes:
+            f.seek(skipbytes, 0)
         if bytecount:
             data = f.read(bytecount)
         else:
@@ -221,5 +232,5 @@ def groups_to_average(fieldname, measurement_generator):
 
 
 if __name__ == "__main__":
-    data_read = load_data(0)
-    print(len(data_read))
+    data_read = load_data(1)
+    print("total data read", len(data_read))
