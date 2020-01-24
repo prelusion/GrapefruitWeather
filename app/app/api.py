@@ -80,6 +80,11 @@ def get_most_recent_air_pressure():
 
 
 @api_bp.route('/timezone')
-def get_timezone_by_station():
-    station = request.args.get("stations")
-    
+def get_timezone():
+    station_id = request.args.get("station_id")
+    track_id = request.args.get("track_id")
+    gmt_offset = request.args.get("gmt_offset")
+
+    if station_id is not None or "":
+        return http_format_data(db.get_timezone_by_station_id(station_id))
+

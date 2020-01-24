@@ -67,11 +67,12 @@ def http_format_error(message):
 
 def http_format_data(data, params=None):
     response = {"data": data}
-
-    for param, value in params.items():
-        response[param] = value
+    if params:
+        for param, value in params.items():
+            response[param] = value
 
     return jsonify(response)
+
 
 
 def csv_to_array_of_dicts(f):

@@ -6,6 +6,7 @@ from app import const, util
 _stations_data = None
 _tracks_data = None
 _countries_data = None
+_timezones_data = None
 
 
 def get_stations():
@@ -64,3 +65,14 @@ def get_countries():
             _countries_data = list(map(_convert_country, _countries_data))
 
     return _countries_data
+
+
+def get_timezones():
+    global _timezones_data
+
+    if not _timezones_data:
+        with open(os.path.join(const.DATA_DIR, "timezones.csv")) as f:
+            _timezones_data = util.csv_to_array_of_dicts(f)
+            _timezones_data = list(map(_convert_country, _timezones_data))
+
+    return _timezones_data

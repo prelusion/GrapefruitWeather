@@ -1,5 +1,7 @@
+import datetime
 from copy import deepcopy
 
+import pytz as pytz
 from geopy import distance
 
 from app import fileaccess
@@ -92,3 +94,18 @@ def get_most_recent_air_pressure_average(station_ids, seconds, interval):
     avg_temperatures = list(
         wsmc.groups_to_average("air_pressure", measurement_generator))
     return avg_temperatures
+
+
+def get_timezone_by_station_id(station_id):
+    station = get_stations(station_id=station_id, timezone=True)
+    if len(station[1]) > 1:
+        return False
+    return datetime.datetime.now(pytz.timezone(station[1][0]["timezone"])).strftime('%z')
+
+
+def get_timezone_by_track_id(track_id):
+    pass
+
+
+def get_timezone_by_gmt_offset(gmt_offset):
+    pass

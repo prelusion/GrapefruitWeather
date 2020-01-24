@@ -1,7 +1,11 @@
 import csv
+import datetime
 import os
-from external_tools import dataset
 
+import pytz
+
+from external_tools import dataset
+from timezonefinder import TimezoneFinder
 
 def get_stations_db():
     stations = []
@@ -45,7 +49,7 @@ with open("countries.csv", 'w', newline='') as myfile:
     for key, value in countries.items():
         wr.writerow((key, value))
 
-from timezonefinder import TimezoneFinder
+
 
 tf = TimezoneFinder()
 nullzones = 0;
@@ -60,6 +64,8 @@ with open("stations.csv", 'w', newline='') as myfile:
                 print(station)
             timezone = tf.timezone_at(lng=float(station[4]), lat=float(station[3]))
             if timezone is None:
+                timezone = tf.closest_timezone_at(lng=float(station[4]), lat=float(station[3]))
+            if timezone is None:
                 continue
             if timezone not in timezones.values():
                 timezones[id] = timezone
@@ -72,7 +78,7 @@ with open("stations.csv", 'w', newline='') as myfile:
 with open("timezones.csv", 'w', newline='') as myfile:
     wr = csv.writer(myfile)
     for key, value in timezones.items():
-        wr.writerow((key, value))
+        wr.writerow((key, value, datetime.datetime.now(pytz.timezone(value)).strftime('%z')))
 
 test = "test"
 #writer = csv.writer()
