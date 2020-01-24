@@ -7,7 +7,8 @@ from collections import OrderedDict
 from app import const
 from app import util
 
-PREFERRED_CHUNK_SIZE = 104857600  # +- 100 MB
+# PREFERRED_CHUNK_SIZE = 104857600  # +- 100 MB
+PREFERRED_CHUNK_SIZE = 57181735
 
 # Byte count for each field within a measurement
 PROTOCOL_FORMAT_BC = OrderedDict({
@@ -61,23 +62,31 @@ def load_data(offset=0, chunksize=ACTUAL_CHUNK_SIZE):
     """
     datadir = const.MEASUREMENTS_DIR
     files = os.listdir(datadir)
-    print(files)
     files = list(filter(lambda file: file.endswith(".wsmc"), files))
     files.sort(key=lambda name: int(re.sub('\D', '', name)))
 
     files = list((name for name in files if ".wsmc" in name))
-    index = len(files)-1-offset
 
+    index = len(files)-1
     if index < 0:
-        raise ValueError("offset limited")
+        raise ValueError(f"Unable to retrieve data with offset: {offset}")
 
-    currentfile = files[index]
-    print(currentfile)
+    if offset == 0:
+        spaceleft = chunksize
+        totaldata = []
 
-    data = read_file(os.path.join(datadir, currentfile))
-    spaceleft = chunksize - len(data)
-    print(spaceleft, len(data))
-    # return read_file(filepath, ACTUAL_CHUNK_SIZE)
+        while index >= 0 and spaceleft > MEASUREMENT_BYTE_COUNT:
+            currentfile = files[index]
+            data = read_file(os.path.join(datadir, currentfile), bytecount=spaceleft)
+            totaldata.extend(data)
+            spaceleft -= len(data)
+            index -= 1
+
+        return totaldata
+    else:
+        currentfile = files[index]
+        size = os.path.getsize(os.path.join(datadir, currentfile))
+        print(size)
 
 
 def read_file(filepath, bytecount=None):
@@ -212,4 +221,5 @@ def groups_to_average(fieldname, measurement_generator):
 
 
 if __name__ == "__main__":
-    load_data(0)
+    data_read = load_data(0)
+    print(len(data_read))
