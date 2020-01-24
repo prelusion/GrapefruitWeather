@@ -58,10 +58,10 @@ def get_stations():
         return http_format_data(result, params)
 
 
-@api_bp.route('/airpressure')
-def get_most_recent_air_pressure():
+@api_bp.route('/measurements/airpressure')
+def get_airpressure_measurements():
     """
-    Example: http://127.0.0.1:5000/api/airpressure?limit=120&stations=93590,589210
+    Example: http://127.0.0.1:5000/api/measurements/airpressure?limit=120&stations=93590,589210
     """
     stations = request.args.get("stations", [743700, 93590, 589210])
     try:
