@@ -20,6 +20,7 @@ public class FileMeasurementSaver implements Runnable {
     private final List<StationIndexEntry> stationIndex;
     private final Map<Integer, Integer> indexInsertLocations;
     private int collectionId;
+    private int collectionCheckCounter = 100;
 
     public FileMeasurementSaver(
             Logger logger,
@@ -87,6 +88,15 @@ public class FileMeasurementSaver implements Runnable {
             }
         } catch (IOException exception) {
             logger.error("Writing measurement to file failed", exception);
+        }
+
+        collectionCheckCounter--;
+        if (collectionCheckCounter <= 0) {
+            if (file.length() > (1024 * 1024 * 30)) {
+                collectionId++;
+            }
+
+            collectionCheckCounter = 100;
         }
     }
 }
