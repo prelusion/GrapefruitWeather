@@ -63,7 +63,12 @@ def get_most_recent_air_pressure():
     """
     Example: http://127.0.0.1:5000/api/airpressure?limit=120&stations=93590,589210
     """
-    stations = list(map(int, request.args.get("stations", [743700, 93590, 589210]).split(",")))
+    stations = request.args.get("stations", [743700, 93590, 589210])
+    try:
+        stations = stations.split(",")
+    except IndexError:
+        stations = stations
+    stations = list(map(int, stations))
     interval = int(request.args.get("interval", 1))
     limit = int(request.args.get("limit", 120))
 
