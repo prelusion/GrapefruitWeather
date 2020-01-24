@@ -1,6 +1,7 @@
 import datetime
 import math
 import os
+import re
 from collections import OrderedDict
 
 from app import const
@@ -49,12 +50,45 @@ CHUNKS = math.trunc(PREFERRED_CHUNK_SIZE / MEASUREMENT_BYTE_COUNT)
 ACTUAL_CHUNK_SIZE = CHUNKS * MEASUREMENT_BYTE_COUNT
 
 
-def read_test_file():
-    filepath = os.path.join(const.MEASUREMENTS_DIR, "pizza.wsmc")
-    return read_file(filepath, ACTUAL_CHUNK_SIZE)
+def load_data(offset=0, chunksize=ACTUAL_CHUNK_SIZE):
+    """ Loads wsmc data from the file system.
+
+    Data is loaded backwards, which implies that the newest data is loaded first.
+
+    :param offset: amount of chunks skipped when loading into memory
+    :param chunksize: amount of bytes loaded into memory
+    :return: data in bytes
+    """
+    datadir = const.MEASUREMENTS_DIR
+    files = os.listdir(datadir)
+    print(files)
+    files = list(filter(lambda file: file.endswith(".wsmc"), files))
+    files.sort(key=lambda name: int(re.sub('\D', '', name)))
+
+    files = list((name for name in files if ".wsmc" in name))
+    index = len(files)-1-offset
+
+    if index < 0:
+        raise ValueError("offset limited")
+
+    currentfile = files[index]
+    print(currentfile)
+
+    data = read_file(os.path.join(datadir, currentfile))
+    spaceleft = chunksize - len(data)
+    print(spaceleft, len(data))
+    # return read_file(filepath, ACTUAL_CHUNK_SIZE)
 
 
 def read_file(filepath, bytecount=None):
+    """ Reads a .wsmc file into memory.
+
+    This function also checks that the file does not include corrupt measurements.
+
+    :param filepath: path to .wsmc file
+    :param bytecount: amount of bytes to load into memory, by default loads whole file.
+    :return: data in bytes
+    """
     with open(filepath, "rb") as f:
         if bytecount:
             data = f.read(bytecount)
@@ -175,3 +209,7 @@ def groups_to_average(fieldname, measurement_generator):
     for measurements in measurement_generator:
         temperatures = [measurement[fieldname] for measurement in measurements]
         yield measurements[0]["timestamp"], round(util.avg(temperatures), 2)
+
+
+if __name__ == "__main__":
+    load_data(0)
