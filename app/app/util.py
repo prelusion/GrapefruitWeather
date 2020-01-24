@@ -74,7 +74,9 @@ def http_format_data(data, params=None):
     return jsonify(response)
 
 
-
 def csv_to_array_of_dicts(f):
     return [{k: v for k, v in row.items()}
             for row in csv.DictReader(f, skipinitialspace=True)]
+
+def convert_measurement_timezone(measurements, dest_timezone_id):
+    pass
