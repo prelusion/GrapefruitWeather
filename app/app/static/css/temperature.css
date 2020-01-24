@@ -1,6 +1,7 @@
 .temperature {
     text-align: center; 
     color: gold;
+    background-color: #091e49; 
 }
 
 .temperature .footer_container {
@@ -9,4 +10,5 @@
     margin-top: 1vh;
     border-radius: 5px;
     border-top: black 1px solid;
+    background-color: white;
 }
