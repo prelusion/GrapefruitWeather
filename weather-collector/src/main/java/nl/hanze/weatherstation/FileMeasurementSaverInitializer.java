@@ -16,7 +16,7 @@ public class FileMeasurementSaverInitializer {
             Queue<Measurement> measurementSaveQueue,
             MeasurementConverter measurementConverter
     ) {
-        return new FileMeasurementSaver(logger, measurementSaveQueue, measurementConverter, null, null, getCurrentIndex());
+        return new FileMeasurementSaver(logger, measurementSaveQueue, measurementConverter, getCurrentIndex());
     }
 
     private int getCurrentIndex() {

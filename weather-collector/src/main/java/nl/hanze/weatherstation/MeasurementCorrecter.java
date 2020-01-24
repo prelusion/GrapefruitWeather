@@ -10,16 +10,10 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-public class MeasurementCorrecter implements Runnable {
-    private final Logger logger;
-    private final Queue<Measurement> measurementQueue;
-    private final Queue<Measurement> measurementSaveQueue;
+public class MeasurementCorrecter {
     private final HashMap<Integer, Queue<Measurement>> measurementHistory;
 
-    public MeasurementCorrecter(Logger logger, Queue<Measurement> measurementQueue, Queue<Measurement> measurementSaveQueue, HashMap<Integer, Queue<Measurement>> measurementHistory) {
-        this.logger = logger;
-        this.measurementQueue = measurementQueue;
-        this.measurementSaveQueue = measurementSaveQueue;
+    public MeasurementCorrecter(HashMap<Integer, Queue<Measurement>> measurementHistory) {
         this.measurementHistory = measurementHistory;
     }
 
@@ -64,13 +58,7 @@ public class MeasurementCorrecter implements Runnable {
         }
     }
 
-    private void processMeasurement() {
-        Measurement measurement = measurementQueue.poll();
-
-        if (measurement == null) {
-            return;
-        }
-
+    public Measurement correctMeasurement(Measurement measurement) {
         val expectedTemperature = calculateExpectedResult(measurement.getStationId(), Measurement::getTemperature);
 
         if (expectedTemperature.isPresent()) {
@@ -92,19 +80,6 @@ public class MeasurementCorrecter implements Runnable {
             return (windDirection == null) ? null : windDirection.doubleValue();
         }, v -> measurement.setWindDirection(v.intValue()));
 
-        measurementHistory.get(measurement.getStationId()).add(measurement);
-        measurementSaveQueue.offer(measurement);
-    }
-
-    @Override
-    public void run() {
-        while (true) {
-            if (Thread.currentThread().isInterrupted()) {
-                logger.info(String.format("%s interrupted", this.getClass().toString()));
-                return;
-            }
-
-            processMeasurement();
-        }
+        return measurement;
     }
 }

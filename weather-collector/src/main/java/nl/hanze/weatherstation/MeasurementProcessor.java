@@ -6,27 +6,29 @@ import nl.hanze.weatherstation.models.Measurement;
 import org.slf4j.Logger;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
 import java.util.Queue;
 
 public class MeasurementProcessor implements Runnable {
     private final Logger logger;
+    private final MeasurementCorrecter measurementCorrecter;
     private final Queue<String> rawDataQueue;
     private final Queue<Measurement> measurementQueue;
+    private final HashMap<Integer, Queue<Measurement>> measurementHistory;
 
-    public MeasurementProcessor(Logger logger, Queue<String> rawDataQueue, Queue<Measurement> measurementQueue) {
+    public MeasurementProcessor(Logger logger, MeasurementCorrecter measurementCorrecter, Queue<String> rawDataQueue, Queue<Measurement> measurementQueue, HashMap<Integer, Queue<Measurement>> measurementHistory) {
         this.logger = logger;
+        this.measurementCorrecter = measurementCorrecter;
         this.rawDataQueue = rawDataQueue;
         this.measurementQueue = measurementQueue;
+        this.measurementHistory = measurementHistory;
     }
 
-    private List<Measurement> convertData() {
-        List<Measurement> measurements = new ArrayList<>();
+    public void processData() {
         val xmlString = rawDataQueue.poll();
 
         if (xmlString == null) {
-            return measurements;
+            return;
         }
 
         var currentIndex = 0;
@@ -82,10 +84,10 @@ public class MeasurementProcessor implements Runnable {
                 measurement.setIsStrongWind(Boolean.parseBoolean(String.valueOf(events.charAt(5))));
             }
 
-            measurements.add(measurement);
+            measurement = measurementCorrecter.correctMeasurement(measurement);
+            measurementHistory.get(measurement.getStationId()).offer(measurement);
+            measurementQueue.offer(measurement);
         }
-
-        return measurements;
     }
 
     private String getTagText(String xml, String tag, int fromIndex) {
@@ -93,17 +95,10 @@ public class MeasurementProcessor implements Runnable {
         return xml.substring(fromIndex, xml.indexOf('<', fromIndex));
     }
 
-    public void processData() {
-        for (Measurement measurement : convertData()) {
-            measurementQueue.offer(measurement);
-        }
-    }
-
     @Override
     public void run() {
         while (true) {
             if (Thread.currentThread().isInterrupted()) {
-                logger.info(String.format("%s interrupted", this.getClass().toString()));
                 return;
             }
 

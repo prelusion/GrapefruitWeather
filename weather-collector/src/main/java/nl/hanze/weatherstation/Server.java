@@ -26,7 +26,6 @@ public class Server {
         while (true) {
             if (Thread.currentThread().isInterrupted()) {
                 serverSocket.close();
-                logger.info(String.format("%s interrupted", this.getClass().toString()));
                 return;
             }
 
