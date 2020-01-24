@@ -56,7 +56,6 @@ function movingTrigger(event) {
 function getCurrentMapCoordsStations(latitude, longitude) {
     $.get("http://127.0.0.1:5000/api/stations?latitude="+latitude+"&longitude="+longitude+"&limit="+$("#limit").val()+"&range="+$("#range").val(), function(result) {
         for(station in result.data) {
-            console.log(result.data);
             if(!stations.includes(result.data[station].id)) {
                 stations.push(result.   data[station].id);
                 var marker = L.marker([result.data[station].latitude, result.data[station].longitude], {icon: weatherstationIcon} ).addTo(markers)
@@ -94,7 +93,6 @@ function markerClick(event) {
             selectedAirStations.push(event.layer.station_id);
         }  
     }
-    console.log(selectedAirStations);
 }
 
 function removeValueOutArray(array, value) {
@@ -156,7 +154,6 @@ function markOrCreateStations(result) {
             }
         }
     }
-    console.log("air stations ", selectedAirStations);
 }
 
 function setMapView(latitude, longitude, zoom) {
@@ -177,6 +174,5 @@ function setTemperatureStations(result) {
             selectedTemperatureStations.push(result.data[station].id);
         }
     }
-    console.log("temperature stations ", selectedTemperatureStations);
 }
 

@@ -52,7 +52,6 @@ function getStationsFilter(stationType = "air", custom = false, custom_latitude,
         });
     }
 }
-getCurrentMapCoordsStations
 
 // $.get("http://127.0.0.1:5000/api/stations?latitude="+latitude+"&longitude="+longitude+"&country="+country+"&limit="+limit+"&range="+range, function(result) {
 //         markOrCreateStations(result);

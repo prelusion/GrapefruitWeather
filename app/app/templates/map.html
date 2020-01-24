@@ -10,8 +10,7 @@
 <script>
     $(document).ready(function() {
         jsonArray = {{ racing_tracks|tojson|safe }};
-        for(var index in jsonArray) { 
-            console.log("Track " + jsonArray[index].id + " index " + index);    
+        for(var index in jsonArray) {    
             var marker = L.marker([jsonArray[index].latitude.toFixed(2), jsonArray[index].longitude.toFixed(2)], {icon: racetrackIcon} ).addTo(markers)
                 .bindPopup("City:" + jsonArray[index].city + ", Country: " +  jsonArray[index].country + ", Title: " + jsonArray[index].title);
             marker.highlighted = false;
