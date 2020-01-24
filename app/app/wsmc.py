@@ -7,10 +7,7 @@ from collections import OrderedDict
 from app import const
 from app import util
 
-# PREFERRED_CHUNK_SIZE = 104857600  # +- 100 MB
-# PREFERRED_CHUNK_SIZE = 27181735
-# PREFERRED_CHUNK_SIZE = 5531225
-PREFERRED_CHUNK_SIZE = 300
+PREFERRED_CHUNK_SIZE = 104857600  # +- 100 MB
 
 # Byte count for each field within a measurement
 PROTOCOL_FORMAT_BC = OrderedDict({
@@ -63,39 +60,36 @@ def load_data(offset=0, chunksize=ACTUAL_CHUNK_SIZE):
     :return: data in bytes
     """
     datadir = const.MEASUREMENTS_DIR
+    skipbytes = offset * chunksize
+    spaceleft = chunksize
     files = os.listdir(datadir)
+    totaldata = []
+
     files = list(filter(lambda file: file.endswith(".wsmc"), files))
     files.sort(key=lambda name: int(re.sub('\D', '', name)))
-
     files = list((name for name in files if ".wsmc" in name))
 
     index = len(files) - 1
     if index < 0:
         raise ValueError(f"Unable to retrieve data with offset: {offset}")
 
-    if offset == 0:
-        spaceleft = chunksize
-        totaldata = []
-
-        while index >= 0 and spaceleft > MEASUREMENT_BYTE_COUNT:
-            currentfile = files[index]
-            data = read_file(os.path.join(datadir, currentfile), bytecount=spaceleft)
-            totaldata.extend(data)
-            spaceleft -= len(data)
-            index -= 1
-
-        return totaldata
-    else:
+    while index >= 0 and spaceleft > MEASUREMENT_BYTE_COUNT:
         currentfile = files[index]
         size = os.path.getsize(os.path.join(datadir, currentfile))
-        skipbytes = offset * chunksize
 
-        # File is larger than chunk size
-        if size - skipbytes > chunksize:
-            return read_file(
+        if skipbytes > size:
+            skipbytes -= size
+        else:
+            data = read_file(
                 os.path.join(datadir, currentfile),
-                bytecount=chunksize, skipbytes=skipbytes)
-        return []
+                bytecount=spaceleft, skipbytes=skipbytes)
+            skipbytes = 0
+            spaceleft -= len(data)
+            totaldata.extend(data)
+
+        index -= 1
+
+    return totaldata
 
 
 def read_file(filepath, bytecount=None, skipbytes=None):
@@ -232,5 +226,5 @@ def groups_to_average(fieldname, measurement_generator):
 
 
 if __name__ == "__main__":
-    data_read = load_data(1)
+    data_read = load_data(0)
     print("total data read", len(data_read))
