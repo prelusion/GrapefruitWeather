@@ -51,18 +51,16 @@ $(document).ready(function(){
                 } else {
                         limit = 1;
                         timelist.shift();
-                        timelist[timelist.length] = ("" + result.data[0][0].substring(17,25));
+                        timelist.push("" + result.data[0][0].substring(17,25));
 
                         pressurelist.shift();
-                        pressurelist[pressurelist.length] = result.data[0][1];
+                        pressurelist.push(result.data[0][1]);
                 }       
             });        
         }
 
         get_data();
         plot(timelist, pressurelist);
-
-
     }, 1000);
 
 });
