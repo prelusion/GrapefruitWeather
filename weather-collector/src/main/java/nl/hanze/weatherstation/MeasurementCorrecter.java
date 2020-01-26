@@ -33,11 +33,16 @@ public class MeasurementCorrecter implements Runnable {
 
         val values = measurementQueue.stream().map(measurementFunction).filter(Objects::nonNull).collect(Collectors.toList());
 
-        for (int i = 0; i < values.size(); i++) {
-            values.set(i, Math.pow(0.5, (values.size() - i)) * values.get(i));
+        if (values.size() == 0) {
+            return OptionalDouble.empty();
         }
 
-        return OptionalDouble.of(values.stream().mapToDouble(m -> m).sum());
+        double currentAverage = values.get(0);
+        for (int i = 0; i < values.size(); i++) {
+            currentAverage = currentAverage + 0.5 * (values.get(i) - currentAverage);
+        }
+
+        return OptionalDouble.of(currentAverage);
     }
 
     /**

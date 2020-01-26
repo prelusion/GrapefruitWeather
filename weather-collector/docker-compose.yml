@@ -16,5 +16,5 @@ volumes:
     nfsmount:
         driver_opts:
             type: nfs
-            o: addr=40.68.169.51,nolock,soft,rw,nfsvers=4
+            o: addr=51.144.90.93,nolock,soft,rw,nfsvers=4
             device: ":/"

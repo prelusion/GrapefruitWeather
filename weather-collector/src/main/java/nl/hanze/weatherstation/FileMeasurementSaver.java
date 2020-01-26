@@ -45,48 +45,28 @@ public class FileMeasurementSaver implements Runnable {
                 return;
             }
 
-            processBatch();
+            process();
         }
     }
 
-    /**
-     * Collect a batch of measurements.
-     */
-    private List<Measurement> collect() {
-        List<Measurement> measurements = new ArrayList<>();
-
-        for (int i = 0; i < measurementSaveQueue.size(); i++) {
-            val measurement = measurementSaveQueue.poll();
-
-            if (measurement == null) {
-                break;
-            }
-
-            measurements.add(measurement);
-        }
-
-        return measurements;
-    }
-
-    public void processBatch() {
-        val measurements = collect().stream()
-                .map(measurementConverter::convertMeasurementToByteArray)
-                .reduce(Bytes::concat);
-
-        if (!measurements.isPresent()) {
-            return;
-        }
-
+    public void process() {
         val file = new File(String.format("/measurements/%s.wsmc", collectionId));
 
         try {
             file.createNewFile();
 
             try (val outputStream = new FileOutputStream(file, true)) {
-                outputStream.write(measurements.get());
+                Measurement measurement;
+                while ((measurement = measurementSaveQueue.poll()) != null) {
+                    outputStream.write(measurementConverter.convertMeasurementToByteArray(measurement));
+                }
             }
         } catch (IOException exception) {
             logger.error("Writing measurement to file failed", exception);
+        }
+
+        if (file.length() > (1024 * 1024 * 30)) {
+            collectionId++;
         }
     }
 }

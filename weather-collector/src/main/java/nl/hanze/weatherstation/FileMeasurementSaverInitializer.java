@@ -26,12 +26,12 @@ public class FileMeasurementSaverInitializer {
             return 0;
         }
 
-        val pattern = Pattern.compile("^[0-9]+\\.wsmc$");
+        val pattern = Pattern.compile("^([0-9]+)\\.wsmc$");
 
         return Arrays.stream(files).map(f -> {
             val matcher = pattern.matcher(f.getName());
 
-            return matcher.find() ? matcher.group(0) : null;
+            return matcher.find() ? matcher.group(1) : null;
         }).filter(Objects::nonNull)
                 .mapToInt(Integer::parseInt)
                 .max()
