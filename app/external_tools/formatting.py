@@ -7,6 +7,7 @@ import pytz
 from external_tools import dataset
 from timezonefinder import TimezoneFinder
 
+
 def get_stations_db():
     stations = []
     print(os.getcwd())
@@ -46,8 +47,11 @@ def is_float(value):
 
 with open("countries.csv", 'w', newline='') as myfile:
     wr = csv.writer(myfile)
+    wr.writerow(("id", "name"))
     for key, value in countries.items():
         wr.writerow((key, value))
+    wr.writerow(("230", "MONACO"))
+    wr.writerow(("231", "ABU DHABI"))
 
 
 

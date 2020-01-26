@@ -1,12 +1,8 @@
 import datetime
 from copy import deepcopy
-
-import pytz as pytz
 from geopy import distance
-
 from app import fileaccess
 from app import wsmc
-from app.util import limit_and_offset
 
 
 def get_racing_tracks(track_id=None, name=None, city=None, country=None, limit=None, offset=None):
@@ -111,9 +107,37 @@ def get_timezone_by_track_id(track_id):
     return True, tracks[1][0]["timezone"]
 
 
-def get_timezone_offset_by_timezone_id(timezone_id):
+def get_timezone_by_timezone_id(timezone_id):
     timezones = fileaccess.get_timezones()
     for timezone in timezones:
         if timezone_id == timezone["id"]:
             return True, timezone
     return False, "ID not found."
+
+def limit_and_offset(dataset, limit, offset):
+    if limit is None or "":
+        from app.const import DEFAULT_LIMIT
+        limit = DEFAULT_LIMIT
+    else:
+        limit = int(limit)
+
+    if offset is None:
+        offset = 0
+    else:
+        offset = int(offset)
+
+    new_data_set = []
+    for i in range(limit + offset):
+        if (i + offset + 1) > len(dataset):
+            break;
+        new_data_set.append(dataset[i + offset])
+    return new_data_set
+
+
+def convert_tz(measurements, source_tz, dest_tz):
+    source_delta = pytz.timezone('Asia/Jerusalem').localize(datetime.datetime(measurements[0]))
+    dest_delta = get_timezone_by_timezone_id(dest_tz)
+
+    for measurement in measurements:
+        measurement[0]
+        pytz.timezone(sou).localize(datetime.datetime(2011, 1, 1))

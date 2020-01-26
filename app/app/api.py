@@ -1,7 +1,6 @@
 from flask import Blueprint, request
-
 from app import db
-from app.util import http_format_error, http_format_data, convert_measurement_timezone
+from app.util import http_format_error, http_format_data
 
 api_bp = Blueprint('api_bp', __name__)
 
@@ -69,6 +68,8 @@ def get_airpressure_measurements():
     try:
         stations = stations.split(",")
     except IndexError:
+        stations = stations
+    except AttributeError:
         stations = stations
     stations = list(map(int, stations))
     interval = int(request.args.get("interval", 1))

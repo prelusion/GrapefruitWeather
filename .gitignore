@@ -2,3 +2,5 @@
 .idea/
 
 app/app/test/
+
+app/app/playground.py
