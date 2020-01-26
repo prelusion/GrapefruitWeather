@@ -10,7 +10,7 @@ $(document).ready(function() {
     $("#filter_button").trigger("click");
 });
 
-function getStationsFilter(stationType = "Air", custom = false, custom_latitude, custom_longitude, custom_country_id) {
+function getStationsFilter(stationType = "air", custom = false, custom_latitude, custom_longitude, custom_country_id) {
     var trackID = $("#track").val();
     var latitude = (custom === false) ? $("#latitude").val() : custom_latitude;
     var longitude = (custom === false) ? $("#longitude").val() : custom_longitude;
