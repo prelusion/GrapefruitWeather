@@ -1,3 +1,13 @@
+
+"""
+Max chunksize for 8 GB RAM on Dell Inspiron 5570 with other programs running:
+
+187,5 MB    -> Memory error
+157,5 MB    -> Memory Error
+150 MB      -> Fine
+
+
+"""
 import datetime
 import math
 import os
@@ -7,6 +17,10 @@ from collections import OrderedDict
 
 from app import const
 from app import util
+
+
+MAX_CHUNKSIZE = 100000000  # 100 MB
+
 
 # Byte count for each field within a measurement
 PROTOCOL_FORMAT_BC = OrderedDict({
@@ -53,11 +67,13 @@ def determine_chunksize(prefsize=500000):
 
 
 def load_all_data_test():
+
     data = [1]
     i = 0
     while len(data) != 0:
         del data
-        data = _load_data(offset=i)
+        data = load_data(MAX_CHUNKSIZE, offset=i)
+        print("data length:", len(data))
         i += 1
         print("iteration", i)
     return i
@@ -72,6 +88,7 @@ def load_data(chunksize, offset):
     :param chunksize: preferred amount of bytes loaded into memory
     :return: data in bytes
     """
+    print("chunksize:", chunksize)
     return _load_data(determine_chunksize(chunksize), offset)
 
 
@@ -245,4 +262,4 @@ def groups_to_average(fieldname, measurement_generator):
 
 
 if __name__ == "__main__":
-    print(timeit.timeit('print(load_all_data())', number=1, globals=globals()))
+    print(timeit.timeit('print(load_all_data_test())', number=1, globals=globals()))
