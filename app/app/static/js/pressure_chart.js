@@ -40,34 +40,35 @@ function plot_pressure_graph(){
     draw(pressure_timelist, pressurelist);    
 }
 
-function draw(timestamps, pressure){
-    var myLineChart = new Chart($("#pressure_chart"), {
-        type: 'line',
-        data: {
-            labels: timestamps,
-            datasets: [{ 
-                data: pressure,
-                label: "pressure",
-                borderColor: "#3e95cd",
-                fill: true
-            }]
-        },
-        options: {
-            title: {
-                display: true,
-                text: "Airpressure"
+function draw(){
+    if(pressurelist.length == timeInterval && pressure_timelist.length == timeInterval){
+        $("#loading_label").hide();
+        var myLineChart = new Chart($("#pressure_chart"), {
+            type: 'line',
+            data: {
+                labels: pressure_timelist,
+                datasets: [{ 
+                    data: pressurelist,
+                    label: "pressure",
+                    borderColor: "#3e95cd",
+                    fill: true
+                }]
             },
-            animation: false
-        }
-    });
-    $("#time_label").text("Time(realtime): " + pressure_timelist[pressure_timelist.length-1]);
-    $("#pressure_label").text("Airpressure(realtime): " + pressurelist[pressurelist.length-1]);
-    $(".air .footer_container").css("background-color", "white");
+            options: {
+                title: {
+                    display: true,
+                    text: "Airpressure"
+                },
+                animation: false
+            }
+        });
+        $("#time_label").text("Time(realtime): " + pressure_timelist[pressure_timelist.length-1]);
+        $("#pressure_label").text("Airpressure(realtime): " + pressurelist[pressurelist.length-1]);
+    }
 }
 
 setInterval( function(){
     plot_pressure_graph();
-    draw(pressure_timelist, pressurelist);
 }, 1000); 
 
 
