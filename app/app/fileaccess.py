@@ -87,15 +87,13 @@ def get_timezones():
                 )
     return _timezones_data
 
-
 def generate_track_distance_cache(data, track_id):
     file_path = TRACK_CACHE_DIR + "/" + str(track_id) + ".csv"
-    if not os.path.isfile(file_path):
-        with open(file_path, 'w', newline='') as file:
-            wr = csv.writer(file)
-            wr.writerow(("id", "distance"))
-            for row in data:
-                wr.writerow(row)
+    with open(file_path, 'w', newline='') as file:
+        wr = csv.writer(file)
+        wr.writerow(("id", "distance"))
+        for row in data:
+            wr.writerow(row)
 
 
 def get_track_distances(track_id):

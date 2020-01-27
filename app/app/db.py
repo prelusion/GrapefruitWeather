@@ -1,10 +1,12 @@
 import datetime
+import os
 from copy import deepcopy
 
 import pytz
 from geopy import distance
 from app import fileaccess
 from app import wsmc
+from app.const import TRACK_CACHE_DIR
 from app.fileaccess import generate_track_distance_cache, get_track_distances
 
 
@@ -156,10 +158,13 @@ def convert_tz(measurements, source_tz, dest_tz):
     return measurements
 
 
-def generate_track_to_station_cache():
+def generate_track_to_station_cache(force=False):
     success, tracks = get_racing_tracks()
 
     for track in tracks:
+        file_path = TRACK_CACHE_DIR + "/" + str(track["id"]) + ".csv"
+        if os.path.isfile(file_path) or force:
+            continue
         distances = []
         success, stations = get_stations(limit=16000)
         for station in stations:
