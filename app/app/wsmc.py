@@ -1,4 +1,3 @@
-
 """
 Max chunksize for 8 GB RAM on Dell Inspiron 5570 with other programs running:
 
@@ -6,21 +5,17 @@ Max chunksize for 8 GB RAM on Dell Inspiron 5570 with other programs running:
 157,5 MB    -> Memory Error
 150 MB      -> Fine
 
-
 """
 import datetime
 import math
 import os
 import re
-import timeit
 from collections import OrderedDict
 
 from app import const
 from app import util
 
-
 MAX_CHUNKSIZE = 100000000  # 100 MB
-
 
 # Byte count for each field within a measurement
 PROTOCOL_FORMAT_BC = OrderedDict({
@@ -66,21 +61,50 @@ def determine_chunksize(prefsize=500000):
     return chunks * MEASUREMENT_BYTE_COUNT
 
 
-def load_all_data_test():
-
-    data = [1]
-    i = 0
-    while len(data) != 0:
-        del data
-        data = load_data(MAX_CHUNKSIZE, offset=i)
-        print("data length:", len(data))
-        i += 1
-        print("iteration", i)
-    return i
+def get_wsmc_files():
+    datadir = const.MEASUREMENTS_DIR
+    files = os.listdir(datadir)
+    files = list(filter(lambda file: file.endswith(".wsmc"), files))
+    files.sort(key=lambda name: int(re.sub('\D', '', name)))
+    return list(((name, os.path.join(datadir, name)) for name in files if ".wsmc" in name))
 
 
-def load_data(chunksize, offset):
+def load_data_per_file(offset):
     """ Loads wsmc data from the file system.
+
+    Data is loaded backwards, which implies that the newest data is loaded first.
+    Data is loaded per file, so data from multiple files can not be loaded into memory
+    simultaneously. This means that the file size should be optimized to the maximum chunk size.
+
+    Based on most recent benchmarks, loading data per file performs better
+    than loading data per chunk.
+
+    :param offset: amount of chunks skipped when loading into memory
+    :return: data in bytes
+    """
+    files = get_wsmc_files()
+
+    index = (len(files) - 1) - offset
+    if index < 0:
+        return []
+
+    filename, filepath = files[index]
+
+    size = os.path.getsize(filepath)
+    if size > MAX_CHUNKSIZE:
+        raise RuntimeError(
+            f"Unable to load file with a size greater than max chunk size: {MAX_CHUNKSIZE}")
+
+    return read_file(filepath)
+
+
+def load_data_per_chunk(chunksize, offset):
+    """ DEPRECATED: Please use load_data_per_file instead.
+    Based on most recent benchmarks, loading data per file performs better
+    than loading data per chunk.
+
+
+    Loads wsmc data from the file system.
 
     Data is loaded backwards, which implies that the newest data is loaded first.
 
@@ -88,37 +112,27 @@ def load_data(chunksize, offset):
     :param chunksize: preferred amount of bytes loaded into memory
     :return: data in bytes
     """
-    print("chunksize:", chunksize)
-    return _load_data(determine_chunksize(chunksize), offset)
+    return _load_data_per_chunk(determine_chunksize(chunksize), offset)
 
 
-def _load_data(chunksize, offset):
-    datadir = const.MEASUREMENTS_DIR
+def _load_data_per_chunk(chunksize, offset):
     skipbytes = offset * chunksize
     spaceleft = chunksize
-    files = os.listdir(datadir)
+    files = get_wsmc_files()
     totaldata = []
-
-    files = list(filter(lambda file: file.endswith(".wsmc"), files))
-    files.sort(key=lambda name: int(re.sub('\D', '', name)))
-    files = list((name for name in files if ".wsmc" in name))
 
     index = len(files) - 1
     if index < 0:
-        raise ValueError(f"Unable to retrieve data with offset: {offset}")
+        return []
 
     while index >= 0 and spaceleft > MEASUREMENT_BYTE_COUNT:
-        currentfile = files[index]
-        size = os.path.getsize(os.path.join(datadir, currentfile))
+        filename, filepath = files[index]
+        size = os.path.getsize(filepath)
 
         if skipbytes > size:
             skipbytes -= size
         else:
-            print("file:", currentfile)
-            data = read_file(
-                os.path.join(datadir, currentfile),
-                bytecount=spaceleft, skipbytes=skipbytes)
-
+            data = read_file(filepath, bytecount=spaceleft, skipbytes=skipbytes)
             skipbytes = 0
             spaceleft -= len(data)
             totaldata.extend(data)
@@ -134,7 +148,8 @@ def read_file(filepath, bytecount=None, skipbytes=None):
     This function also checks that the file does not include corrupt measurements.
 
     :param filepath: path to .wsmc file
-    :param bytecount: amount of bytes to load into memory, by default loads whole file.
+    :param bytecount: amount of bytes to load into memory, by default loads whole file
+    :param skipbytes: amount of bytes skipped from beginning of file
     :return: data in bytes
     """
     with open(filepath, "rb") as f:
@@ -259,7 +274,3 @@ def groups_to_average(fieldname, measurement_generator):
     for measurements in measurement_generator:
         temperatures = [measurement[fieldname] for measurement in measurements]
         yield measurements[0]["timestamp"], round(util.avg(temperatures), 2)
-
-
-if __name__ == "__main__":
-    print(timeit.timeit('print(load_all_data_test())', number=1, globals=globals()))
