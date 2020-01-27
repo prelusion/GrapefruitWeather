@@ -81,15 +81,12 @@ def get_stations(station_id=None,
 
 
 def get_most_recent_air_pressure_average(station_ids, limit, interval):
-    chunksize = 750000
-
-    if limit > 1:
-        chunksize *= 40
-
     result = []
     offset = 0
+
     while limit > 0:
         rawdata = wsmc.load_data_per_file(offset)
+
         if len(rawdata) == 0:
             break
 
