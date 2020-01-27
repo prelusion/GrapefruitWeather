@@ -63,13 +63,9 @@ def get_airpressure_measurements():
     Example: http://127.0.0.1:5000/api/measurements/airpressure?limit=120&stations=93590,589210
     """
     stations = request.args.get("stations", [743700, 93590, 589210])
-    timezone = request.args.get("tz")
-
     try:
         stations = stations.split(",")
     except IndexError:
-        stations = stations
-    except AttributeError:
         stations = stations
     stations = list(map(int, stations))
     interval = int(request.args.get("interval", 1))

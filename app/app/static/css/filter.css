@@ -16,3 +16,15 @@
     width: 80%;
     margin-top: 10px;
 }
+
+.filter .input_container #filter_button {
+    border-radius: 5px;
+    cursor: pointer;
+    border: 1px solid gold;
+    background-color: #091e49;
+    color: #e2063b;
+}
+
+.filter .input_container #filter_button:hover {
+    background-color: #072768;
+}
