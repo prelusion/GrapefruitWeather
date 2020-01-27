@@ -1,25 +1,23 @@
 $(document).ready(function(){
 
-    timelist = [];
-    pressurelist = [];
-    stations = [];
+    var timelist = [];
+    var pressurelist = [];
+    var stations = [93590,589210];
     var timeInterval = 120;
     var limit = 120;
 
 
     function plot(timestamps, pressure){
-
         var myLineChart = new Chart($("#pressure_chart"), {
             type: 'line',
             data: {
                 labels: timestamps,
                 datasets: [{ 
                     data: pressure,
-                    //label: "pressure",
+                    label: "pressure",
                     borderColor: "#3e95cd",
                     fill: true
                 }]
-
             },
             options: {
                 title: {
@@ -27,8 +25,6 @@ $(document).ready(function(){
                     text: "Airpressure"
                 },
                 animation: false
-
-
             }
         });
         $("#time_label").text("Time(realtime): " + timelist[timelist.length-1]);
@@ -36,34 +32,36 @@ $(document).ready(function(){
         $(".air .footer_container").css("background-color", "white");
     }
 
+    function setAirStations() {
+        stations = getAirStations();
+    }
+
+    
+    function get_data() {
+        let ur = stations.join();
+        $.get("http://127.0.0.1:5000/api/measurements/airpressure?limit=" + limit +"&stations=" + ur, function(result) {
+            if(timelist.length == 0){
+                for(x = timeInterval - 1; x >= 0; x--){
+                    timelist.push(("" + result.data[x][0].substring(17,25)));
+                    pressurelist.push(result.data[x][1]);
+                    limit = 1;
+                }
+            } else {
+                    console.log(limit);
+                    timelist.shift();
+                    timelist.push("" + result.data[0][0].substring(17,25));
+
+                    pressurelist.shift();
+                    pressurelist.push(result.data[0][1]);
+            }       
+        });  
+    }      
 
     setInterval(function() {
-
-        function get_data() {
-            ur = stations.join();
-            $.get("http://127.0.0.1:5000/api/measurements/airpressure?limit=" + limit +"&stations=" + ur, function(result) {
-                if(timelist.length == 0){
-                    for(x = timeInterval - 1; x >= 0; x--){
-                        timelist.push(("" + result.data[x][0].substring(17,25)));
-                        pressurelist.push(result.data[x][1]);
-                    }
-                } else {
-                        limit = 1;
-                        timelist.shift();
-                        timelist.push("" + result.data[0][0].substring(17,25));
-
-                        pressurelist.shift();
-                        pressurelist.push(result.data[0][1]);
-                }       
-            });        
-        }
-
         get_data();
-        plot(timelist, pressurelist);
+        plot(timelist, pressurelist);        
     }, 1000);
 
+    
 });
 
-function setAirStations() {
-    stations = getAirStations();
-}
