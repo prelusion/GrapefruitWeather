@@ -70,11 +70,13 @@ def get_stations(station_id=None,
             station["distance"] = round(
                 distance.distance([float(station["latitude"]), float(station["longitude"])],
                                   target_location).km)
+
     if track_id and (int(track_id) < 23):
         distances = get_track_distances(track_id)
         stations = stations[:limit]
         for _station in stations:
-            _station["distance"] = distances[_station["id"]]
+            _station["distance"] = int(distances[_station["id"]])
+        stations.sort(key=lambda station: station["distance"])
 
     if longitude is not None and latitude is not None:
         stations.sort(key=lambda station: station["distance"])

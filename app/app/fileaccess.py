@@ -102,6 +102,10 @@ def get_track_distances(track_id):
     global _distance_data
 
     if track_id not in _distance_data:
-        _distance_data[track_id] = []
+        _distance_data[track_id] = {}
         with open(TRACK_CACHE_DIR + "/" + str(track_id) + ".csv") as csvfile:
-            _distance_data[track_id] = csv_to_array_of_dicts(csvfile)
+            reader = csv.reader(csvfile)
+            for row in reader:
+                _distance_data[track_id][row[0]] = row[1]
+
+    return _distance_data[track_id]
