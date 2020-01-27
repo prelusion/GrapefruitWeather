@@ -3,7 +3,7 @@ $(document).ready(function() {
         $(this).parent().hide();
     });
 
-    $("#filter_button").on("click", function(){
+    $(".btn-outline-danger").on("click", function(){
         $(".legenda_container").show();
     });
 });
