@@ -111,20 +111,27 @@ def get_most_recent_air_pressure_average(station_ids, limit, interval):
 
 
 def get_timezone_by_station_id(station_id):
-    stations = get_stations(station_id=station_id, timezone=True)
-    if len(stations[1]) != 1:
+    success, result = get_stations(station_id=station_id, timezone=True)
+
+    if not success:
+        return False, result
+
+    if len(result) != 1:
         return False, "Invalid station returned."
-    return True, stations[1][0]["timezone"]
+
+    return True, result[0]["timezone"]
 
 
 def get_timezone_by_track_id(track_id):
-    tracks = get_racing_tracks(track_id=track_id)
-    pprint(tracks)
-    if len(tracks[1]) != 1:
-        return False, "Invalid track returned."
-    track = tracks[1]
+    success, result = get_racing_tracks(track_id=track_id)
 
-    return True, tracks[1][0]["timezone"]
+    if not success:
+        return False, result
+
+    if len(result) != 1:
+        return False, "Invalid track returned."
+
+    return True, result[0]["timezone"]
 
 
 def get_timezone_by_timezone_id(timezone_id):
