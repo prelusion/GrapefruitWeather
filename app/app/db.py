@@ -5,6 +5,7 @@ from geopy import distance
 
 from app import fileaccess
 from app import wsmc
+from app import util
 
 
 def get_racing_tracks(track_id=None, name=None, city=None, country=None, limit=None, offset=None):
@@ -22,7 +23,7 @@ def get_racing_tracks(track_id=None, name=None, city=None, country=None, limit=N
         racing_tracks = list(filter(lambda track: track["country"].lower() == country.lower(), racing_tracks))
 
     try:
-        racing_tracks = limit_and_offset(racing_tracks, limit, offset)
+        racing_tracks = util.limit_and_offset(racing_tracks, limit, offset)
     except ValueError:
         return False, "Invalid limit given."
 
@@ -72,7 +73,7 @@ def get_stations(station_id=None,
         stations = list(filter(lambda station: station["distance"] < float(radius), stations))
 
     try:
-        stations = limit_and_offset(stations, limit, offset)
+        stations = util.limit_and_offset(stations, limit, offset)
     except ValueError:
         return False, "Invalid limit given."
 
@@ -113,53 +114,30 @@ def get_most_recent_air_pressure_average(station_ids, limit, interval):
 def get_timezone_by_station_id(station_id):
     success, result = get_stations(station_id=station_id, timezone=True)
 
-    if not success:
-        return False, result
-
-    if len(result) != 1:
-        return False, "Invalid station returned."
-
-    return True, result[0]["timezone"]
+    if success and len(result) == 1:
+        return result[0]["timezone"]
 
 
 def get_timezone_by_track_id(track_id):
     success, result = get_racing_tracks(track_id=track_id)
 
-    if not success:
-        return False, result
-
-    if len(result) != 1:
-        return False, "Invalid track returned."
-
-    return True, result[0]["timezone"]
+    if success and len(result) == 1:
+        return result[0]["timezone"]
 
 
 def get_timezone_by_timezone_id(timezone_id):
     timezones = fileaccess.get_timezones()
     for timezone in timezones:
         if timezone_id == timezone["id"]:
-            return True, timezone
-    return False, "ID not found."
+            return timezone
 
 
-def limit_and_offset(dataset, limit, offset):
-    if limit is None or "":
-        from app.const import DEFAULT_LIMIT
-        limit = DEFAULT_LIMIT
-    else:
-        limit = int(limit)
+def get_timezone_by_offset(offset):
+    timezones = fileaccess.get_timezones()
 
-    if offset is None:
-        offset = 0
-    else:
-        offset = int(offset)
-
-    new_data_set = []
-    for i in range(limit + offset):
-        if (i + offset + 1) > len(dataset):
-            break;
-        new_data_set.append(dataset[i + offset])
-    return new_data_set
+    for timezone in timezones:
+        if offset == timezone["offset"]:
+            return timezone
 
 
 def convert_tz(measurements, source_tz, dest_tz):

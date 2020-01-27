@@ -3,6 +3,7 @@ from bisect import bisect_left
 from datetime import timedelta
 from flask import jsonify
 
+
 def avg(lst):
     return sum(lst) / len(lst)
 
@@ -57,4 +58,26 @@ def csv_to_array_of_dicts(f):
             for row in csv.DictReader(f, skipinitialspace=True)]
 
 
+def only_one_is_true(*args):
+    it = iter(args)
+    return any(it) and not any(it)
 
+
+def limit_and_offset(dataset, limit, offset):
+    if limit is None or "":
+        from app.const import DEFAULT_LIMIT
+        limit = DEFAULT_LIMIT
+    else:
+        limit = int(limit)
+
+    if offset is None:
+        offset = 0
+    else:
+        offset = int(offset)
+
+    new_data_set = []
+    for i in range(limit + offset):
+        if (i + offset + 1) > len(dataset):
+            break;
+        new_data_set.append(dataset[i + offset])
+    return new_data_set
