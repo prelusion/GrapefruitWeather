@@ -138,11 +138,7 @@ def limit_and_offset(dataset, limit, offset):
 
 
 def convert_tz(measurements, source_tz, dest_tz):
-    #test = pytz.timezone('Asia/Jerusalem').localize(datetime.datetime(measurements[0])).strftime('%z')
-    pytz.timezone('Asia/Jerusalem').localize(datetime.datetime(2011, 1, 1)).strftime('%z')
-    test = datetime.datetime.now(pytz.timezone(measurements[0][0])).strftime('%z')
-    dest_delta = get_timezone_by_timezone_id(dest_tz)
-
     for measurement in measurements:
-        measurement[0]
-        pytz.timezone('Asia/Jerusalem').localize(datetime.datetime.now())
+        measurement = pytz.timezone(pytz.timezone(source_tz)).localize(measurement)
+        measurement = measurement[0].astimezone(pytz.timezone(dest_tz))
+    return measurements

@@ -1,5 +1,6 @@
 from flask import Blueprint, request
 from app import db
+from app.db import convert_tz
 from app.util import http_format_error, http_format_data
 
 api_bp = Blueprint('api_bp', __name__)
@@ -83,6 +84,7 @@ def get_airpressure_measurements():
         "stations": stations,
     }
 
+    convert_tz(measurements, 1, 2)
     return http_format_data(measurements, params)
 
 
