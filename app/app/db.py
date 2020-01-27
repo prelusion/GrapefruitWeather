@@ -80,15 +80,32 @@ def get_stations(station_id=None,
     return True, stations
 
 
-def get_most_recent_air_pressure_average(station_ids, seconds, interval):
-    rawdata = wsmc.read_test_file()
-    measurementbytes_generator = wsmc.iterate_dataset_left(rawdata)
-    measurementbytes_generator = wsmc.filter_by_field(
-        measurementbytes_generator, "station_id", station_ids)
-    measurementbytes_generator = wsmc.filter_most_recent(
-        measurementbytes_generator, seconds)
-    measurement_generator = wsmc.group_by_timestamp(
-        measurementbytes_generator, interval)
-    avg_temperatures = list(
-        wsmc.groups_to_average("air_pressure", measurement_generator))
-    return avg_temperatures
+def get_most_recent_air_pressure_average(station_ids, limit, interval):
+    chunksize = 750000
+
+    if limit > 1:
+        chunksize *= 40
+
+    result = []
+    offset = 0
+    while limit > 0:
+        rawdata = wsmc.load_data_per_file(offset)
+        if len(rawdata) == 0:
+            break
+
+        measurementbytes_generator = wsmc.iterate_dataset_left(rawdata)
+        measurementbytes_generator = wsmc.filter_by_field(
+            measurementbytes_generator, "station_id", station_ids)
+        measurementbytes_generator = wsmc.filter_most_recent(
+            measurementbytes_generator, limit)
+        measurement_generator = wsmc.group_by_timestamp(
+            measurementbytes_generator, interval)
+        newresult = list(
+            wsmc.groups_to_average("air_pressure", measurement_generator))
+
+        result.extend(newresult)
+        limit -= len(newresult)
+
+        offset += 1
+
+    return result
