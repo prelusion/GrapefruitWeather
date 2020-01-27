@@ -44,8 +44,8 @@ def get_stations():
                                       radius=radius,
                                       country=country,
                                       limit=limit,
-                                      offset=offset,
-                                      timezone=timezone
+                                      timezone=timezone,
+                                      offset=offset
                                       )
 
     params = {

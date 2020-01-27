@@ -5,7 +5,7 @@ import pytz
 from geopy import distance
 from app import fileaccess
 from app import wsmc
-from app.fileaccess import generate_track_distance_cache
+from app.fileaccess import generate_track_distance_cache, get_track_distances
 
 
 def get_racing_tracks(track_id=None, name=None, city=None, country=None, limit=None, offset=None):
@@ -40,12 +40,15 @@ def get_stations(station_id=None,
                  timezone=None,
                  offset=None
                  ):
-  
-    parameters = locals()
-    for local in parameters:
-        if local is not None:
-            if local == "":
-                local = None
+
+    def remove_empty_locals():
+        parameters = locals()
+        for local in parameters:
+            if local is not None:
+                if local == "":
+                    local = None
+                    remove_empty_locals()
+                    return
 
     stations = deepcopy(fileaccess.get_stations())
 
@@ -67,8 +70,11 @@ def get_stations(station_id=None,
             station["distance"] = round(
                 distance.distance([float(station["latitude"]), float(station["longitude"])],
                                   target_location).km)
-        if track_id:
-            
+    if track_id and (int(track_id) < 23):
+        distances = get_track_distances(track_id)
+        stations = stations[:limit]
+        for _station in stations:
+            _station["distance"] = distances[_station["id"]]
 
     if longitude is not None and latitude is not None:
         stations.sort(key=lambda station: station["distance"])
@@ -157,6 +163,6 @@ def generate_track_to_station_cache():
         for station in stations:
             _distance = round(distance.distance([float(track["latitude"]), float(track["longitude"])],
                                     (float(station["latitude"]), float(station["longitude"]))).km)
-            distances.append((_distance, station["id"]))
+            distances.append((station["id"], _distance))
         distances.sort(key=lambda distances: distances[0])
         generate_track_distance_cache(distances, track["id"])
