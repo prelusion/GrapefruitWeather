@@ -1,5 +1,7 @@
 import datetime
 from copy import deepcopy
+
+import pytz
 from geopy import distance
 from app import fileaccess
 from app import wsmc
@@ -114,6 +116,7 @@ def get_timezone_by_timezone_id(timezone_id):
             return True, timezone
     return False, "ID not found."
 
+
 def limit_and_offset(dataset, limit, offset):
     if limit is None or "":
         from app.const import DEFAULT_LIMIT
@@ -135,9 +138,11 @@ def limit_and_offset(dataset, limit, offset):
 
 
 def convert_tz(measurements, source_tz, dest_tz):
-    source_delta = pytz.timezone('Asia/Jerusalem').localize(datetime.datetime(measurements[0]))
+    #test = pytz.timezone('Asia/Jerusalem').localize(datetime.datetime(measurements[0])).strftime('%z')
+    pytz.timezone('Asia/Jerusalem').localize(datetime.datetime(2011, 1, 1)).strftime('%z')
+    test = datetime.datetime.now(pytz.timezone(measurements[0][0])).strftime('%z')
     dest_delta = get_timezone_by_timezone_id(dest_tz)
 
     for measurement in measurements:
         measurement[0]
-        pytz.timezone(sou).localize(datetime.datetime(2011, 1, 1))
+        pytz.timezone('Asia/Jerusalem').localize(datetime.datetime.now())
