@@ -1,4 +1,5 @@
 from flask import Blueprint, request
+
 from app import db
 from app.db import convert_tz
 from app.util import http_format_error, http_format_data
@@ -97,14 +98,16 @@ def get_timezone():
     success = False
     result = None
 
-    if station_id is not None and station_id is not "":
+    if station_id is not None and station_id != "":
         success, result = db.get_timezone_by_station_id(station_id)
 
-    if (track_id is not None) and (track_id is not "") and result is None:
+    if (track_id is not None) and (track_id != "") and result is None:
         success, result = db.get_timezone_by_track_id(track_id)
 
-    if (timezone_id is not None) and (timezone_id is not "") and result is None:
-        success, result = db.get_timezone_offset_by_timezone_id(timezone_id)
+    if (timezone_id is not None) and (timezone_id != "") and result is None:
+        # TODO create get_timezone_offset_by_timezone_id function
+        # success, result = db.get_timezone_offset_by_timezone_id(timezone_id)
+        return http_format_error("Not implemented yet")
 
     if success is False:
         return http_format_error("Invalid input")
