@@ -1,10 +1,11 @@
+import datetime
 from copy import deepcopy
 
+import pytz
 from geopy import distance
-
 from app import fileaccess
 from app import wsmc
-from app.util import limit_and_offset
+from app.fileaccess import generate_track_distance_cache
 
 
 def get_racing_tracks(track_id=None, name=None, city=None, country=None, limit=None, offset=None):
@@ -32,6 +33,7 @@ def get_racing_tracks(track_id=None, name=None, city=None, country=None, limit=N
 def get_stations(station_id=None,
                  longitude=None,
                  latitude=None,
+                 track_id=None,
                  radius=None,
                  country=None,
                  limit=50,
@@ -65,6 +67,8 @@ def get_stations(station_id=None,
             station["distance"] = round(
                 distance.distance([float(station["latitude"]), float(station["longitude"])],
                                   target_location).km)
+        if track_id:
+            
 
     if longitude is not None and latitude is not None:
         stations.sort(key=lambda station: station["distance"])
@@ -80,32 +84,79 @@ def get_stations(station_id=None,
     return True, stations
 
 
-def get_most_recent_air_pressure_average(station_ids, limit, interval):
-    chunksize = 750000
+def get_most_recent_air_pressure_average(station_ids, seconds, interval):
+    rawdata = wsmc.read_test_file()
+    measurementbytes_generator = wsmc.iterate_dataset_left(rawdata)
+    measurementbytes_generator = wsmc.filter_by_field(
+        measurementbytes_generator, "station_id", station_ids)
+    measurementbytes_generator = wsmc.filter_most_recent(
+        measurementbytes_generator, seconds)
+    measurement_generator = wsmc.group_by_timestamp(
+        measurementbytes_generator, interval)
+    avg_temperatures = list(
+        wsmc.groups_to_average("air_pressure", measurement_generator))
+    return avg_temperatures
 
-    if limit > 1:
-        chunksize *= 40
 
-    result = []
-    offset = 0
-    while limit > 0:
-        rawdata = wsmc.load_data_per_file(offset)
-        if len(rawdata) == 0:
-            break
+def get_timezone_by_station_id(station_id):
+    stations = get_stations(station_id=station_id, timezone=True)
+    if len(stations[1]) != 1:
+        return False, "Invalid station returned."
+    return True, stations[1][0]["timezone"]
 
-        measurementbytes_generator = wsmc.iterate_dataset_left(rawdata)
-        measurementbytes_generator = wsmc.filter_by_field(
-            measurementbytes_generator, "station_id", station_ids)
-        measurementbytes_generator = wsmc.filter_most_recent(
-            measurementbytes_generator, limit)
-        measurement_generator = wsmc.group_by_timestamp(
-            measurementbytes_generator, interval)
-        newresult = list(
-            wsmc.groups_to_average("air_pressure", measurement_generator))
 
-        result.extend(newresult)
-        limit -= len(newresult)
+def get_timezone_by_track_id(track_id):
 
-        offset += 1
+    tracks = get_racing_tracks(track_id=track_id)
+    if len(tracks[1]) != 1:
+        return False, "Invalid track returned."
+    return True, tracks[1][0]["timezone"]
 
-    return result
+
+def get_timezone_by_timezone_id(timezone_id):
+    timezones = fileaccess.get_timezones()
+    for timezone in timezones:
+        if timezone_id == timezone["id"]:
+            return True, timezone
+    return False, "ID not found."
+
+
+def limit_and_offset(dataset, limit, offset):
+    if limit is None or "":
+        from app.const import DEFAULT_LIMIT
+        limit = DEFAULT_LIMIT
+    else:
+        limit = int(limit)
+
+    if offset is None:
+        offset = 0
+    else:
+        offset = int(offset)
+
+    new_data_set = []
+    for i in range(limit + offset):
+        if (i + offset + 1) > len(dataset):
+            break;
+        new_data_set.append(dataset[i + offset])
+    return new_data_set
+
+
+def convert_tz(measurements, source_tz, dest_tz):
+    for measurement in measurements:
+        measurement = pytz.timezone(pytz.timezone(source_tz)).localize(measurement)
+        measurement = measurement[0].astimezone(pytz.timezone(dest_tz))
+    return measurements
+
+
+def generate_track_to_station_cache():
+    success, tracks = get_racing_tracks()
+
+    for track in tracks:
+        distances = []
+        success, stations = get_stations(limit=16000)
+        for station in stations:
+            _distance = round(distance.distance([float(track["latitude"]), float(track["longitude"])],
+                                    (float(station["latitude"]), float(station["longitude"]))).km)
+            distances.append((_distance, station["id"]))
+        distances.sort(key=lambda distances: distances[0])
+        generate_track_distance_cache(distances, track["id"])

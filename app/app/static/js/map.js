@@ -4,7 +4,7 @@ $(document).ready(function() {
 
     map.on('dblclick', movingTrigger);
 
-    currentStations = [];
+    stations = [];
     selectedAirStations = [];
     selectedTemperatureStations = [];
 
@@ -57,8 +57,8 @@ function getCurrentMapCoordsStations(latitude, longitude) {
     $.get("http://127.0.0.1:5000/api/stations?latitude="+latitude+"&longitude="+longitude+"&limit="+$("#limit").val()+"&range="+$("#range").val(), function(result) {
         for(station in result.data) {
             if(!stations.includes(result.data[station].id)) {
-                currentStations.push(result.data[station].id);
-                let marker = L.marker([result.data[station].latitude, result.data[station].longitude], {icon: weatherstationIcon} ).addTo(markers)
+                stations.push(result.   data[station].id);
+                var marker = L.marker([result.data[station].latitude, result.data[station].longitude], {icon: weatherstationIcon} ).addTo(markers)
                 .bindPopup("Name:" + result.data[station].name);
                 marker.highlighted = false;
                 marker.profile = "station";     
@@ -91,7 +91,6 @@ function markerClick(event) {
             event.layer.setIcon(weatherstationIconSelected);
             event.layer.highlighted = true;
             selectedAirStations.push(event.layer.station_id);
-            setAirStations();
         }  
     }
 }
@@ -131,13 +130,13 @@ function deselectMarkers() {
     }
 }
 
-function setAirStationsFromAPI(result) {
+function markOrCreateStations(result) {
     for(station in result.data) {
         selectedAirStations.push(result.data[station].id);
         if(!stations.includes(result.data[station].id)){
-            currentStations.push(result.data[station].id);
+            stations.push(result.data[station].id);
 
-            let marker = L.marker([result.data[station].latitude, result.data[station].longitude], {icon: weatherstationIconSelected} ).addTo(markers)
+            var marker = L.marker([result.data[station].latitude, result.data[station].longitude], {icon: weatherstationIconSelected} ).addTo(markers)
             .bindPopup("Name:" + result.data[station].name);
             marker.highlighted = true;
             marker.profile = "station";     
@@ -148,14 +147,13 @@ function setAirStationsFromAPI(result) {
         } else {
             for(index in markers._layers) {
                 if(markers._layers[index].station_id === result.data[station].id) {
-                    let marker = markers._layers[index];
+                    var marker = markers._layers[index];
                     marker.setIcon(weatherstationIconSelected);
                     marker.highlighted = true;
                 }
             }
         }
     }
-    setAirStations();
 }
 
 function setMapView(latitude, longitude, zoom) {
@@ -170,12 +168,11 @@ function getTemperatureStations() {
     return selectedTemperatureStations;
 }
 
-function setTemperatureStationsFromAPI(result) {
+function setTemperatureStations(result) {
     for(station in result.data) {
         if(!selectedAirStations.includes(result.data[station].id)) {
             selectedTemperatureStations.push(result.data[station].id);
         }
     }
-    //setTemperatureStations();
 }
 

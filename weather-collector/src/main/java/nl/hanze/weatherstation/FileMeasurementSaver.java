@@ -20,6 +20,7 @@ public class FileMeasurementSaver implements Runnable {
     private final List<StationIndexEntry> stationIndex;
     private final Map<Integer, Integer> indexInsertLocations;
     private int collectionId;
+    private int collectionCheckCounter = 100;
 
     public FileMeasurementSaver(
             Logger logger,

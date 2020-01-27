@@ -2,3 +2,7 @@
 .idea/
 
 app/app/test/
+
+app/app/playground.py
+
+app/data/track_distance_cache/

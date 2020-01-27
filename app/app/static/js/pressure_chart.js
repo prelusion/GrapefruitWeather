@@ -2,7 +2,7 @@ $(document).ready(function(){
 
     timelist = [];
     pressurelist = [];
-    stations = [];
+    stations = [93590,589210];
     var timeInterval = 120;
     var limit = 120;
 
@@ -37,11 +37,12 @@ $(document).ready(function(){
     }
 
 
+
     setInterval(function() {
 
         function get_data() {
             ur = stations.join();
-            $.get("http://127.0.0.1:5000/api/measurements/airpressure?limit=" + limit +"&stations=" + ur, function(result) {
+            $.get("http://127.0.0.1:5000/api/airpressure?limit=" + limit +"&stations=" + ur, function(result) {
                 if(timelist.length == 0){
                     for(x = timeInterval - 1; x >= 0; x--){
                         timelist.push(("" + result.data[x][0].substring(17,25)));
@@ -63,7 +64,3 @@ $(document).ready(function(){
     }, 1000);
 
 });
-
-function setAirStations() {
-    stations = getAirStations();
-}
