@@ -3,6 +3,7 @@ var timeInterval = 120;
 var limit = 120;
 var pressure_timelist = [];
 var pressurelist = [];
+const refreshrate = 1000;
 
 
 function get_pressure_data() {
@@ -69,7 +70,7 @@ function draw(){
 
 setInterval( function(){
     plot_pressure_graph();
-}, 1000); 
+}, refreshrate); 
 
 
 
