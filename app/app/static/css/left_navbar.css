@@ -1,6 +1,7 @@
 .left_navbar {
+    margin-top: -54px;
     position: fixed;
-    height: 94vh;   
+    height: 100vh;   
     background-color: #091e49;
     background-image: linear-gradient(to bottom left, #091e49,#091e49,  #e2063b);
     width: 250px;
