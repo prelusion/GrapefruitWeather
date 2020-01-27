@@ -1,6 +1,7 @@
 from flask import Blueprint, request
 
 from app import db
+from app.db import convert_tz
 from app.util import http_format_error, http_format_data
 
 api_bp = Blueprint('api_bp', __name__)
@@ -84,4 +85,31 @@ def get_airpressure_measurements():
         "stations": stations,
     }
 
+    convert_tz(measurements, 1, 2)
     return http_format_data(measurements, params)
+
+
+@api_bp.route('/timezone')
+def get_timezone():
+    station_id = request.args.get("station_id")
+    track_id = request.args.get("track_id")
+    timezone_id = request.args.get("timezone_id")
+
+    success = False
+    result = None
+
+    if station_id is not None and station_id != "":
+        success, result = db.get_timezone_by_station_id(station_id)
+
+    if (track_id is not None) and (track_id != "") and result is None:
+        success, result = db.get_timezone_by_track_id(track_id)
+
+    if (timezone_id is not None) and (timezone_id != "") and result is None:
+        # TODO create get_timezone_offset_by_timezone_id function
+        # success, result = db.get_timezone_offset_by_timezone_id(timezone_id)
+        return http_format_error("Not implemented yet")
+
+    if success is False:
+        return http_format_error("Invalid input")
+    else:
+        return http_format_data(result)
