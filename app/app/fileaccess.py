@@ -48,7 +48,6 @@ def get_tracks():
 
     if not _tracks_data:
         with open(os.path.join(const.DATA_DIR, "tracks.csv"), encoding="utf-8") as f:
-            print(f)
             _tracks_data = util.csv_to_array_of_dicts(f)
             _tracks_data = list(map(_convert_track, _tracks_data))
 
