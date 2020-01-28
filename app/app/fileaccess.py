@@ -87,8 +87,9 @@ def get_timezones():
                 )
     return _timezones_data
 
+
 def generate_track_distance_cache(data, track_id):
-    file_path = TRACK_CACHE_DIR + "/" + str(track_id) + ".csv"
+    file_path = os.path.join(TRACK_CACHE_DIR, str(track_id + ".csv"))
     with open(file_path, 'w', newline='') as file:
         wr = csv.writer(file)
         wr.writerow(("id", "distance"))
