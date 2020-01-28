@@ -1,10 +1,8 @@
 """
 Max chunksize for 8 GB RAM on Dell Inspiron 5570 with other programs running:
-
 187,5 MB    -> Memory error
 157,5 MB    -> Memory Error
 150 MB      -> Fine
-
 """
 import datetime
 import math
@@ -71,14 +69,11 @@ def get_wsmc_files():
 
 def load_data_per_file(offset):
     """ Loads wsmc data from the file system.
-
     Data is loaded backwards, which implies that the newest data is loaded first.
     Data is loaded per file, so data from multiple files can not be loaded into memory
     simultaneously. This means that the file size should be optimized to the maximum chunk size.
-
     Based on most recent benchmarks, loading data per file performs better
     than loading data per chunk.
-
     :param offset: amount of chunks skipped when loading into memory
     :return: data in bytes
     """
@@ -102,12 +97,8 @@ def load_data_per_chunk(chunksize, offset):
     """ DEPRECATED: Please use load_data_per_file instead.
     Based on most recent benchmarks, loading data per file performs better
     than loading data per chunk.
-
-
     Loads wsmc data from the file system.
-
     Data is loaded backwards, which implies that the newest data is loaded first.
-
     :param offset: amount of chunks skipped when loading into memory
     :param chunksize: preferred amount of bytes loaded into memory
     :return: data in bytes
@@ -144,9 +135,7 @@ def _load_data_per_chunk(chunksize, offset):
 
 def read_file(filepath, bytecount=None, skipbytes=None):
     """ Reads a .wsmc file into memory.
-
     This function also checks that the file does not include corrupt measurements.
-
     :param filepath: path to .wsmc file
     :param bytecount: amount of bytes to load into memory, by default loads whole file
     :param skipbytes: amount of bytes skipped from beginning of file
