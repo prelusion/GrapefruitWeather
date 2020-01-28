@@ -76,6 +76,7 @@ function markerClick(event) {
         if(event.layer.profile === "track") {
             deselectMarkers();
             event.layer.setIcon(racetrackIcon);
+            setTemperatureStations();
         } else {
             event.layer.setIcon(weatherstationIcon);
             selectedAirStations = removeValueOutArray(selectedAirStations, event.layer.station_id);
@@ -87,7 +88,7 @@ function markerClick(event) {
             $("#track").val(event.layer.track_id+1);
             setFilterValues(event.layer.latitude, event.layer.longitude, event.layer.country_id, event.layer.country)
             event.layer.setIcon(racetrackIconSelected);
-            getStationsFilter("temperature", true, event.layer.latitude, event.layer.longitude, event.layer.country_id);      
+            getStationsFilter(true, event.layer.latitude, event.layer.longitude, event.layer.country_id);      
             event.layer.highlighted = true;   
         } else {
             event.layer.setIcon(weatherstationIconSelected);

@@ -8,3 +8,7 @@ from app import db
 def index():
     racing_tracks = db.get_racing_tracks()[1];
     return render_template('index.html', racing_tracks=racing_tracks)
+
+@app.route("/login")
+def login():
+    return render_template('login.html')
