@@ -65,6 +65,27 @@ def get_stations():
 def get_airpressure_measurements():
     """
     Example: http://127.0.0.1:5000/api/measurements/airpressure?limit=120&stations=93590,589210
+
+
+    To convert measurement timestamps to browser timezone:
+
+        Execute in javascript:
+            offset = new Date().getTimezoneOffset();
+
+        Call timezone api with offset:
+            timezone_id = http://127.0.0.1:5000/api/timezone?offset=<offset>
+
+        Call air pressure api with timezone id:
+            http://127.0.0.1:5000/api/measurements/airpressure?limit=120&stations=93590,589210&timezone=timezone_id
+
+
+    To convert measurement timestamps to F1 circuit timezone:
+
+        Call timezone api with F1 track id:
+            timezone_id = http://127.0.0.1:5000/api/timezone?track_id=<track_id>
+
+        Call air pressure api with timezone id:
+            http://127.0.0.1:5000/api/measurements/airpressure?limit=120&stations=93590,589210&timezone=timezone_id
     """
 
     def convert_measurement(measurement, timezone):
