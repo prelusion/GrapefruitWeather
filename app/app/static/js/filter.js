@@ -13,6 +13,7 @@ $(document).ready(function() {
 });
 
 function getStationsFilter(stationType = "air", custom = false, custom_latitude, custom_longitude, custom_country_id) {
+    let trackID = $("#track").val();
     let latitude = (custom === false) ? $("#latitude").val() : custom_latitude;
     let longitude = (custom === false) ? $("#longitude").val() : custom_longitude;
     let country = (custom === false) ?  $("#country").attr("countryid") : custom_country_id;
@@ -43,7 +44,7 @@ function getStationsFilter(stationType = "air", custom = false, custom_latitude,
     if(limit === "") {
         limit = 50;
     }
-     $.get("http://127.0.0.1:5000/api/stations?latitude="+latitude+"&longitude="+longitude+"&limit="+limit+"&range="+range, function(result) {
+    $.get("http://127.0.0.1:5000/api/stations?track_id="+trackID+"&limit="+limit+"&range="+range, function(result) {
         setAirStationsFromAPI(result);
         // setMapView(latitude, longitude, map.getZoom());
     });
