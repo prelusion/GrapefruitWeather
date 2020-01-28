@@ -4,7 +4,7 @@ body {
 }
 
 .maincontainer {
-    margin-top: 40px;
+    margin-top: 150px;
     max-height: 80vh;
     margin-left: 25%;
 }
@@ -34,6 +34,10 @@ body {
     bottom: 35px;    
 }
 
+.footer {
+    height: 40px;
+}
+
 @media only screen and (max-width: 1200px) {
     .maincontainer {
         margin-left: 25%;
@@ -55,7 +59,7 @@ body {
 
 @media only screen and (max-width: 1200px) and (min-width: 992px) {
     .maincontainer {
-        margin-left: 10%;
+        margin-left: 5%;
     }
     
     .maincontainer .row {

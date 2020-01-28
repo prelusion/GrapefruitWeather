@@ -1,7 +1,6 @@
 import csv
 from bisect import bisect_left
 from datetime import timedelta
-
 from flask import jsonify
 
 
@@ -41,6 +40,29 @@ def binary_search(array, value):
         return -1
 
 
+def http_format_error(message):
+    return jsonify({"error": message})
+
+
+def http_format_data(data, params=None):
+    response = {"data": data}
+    if params:
+        for param, value in params.items():
+            response[param] = value
+
+    return jsonify(response)
+
+
+def csv_to_array_of_dicts(f):
+    return [{k: v for k, v in row.items()}
+            for row in csv.DictReader(f, skipinitialspace=True)]
+
+
+def only_one_is_true(*args):
+    it = iter(args)
+    return any(it) and not any(it)
+
+
 def limit_and_offset(dataset, limit, offset):
     if limit is None or "":
         from app.const import DEFAULT_LIMIT
@@ -59,21 +81,3 @@ def limit_and_offset(dataset, limit, offset):
             break;
         new_data_set.append(dataset[i + offset])
     return new_data_set
-
-
-def http_format_error(message):
-    return jsonify({"error": message})
-
-
-def http_format_data(data, params=None):
-    response = {"data": data}
-
-    for param, value in params.items():
-        response[param] = value
-
-    return jsonify(response)
-
-
-def csv_to_array_of_dicts(f):
-    return [{k: v for k, v in row.items()}
-            for row in csv.DictReader(f, skipinitialspace=True)]

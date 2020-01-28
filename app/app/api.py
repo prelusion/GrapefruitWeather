@@ -1,8 +1,8 @@
 from flask import Blueprint, request
-
 from app import db
+from app.db import convert_tz
 from app.util import http_format_error, http_format_data
-
+from app import util
 api_bp = Blueprint('api_bp', __name__)
 
 
@@ -30,6 +30,7 @@ def get_stations():
     station_id = request.args.get("id")
     longitude = request.args.get("longitude")
     latitude = request.args.get("latitude")
+    track_id = request.args.get("track_id")
     radius = request.args.get("radius")
     country = request.args.get("country")
     limit = request.args.get("limit")
@@ -39,11 +40,12 @@ def get_stations():
     success, result = db.get_stations(station_id=station_id,
                                       longitude=longitude,
                                       latitude=latitude,
+                                      track_id=track_id,
                                       radius=radius,
                                       country=country,
                                       limit=limit,
-                                      offset=offset,
-                                      timezone=timezone
+                                      timezone=timezone,
+                                      offset=offset
                                       )
 
     params = {
@@ -74,6 +76,7 @@ def get_airpressure_measurements():
     stations = list(map(int, stations))
     interval = int(request.args.get("interval", 1))
     limit = int(request.args.get("limit", 120))
+    # timezone = int(request.args.get("timezone"))
 
     measurements = db.get_most_recent_air_pressure_average(stations, limit, interval)
 
@@ -85,3 +88,54 @@ def get_airpressure_measurements():
     }
 
     return http_format_data(measurements, params)
+
+
+@api_bp.route('/timezone')
+def get_timezone():
+    """
+    offset parameter must be given in the format returned by the following
+    javascript command:
+
+        new Date().getTimezoneOffset();
+
+    The time-zone offset is the difference, in minutes, between UTC and local time.
+    Note that this means that the offset is positive if the local timezone is behind
+    UTC and negative if it is ahead. For example, if your time zone is UTC+10
+    (Australian Eastern Standard Time), -600 will be returned. Daylight savings time
+    prevents this value from being a constant even for a given locale.
+    """
+
+    def convert_js_offset_to_storage_offset(offset_mins):
+        offset_hours = offset_mins / 60
+        offset_opposite = offset_hours * -1
+        offset_times_hundred = offset_opposite * 100
+        offset_rounded = f"0{int(offset_times_hundred)}"
+        converted = f"+{offset_rounded.strip()}" if int(offset_rounded) > 0 else offset_rounded
+        return converted
+
+    station_id = request.args.get("station_id")
+    track_id = request.args.get("track_id")
+    timezone_id = request.args.get("timezone_id")
+    offset = request.args.get("offset")
+
+    if not util.only_one_is_true(station_id, track_id, timezone_id, offset):
+        return http_format_error("Only one query parameter can be used simultaneously")
+
+    timezone = None
+
+    if station_id:
+        timezone = db.get_timezone_by_station_id(station_id)
+    elif track_id:
+        timezone = db.get_timezone_by_track_id(track_id)
+    elif timezone_id:
+        # TODO create get_timezone_offset_by_timezone_id function
+        # success, result = db.get_timezone_offset_by_timezone_id(timezone_id)
+        return http_format_error("Not implemented yet")
+    elif offset:
+        offset = convert_js_offset_to_storage_offset(int(offset))
+        timezone = db.get_timezone_by_offset(offset)
+
+    if not timezone:
+        return http_format_error("Invalid input")
+
+    return http_format_data(timezone)
