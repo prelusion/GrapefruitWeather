@@ -3,7 +3,7 @@ import os
 from copy import deepcopy
 from pprint import pprint
 import pytz
-
+from logging import getLogger
 import pytz
 from geopy import distance
 from app import fileaccess
@@ -11,6 +11,9 @@ from app import wsmc
 from app.const import TRACK_CACHE_DIR
 from app.fileaccess import generate_track_distance_cache, get_track_distances
 from app import util
+
+
+logger = getLogger(__name__)
 
 
 def get_racing_tracks(track_id=None, name=None, city=None, country=None, limit=None, offset=None):
@@ -173,6 +176,7 @@ def generate_track_to_station_cache(force=False):
         file_path = TRACK_CACHE_DIR + "/" + str(track["id"]) + ".csv"
         if os.path.isfile(file_path) or force:
             continue
+        logger.info(f"Generating distances for track {track['id']}")
         distances = []
         success, stations = get_stations(limit=16000)
         for station in stations:
