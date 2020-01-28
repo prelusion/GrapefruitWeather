@@ -82,8 +82,7 @@ def get_timezones():
                     "id": row[0],
                     "name": row[1],
                     "offset": row[2],
-                }
-                )
+                })
     return _timezones_data
 
 
