@@ -51,7 +51,6 @@ function getStationsFilter(stationType = "air", custom = false, custom_latitude,
     console.log(radius);
     $.get("http://127.0.0.1:5000/api/stations?track_id="+trackID+"&limit="+limit+"&radius="+radius, function(result) {
         setAirStationsFromAPI(result);
-        // setMapView(latitude, longitude, map.getZoom());
     });
     if(stationType === "temperature") {
         $.get("http://127.0.0.1:5000/api/stations?country="+country, function(result) {

@@ -1,0 +1,33 @@
+.login_wrapper {
+    margin-top: 100px;
+    height: 85vh;
+    border-radius: 20px;
+    text-align: center;
+    color: #e2063b;
+    font-size: 28;
+}
+
+.container .login_container {
+    width: 75%;
+    margin: auto;
+    height: 75vh;
+    margin-top: 50px
+}
+
+.container .login_container .form_container .login_input_styling {
+    height: 60px;
+    margin-top: 10px;
+}
+
+.container .login_container .form_container .login_btn {
+    width: 20%;
+    color: #e2063b; 
+    border: 1px solid gold; 
+    background-color: #091e49;
+    border-radius: 10px;
+    cursor: pointer;
+}
+
+.container .login_container .form_container .login_btn:hover {
+    background-color: #072768;
+}
