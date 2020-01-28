@@ -9,13 +9,13 @@ var pressure_ready = false;
 function draw() {
     if(pressurelist.length == pressure_timeinterval && pressure_timelist.length == pressure_timeinterval){
         $("#loading_label").hide();
-        var myLineChart = new Chart($("#pressure_chart"), {
+        new Chart($("#pressure_chart"), {
             type: 'line',
             data: {
                 labels: pressure_timelist,
                 datasets: [{ 
                     data: pressurelist,
-                    label: "pressure",
+                    label: "airpressure",
                     borderColor: "#3e95cd",
                     fill: true
                 }]
@@ -28,8 +28,8 @@ function draw() {
                 animation: false
             }
         });
-        $("#time_label").text("Time(realtime): " + pressure_timelist[pressure_timelist.length-1]);
-        $("#pressure_label").text("Airpressure(realtime): " + pressurelist[pressurelist.length-1]);
+        $("#time_label").text("Time (realtime): " + pressure_timelist[pressure_timelist.length-1]);
+        $("#pressure_label").text("Airpressure (realtime): " + pressurelist[pressurelist.length-1]);
     }
 }
 
