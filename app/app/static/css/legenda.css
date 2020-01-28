@@ -1,0 +1,45 @@
+.legenda_container { 
+    width: 100%;
+    background-color: red;
+    opacity: 0.7;
+    border: 1px solid gold;
+    z-index: 999;
+    border-radius: 5px;
+    height: 360px;
+    padding: 10px;
+    display: none;
+}
+
+.legenda_container .legenda_remove {
+    cursor: pointer; 
+    float: right; 
+    padding: 5px; 
+    margin-right: 5px; 
+    padding: 10px; 
+    width: 45px; 
+    border-radius: 10px;  
+    border: 1px solid gold;
+    text-align: center;
+}
+
+.legenda_container .legenda_remove:hover {
+    background-color: #091e49;
+}
+
+.legenda_container .info_container {
+    height: 70px;
+    width: 100%;
+    float: left;
+    border-bottom: 1px solid gold;
+}
+
+.legenda_container .info_container .legenda_image img {
+    width: 64px;
+    float: left;
+}
+
+.legenda_container .info_container .legenda_info {
+    text-align: left;   
+    font-size: 15px;
+    color: white;
+}

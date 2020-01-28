@@ -56,7 +56,7 @@ function movingTrigger(event) {
 function getCurrentMapCoordsStations(latitude, longitude) {
     $.get("http://127.0.0.1:5000/api/stations?latitude="+latitude+"&longitude="+longitude+"&limit="+$("#limit").val()+"&range="+$("#range").val(), function(result) {
         for(station in result.data) {
-            if(!stations.includes(result.data[station].id)) {
+            if(!currentStations.includes(result.data[station].id)) {
                 currentStations.push(result.data[station].id);
                 let marker = L.marker([result.data[station].latitude, result.data[station].longitude], {icon: weatherstationIcon} ).addTo(markers)
                 .bindPopup("Name:" + result.data[station].name);
@@ -134,7 +134,7 @@ function deselectMarkers() {
 function setAirStationsFromAPI(result) {
     for(station in result.data) {
         selectedAirStations.push(result.data[station].id);
-        if(!stations.includes(result.data[station].id)){
+        if(!currentStations.includes(result.data[station].id)){
             currentStations.push(result.data[station].id);
 
             let marker = L.marker([result.data[station].latitude, result.data[station].longitude], {icon: weatherstationIconSelected} ).addTo(markers)

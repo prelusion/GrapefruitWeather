@@ -1,5 +1,4 @@
 from flask import Blueprint, request
-
 from app import db
 from app.db import convert_tz
 from app.util import http_format_error, http_format_data
@@ -31,6 +30,7 @@ def get_stations():
     station_id = request.args.get("id")
     longitude = request.args.get("longitude")
     latitude = request.args.get("latitude")
+    track_id = request.args.get("track_id")
     radius = request.args.get("radius")
     country = request.args.get("country")
     limit = request.args.get("limit")
@@ -40,11 +40,12 @@ def get_stations():
     success, result = db.get_stations(station_id=station_id,
                                       longitude=longitude,
                                       latitude=latitude,
+                                      track_id=track_id,
                                       radius=radius,
                                       country=country,
                                       limit=limit,
-                                      offset=offset,
-                                      timezone=timezone
+                                      timezone=timezone,
+                                      offset=offset
                                       )
 
     params = {
@@ -75,7 +76,7 @@ def get_airpressure_measurements():
     stations = list(map(int, stations))
     interval = int(request.args.get("interval", 1))
     limit = int(request.args.get("limit", 120))
-    timezone = int(request.args.get("timezone"))
+    # timezone = int(request.args.get("timezone"))
 
     measurements = db.get_most_recent_air_pressure_average(stations, limit, interval)
 
@@ -86,7 +87,6 @@ def get_airpressure_measurements():
         "stations": stations,
     }
 
-    convert_tz(measurements, 1, 2)
     return http_format_data(measurements, params)
 
 
