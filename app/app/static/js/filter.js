@@ -16,7 +16,7 @@ function setFilterValues(latitude, longitude, countryID, countryName) {
     $("#country").val(countryName);
 }
 
-function getStationsFilter(stationType = "air", custom = false, custom_latitude, custom_longitude, custom_country_id) {
+function getStationsFilter(custom = false, custom_latitude, custom_longitude, custom_country_id) {
     let trackID = $("#track").val();
     let latitude = (custom === false) ? $("#latitude").val() : custom_latitude;
     let longitude = (custom === false) ? $("#longitude").val() : custom_longitude;
@@ -48,30 +48,10 @@ function getStationsFilter(stationType = "air", custom = false, custom_latitude,
     if(limit === "") {
         limit = 50;
     }
-    console.log(radius);
     $.get("http://127.0.0.1:5000/api/stations?track_id="+trackID+"&limit="+limit+"&radius="+radius, function(result) {
         setAirStationsFromAPI(result);
-        // setMapView(latitude, longitude, map.getZoom());
     });
-    if(stationType === "temperature") {
-        $.get("http://127.0.0.1:5000/api/stations?country="+country, function(result) {
-            setTemperatureStationsFromAPI(result);
-        });
-    }
+    $.get("http://127.0.0.1:5000/api/stations?country="+country, function(result) {
+        setTemperatureStationsFromAPI(result);
+    });
 }
-
-// $.get("http://127.0.0.1:5000/api/stations?latitude="+latitude+"&longitude="+longitude+"&country="+country+"&limit="+limit+"&range="+range, function(result) {
-//         setAirStationsFromAPI(result);
-//         setMapView(latitude, longitude, map.getZoom());
-// });
-
-// console.log(range);
-// $.get("http://127.0.0.1:5000/api/stations?latitude="+latitude+"&longitude="+longitude+"&limit="+limit+"&range="+range, function(result) {
-//     setAirStationsFromAPI(result);
-//     setMapView(latitude, longitude, map.getZoom());
-// });
-// if(stationType === "temperature") {
-//     $.get("http://127.0.0.1:5000/api/stations?country="+country+"&limit="+limit, function(result) {
-//         setTemperatureStations(result);
-//     });
-// }
