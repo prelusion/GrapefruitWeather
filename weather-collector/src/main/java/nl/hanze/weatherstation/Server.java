@@ -1,8 +1,6 @@
 package nl.hanze.weatherstation;
 
 import lombok.val;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -10,12 +8,10 @@ import java.net.Socket;
 import java.util.Queue;
 
 public class Server {
-    private final Logger logger;
     private final int port;
     private final Queue<String> rawDataQueue;
 
-    public Server(Logger logger, int port, Queue<String> rawDataQueue) {
-        this.logger = logger;
+    public Server(int port, Queue<String> rawDataQueue) {
         this.port = port;
         this.rawDataQueue = rawDataQueue;
     }
@@ -35,8 +31,7 @@ public class Server {
     }
 
     private void handle(Socket socket) {
-        val logger = LoggerFactory.getLogger(String.format("socket-handler-%d", socket.getLocalPort()));
-        val socketHandler = new SocketHandler(socket, rawDataQueue, logger);
+        val socketHandler = new SocketHandler(socket, rawDataQueue);
         val thread = new Thread(socketHandler);
         thread.start();
     }

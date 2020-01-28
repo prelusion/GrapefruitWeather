@@ -1,12 +1,15 @@
 package nl.hanze.weatherstation;
 
 import lombok.val;
+import nl.hanze.weatherstation.models.AverageMeasurement;
 import nl.hanze.weatherstation.models.Measurement;
 
+import java.nio.ByteBuffer;
+import java.time.Instant;
 import java.time.ZoneOffset;
 
 public class MeasurementConverter {
-    public byte[] convertMeasurementToByteArray(Measurement measurement) {
+    public static byte[] convertMeasurementToByteArray(Measurement measurement) {
         // Each measurement has a fixes size of 35 bytes.
         byte[] byteArray = new byte[35];
 
@@ -160,14 +163,65 @@ public class MeasurementConverter {
         return byteArray;
     }
 
-    private void writeIntToByteArray(byte[] byteArray, int offset, int length, int number) {
+    public static byte[] convertAverageToByteArray(int stationId, AverageMeasurement averageMeasurement) {
+        // Each average has a fixes size of 35 bytes.
+        byte[] byteArray = new byte[35];
+
+        writeIntToByteArray(byteArray, 0, 3, stationId);
+        val epoch = averageMeasurement.getDate().toEpochSecond(ZoneOffset.UTC);
+        writeIntToByteArray(byteArray, 3, 4, Math.toIntExact(epoch));
+        writeIntToByteArray(byteArray, 7, 2, averageMeasurement.getCount());
+
+        writeIntToByteArray(byteArray, 9, 3, (int)(averageMeasurement.getTemperature() * 10));
+        writeIntToByteArray(byteArray, 12, 3, (int)(averageMeasurement.getDewPoint() * 10));
+        writeIntToByteArray(byteArray, 15, 3, (int)(averageMeasurement.getStationAirPressure() * 10));
+        writeIntToByteArray(byteArray, 18, 3, (int)(averageMeasurement.getSeaAirPressure() * 10));
+        writeIntToByteArray(byteArray, 21, 2, (int)(averageMeasurement.getVisibility() * 10));
+        writeIntToByteArray(byteArray, 23, 2, (int)(averageMeasurement.getAirSpeed() * 10));
+        writeIntToByteArray(byteArray, 25, 3, (int)(averageMeasurement.getRainFall() * 10));
+        writeIntToByteArray(byteArray, 28, 3, (int)(averageMeasurement.getSnowFall() * 10));
+        writeIntToByteArray(byteArray, 31, 2, (int)(averageMeasurement.getCloudPercentage() * 10));
+        writeIntToByteArray(byteArray, 33, 2, averageMeasurement.getWindDirection());
+
+        return byteArray;
+    }
+
+    public static AverageMeasurement convertByteArrayToAverage(byte[] byteArray) {
+        val epoch = getIntFromByteArray(byteArray, 3, 4);
+        val averageMeasurement = new AverageMeasurement(Instant.ofEpochSecond(epoch).atZone(ZoneOffset.UTC).toLocalDateTime());
+
+        averageMeasurement.setCount(getIntFromByteArray(byteArray, 7, 2));
+        averageMeasurement.setTemperature(getIntFromByteArray(byteArray, 9, 3) / 10.0);
+        averageMeasurement.setDewPoint(getIntFromByteArray(byteArray, 12, 3) / 10.0);
+        averageMeasurement.setStationAirPressure(getIntFromByteArray(byteArray, 15, 3) / 10.0);
+        averageMeasurement.setSeaAirPressure(getIntFromByteArray(byteArray, 18, 3) / 10.0);
+        averageMeasurement.setVisibility(getIntFromByteArray(byteArray, 21, 2) / 10.0);
+        averageMeasurement.setAirSpeed(getIntFromByteArray(byteArray, 23, 2) / 10.0);
+        averageMeasurement.setRainFall(getIntFromByteArray(byteArray, 25, 3) / 10.0);
+        averageMeasurement.setSnowFall(getIntFromByteArray(byteArray, 28, 3) / 10.0);
+        averageMeasurement.setCloudPercentage(getIntFromByteArray(byteArray, 31, 2) / 10.0);
+        averageMeasurement.setWindDirection(getIntFromByteArray(byteArray, 33, 2));
+
+        return averageMeasurement;
+    }
+
+    public static int getIntFromByteArray(byte[] byteArray, int offset, int length) {
+        byte[] buffer = new byte[4];
+        System.arraycopy(byteArray, offset, buffer, 4 - length, length);
+
+        if (length < 4) {
+            for (int i = 0; i < 4 - length; i++) {
+                buffer[i] = ((byteArray[offset] & 0b10000000) == 0b10000000) ? (byte)0xFF : (byte)0x00;
+            }
+        }
+
+        return ByteBuffer.wrap(buffer).getInt();
+    }
+
+    public static void writeIntToByteArray(byte[] byteArray, int offset, int length, int number) {
         for (int i = 0; i < length; i++) {
             val shiftAmount = ((length - i - 1) * 8);
             byteArray[i + offset] = (byte) ((number & (0xFF << shiftAmount)) >> shiftAmount);
-        }
-
-        if (number < 0) {
-            byteArray[offset] |= (1 << 7);
         }
     }
 }

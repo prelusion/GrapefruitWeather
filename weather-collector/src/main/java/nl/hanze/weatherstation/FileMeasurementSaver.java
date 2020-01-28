@@ -3,6 +3,7 @@ package nl.hanze.weatherstation;
 import lombok.val;
 import nl.hanze.weatherstation.models.Measurement;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -12,19 +13,19 @@ import java.util.Queue;
 public class FileMeasurementSaver implements Runnable {
     private final Logger logger;
     private final Queue<Measurement> measurementQueue;
-    private final MeasurementConverter measurementConverter;
+    private final Queue<Measurement> measurementAverageQueue;
     private int collectionId;
 
     public FileMeasurementSaver(
-            Logger logger,
             Queue<Measurement> measurementQueue,
-            MeasurementConverter measurementConverter,
-            int startCollectionId
+            Queue<Measurement> measurementAverageQueue
     ) {
-        this.logger = logger;
+        this.logger = LoggerFactory.getLogger(this.getClass());
         this.measurementQueue = measurementQueue;
-        this.measurementConverter = measurementConverter;
-        this.collectionId = startCollectionId;
+        this.measurementAverageQueue = measurementAverageQueue;
+
+        val files = FileHelper.extractExtensionSequences("/measurements", "wsmc");
+        this.collectionId = files.size() == 0 ? 0 : files.get(0);
     }
 
     @Override
@@ -47,7 +48,10 @@ public class FileMeasurementSaver implements Runnable {
             try (val outputStream = new FileOutputStream(file, true)) {
                 Measurement measurement;
                 while ((measurement = measurementQueue.poll()) != null) {
-                    outputStream.write(measurementConverter.convertMeasurementToByteArray(measurement));
+                    outputStream.write(MeasurementConverter.convertMeasurementToByteArray(measurement));
+
+                    // When the measurement is saved it can be offered to the average queue.
+                    measurementAverageQueue.offer(measurement);
                 }
             }
         } catch (IOException exception) {
