@@ -10,7 +10,7 @@
     display: none;
 }
 
-.legenda_container {
+.legenda_container .legenda_remove {
     cursor: pointer; 
     float: right; 
     padding: 5px; 
