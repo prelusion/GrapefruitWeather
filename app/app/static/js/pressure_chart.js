@@ -44,13 +44,13 @@ function get_pressure_data() {
                 }
                 pressure_call_limit = 1;
             } else {
-                if(!result.data[0][0].substring(17,25) == pressure_timelist[pressure_timelist.length - 1]) {
+                // if(!result.data[0][0].substring(17,25) == pressure_timelist[pressure_timelist.length - 1]) {
                     pressure_timelist.shift();
                     pressure_timelist.push("" + result.data[0][0].substring(17,25));
 
                     pressurelist.shift();
                     pressurelist.push(result.data[0][1]);
-                }
+                // }
             }       
         });  
     }
