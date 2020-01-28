@@ -76,6 +76,7 @@ function markerClick(event) {
         if(event.layer.profile === "track") {
             deselectMarkers();
             event.layer.setIcon(racetrackIcon);
+            setTemperatureStations();
         } else {
             event.layer.setIcon(weatherstationIcon);
             selectedAirStations = removeValueOutArray(selectedAirStations, event.layer.station_id);
