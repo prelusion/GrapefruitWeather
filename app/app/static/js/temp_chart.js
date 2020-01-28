@@ -8,7 +8,7 @@ var temperature_ready = false;
 
 function draw_temp() {
     if(temperaturelist.length == temperature_timeInterval && temperature_timelist.length == temperature_timeInterval){
-        $("#temp_loading_label").hide();
+        $("#temp_status_label").hide();
         new Chart($("#temperature_chart"), {
             type: 'line',
             data: {
@@ -69,8 +69,14 @@ function setTemperatureStations() {
     temperaturelist = [];
     temperature_call_limit = 120;
     graphTempStations = getTemperatureStations();
-    plot_temperature_graph();
-    temperature_ready = true;
+    if(graphTempStations.length != 0){
+        plot_temperature_graph();
+        temperature_ready = true;
+    } else {
+        $("#temp_status_label").text("This country has no temperature stations!");
+        $("#temperature_chart").hide();
+        $("#temp_status_label").show();
+    }
 }
 
 function refresh_temperature() {
@@ -80,7 +86,3 @@ function refresh_temperature() {
 }
 
 setInterval(refresh_temperature, temperature_refreshrate); 
-
-
-
-
