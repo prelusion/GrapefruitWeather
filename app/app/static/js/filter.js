@@ -44,7 +44,9 @@ function getStationsFilter(stationType = "air", custom = false, custom_latitude,
     if(limit === "") {
         limit = 50;
     }
+    console.log(trackID);
     $.get("http://127.0.0.1:5000/api/stations?track_id="+trackID+"&limit="+limit+"&range="+range, function(result) {
+        console.log(result);
         setAirStationsFromAPI(result);
         // setMapView(latitude, longitude, map.getZoom());
     });
