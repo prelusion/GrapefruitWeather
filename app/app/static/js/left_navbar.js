@@ -16,6 +16,7 @@ $(document).ready(function() {
         $("#latitude").val($(this).children("p").attr("latitude"));
         $("#longitude").val($(this).children("p").attr("longitude"));
         $("#country").val($(this).children("p").attr("country"));
+        $("#country").attr("countryid", $(this).children("p").attr("countryid"));
         getStationsFilter();
     });
 }); 

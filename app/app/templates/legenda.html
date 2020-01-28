@@ -1,0 +1,44 @@
+<div class="legenda_container">
+    <div class="legenda_remove">
+        X
+    </div>
+
+    <div class="info_container">
+        <div class="legenda_image">
+            <img src="/static/resources/images/racetrack_marker.png">
+        </div>
+        <div class="legenda_info">
+            <span>This marker stands for a track. You can click on this marker to select it. (Only 1 track marker can be selected at a time).</span>
+        </div>
+    </div>
+    
+    <div class="info_container">
+        <div class="legenda_image">
+            <img src="/static/resources/images/racetrack_marker.gif">
+        </div>
+        <div class="legenda_info">
+            <span>This marker stands for a selected track. While a track is selected the country in which this track lies will make a average of all the temperatures and give it to the graph.</span>
+        </div>
+    </div>
+    
+    <div class="info_container">
+        <div class="legenda_image">
+            <img src="/static/resources/images/weatherstation_marker.png">
+        </div>
+        <div class="legenda_info">
+            <span>This marker stands for a weather station. You can click on this marker to select it. (Multiple weather stations can be selected at a time).</span>
+        </div>
+    </div>
+    
+    <div class="info_container">
+        <div class="legenda_image">
+            <img src="/static/resources/images/weatherstation_marker.gif">
+        </div>
+        <div class="legenda_info">
+            <span>This marker stands for a selected weather station. A weather station gathers the temperature and airpressure when it is selected. Can be deselected by clicking on it or click on another track.</span>
+        </div>
+    </div>
+    <div style="clear: both"></div>
+</div>
+
+<script src="{{ url_for('static', filename='js/legenda.js') }}"></script>
