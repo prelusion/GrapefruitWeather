@@ -1,5 +1,5 @@
 var graphAirStations = [];
-var pressure_timeinterval = 120;
+const pressure_timeinterval = 120;
 var pressure_call_limit = 120;
 var pressure_timelist = [];
 var pressurelist = [];
