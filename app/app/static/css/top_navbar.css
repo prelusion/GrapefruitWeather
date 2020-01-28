@@ -1,3 +1,10 @@
+.top_navbar {
+    z-index: 999;
+    width: 100%;
+    position: fixed;
+    margin-top: -150px;
+}
+
 .top_navbar .navbar {
     background-color:#091e49;
 }

@@ -1,6 +1,8 @@
 import datetime
 import os
 from copy import deepcopy
+from pprint import pprint
+import pytz
 
 import pytz
 from geopy import distance
@@ -94,33 +96,56 @@ def get_stations(station_id=None,
     return True, stations
 
 
-def get_most_recent_air_pressure_average(station_ids, seconds, interval):
-    rawdata = wsmc.read_test_file()
-    measurementbytes_generator = wsmc.iterate_dataset_left(rawdata)
-    measurementbytes_generator = wsmc.filter_by_field(
-        measurementbytes_generator, "station_id", station_ids)
-    measurementbytes_generator = wsmc.filter_most_recent(
-        measurementbytes_generator, seconds)
-    measurement_generator = wsmc.group_by_timestamp(
-        measurementbytes_generator, interval)
-    avg_temperatures = list(
-        wsmc.groups_to_average("air_pressure", measurement_generator))
-    return avg_temperatures
+def get_most_recent_air_pressure_average(station_ids, limit, interval):
+    result = []
+    offset = 0
+
+    while limit > 0:
+        rawdata = wsmc.load_data_per_file(offset)
+
+        if len(rawdata) == 0:
+            break
+
+        measurementbytes_generator = wsmc.iterate_dataset_left(rawdata)
+        measurementbytes_generator = wsmc.filter_by_field(
+            measurementbytes_generator, "station_id", station_ids)
+        measurementbytes_generator = wsmc.filter_most_recent(
+            measurementbytes_generator, limit)
+        measurement_generator = wsmc.group_by_timestamp(
+            measurementbytes_generator, interval)
+        newresult = list(
+            wsmc.groups_to_average("air_pressure", measurement_generator))
+
+        result.extend(newresult)
+        limit -= len(newresult)
+
+        offset += 1
+
+    return result
 
 
 def get_timezone_by_station_id(station_id):
-    stations = get_stations(station_id=station_id, timezone=True)
-    if len(stations[1]) != 1:
+    success, result = get_stations(station_id=station_id, timezone=True)
+
+    if not success:
+        return False, result
+
+    if len(result) != 1:
         return False, "Invalid station returned."
-    return True, stations[1][0]["timezone"]
+
+    return True, result[0]["timezone"]
 
 
 def get_timezone_by_track_id(track_id):
+    success, result = get_racing_tracks(track_id=track_id)
 
-    tracks = get_racing_tracks(track_id=track_id)
-    if len(tracks[1]) != 1:
+    if not success:
+        return False, result
+
+    if len(result) != 1:
         return False, "Invalid track returned."
-    return True, tracks[1][0]["timezone"]
+
+    return True, result[0]["timezone"]
 
 
 def get_timezone_by_timezone_id(timezone_id):
