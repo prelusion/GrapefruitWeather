@@ -55,6 +55,9 @@ def get_stations(station_id=None,
                     remove_empty_locals()
                     return
 
+    if limit == None:
+        limit = 50
+
     stations = deepcopy(fileaccess.get_stations())
 
     if radius is not None and (latitude is not None or longitude is not None):
@@ -78,10 +81,12 @@ def get_stations(station_id=None,
 
     if track_id and (int(track_id) < 23):
         distances = get_track_distances(track_id)
-        stations = stations[:limit]
         for _station in stations:
             _station["distance"] = int(distances[_station["id"]])
         stations.sort(key=lambda station: station["distance"])
+        stations = stations[:int(limit)]
+        if radius and int(radius) > 0:
+            stations = list(filter(lambda station: station["distance"] < float(radius), stations))
 
     if longitude is not None and latitude is not None:
         stations.sort(key=lambda station: station["distance"])

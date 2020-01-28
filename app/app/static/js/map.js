@@ -84,6 +84,8 @@ function markerClick(event) {
     } else {
         if(event.layer.profile === "track") {
             deselectMarkers();
+            $("#track").val(event.layer.track_id+1);
+            setFilterValues(event.layer.latitude, event.layer.longitude, event.layer.country_id, event.layer.country)
             event.layer.setIcon(racetrackIconSelected);
             getStationsFilter("temperature", true, event.layer.latitude, event.layer.longitude, event.layer.country_id);      
             event.layer.highlighted = true;   

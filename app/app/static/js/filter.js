@@ -1,10 +1,7 @@
 $(document).ready(function() {
     //$(#track).val() = the track id+1.
     $("#filter_button").on("click", function() {
-        $("#latitude").val(jsonArray[$("#track").val()-1].latitude);
-        $("#longitude").val(jsonArray[$("#track").val()-1].longitude);
-        $("#country").attr("countryid", jsonArray[$("#track").val()-1].country_id);
-        $("#country").val(jsonArray[$("#track").val()-1].country);
+        setFilterValues(jsonArray[$("#track").val()-1].latitude, jsonArray[$("#track").val()-1].longitude, jsonArray[$("#track").val()-1].country_id, jsonArray[$("#track").val()-1].country);
         setMapView($("#latitude").val(), $("#longitude").val(), map.getZoom());
         updateMarker($("#track").val()-1);
         getStationsFilter();
@@ -12,13 +9,20 @@ $(document).ready(function() {
     $("#filter_button").trigger("click");
 });
 
+function setFilterValues(latitude, longitude, countryID, countryName) {
+    $("#latitude").val(latitude);
+    $("#longitude").val(longitude);
+    $("#country").attr("countryid", countryID);
+    $("#country").val(countryName);
+}
+
 function getStationsFilter(stationType = "air", custom = false, custom_latitude, custom_longitude, custom_country_id) {
     let trackID = $("#track").val();
     let latitude = (custom === false) ? $("#latitude").val() : custom_latitude;
     let longitude = (custom === false) ? $("#longitude").val() : custom_longitude;
     let country = (custom === false) ?  $("#country").attr("countryid") : custom_country_id;
     let limit = $("#limit").val();
-    let range = $("#range").val();
+    let radius = $("#range").val();
     let error = false;
     if (isNaN(latitude)) {
         $("#latitude_error").show();
@@ -32,7 +36,7 @@ function getStationsFilter(stationType = "air", custom = false, custom_latitude,
         $("#limit_error").show();
         error = true;
     }
-    if(isNaN(range)) {
+    if(isNaN(radius)) {
         $("#range_error").show();
         error = true;
     }
@@ -44,9 +48,8 @@ function getStationsFilter(stationType = "air", custom = false, custom_latitude,
     if(limit === "") {
         limit = 50;
     }
-    console.log(trackID);
-    $.get("http://127.0.0.1:5000/api/stations?track_id="+trackID+"&limit="+limit+"&range="+range, function(result) {
-        console.log(result);
+    console.log(radius);
+    $.get("http://127.0.0.1:5000/api/stations?track_id="+trackID+"&limit="+limit+"&radius="+radius, function(result) {
         setAirStationsFromAPI(result);
         // setMapView(latitude, longitude, map.getZoom());
     });
