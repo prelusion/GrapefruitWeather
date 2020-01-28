@@ -6,9 +6,9 @@ var pressurelist = [];
 const pressure_refreshrate = 1000;
 var pressure_ready = false;
 
-function draw() {
+function draw_pressure() {
     if(pressurelist.length == pressure_timeinterval && pressure_timelist.length == pressure_timeinterval){
-        $("#loading_label").hide();
+        $("#pressure_loading_label").hide();
         new Chart($("#pressure_chart"), {
             type: 'line',
             data: {
@@ -28,7 +28,7 @@ function draw() {
                 animation: false
             }
         });
-        $("#time_label").text("Time (realtime): " + pressure_timelist[pressure_timelist.length-1]);
+        $("#pressure_time_label").text("Time (realtime): " + pressure_timelist[pressure_timelist.length-1]);
         $("#pressure_label").text("Airpressure (realtime): " + pressurelist[pressurelist.length-1]);
     }
 }
@@ -58,7 +58,7 @@ function get_pressure_data() {
 
 function plot_pressure_graph() {
     get_pressure_data();
-    draw();    
+    draw_pressure();    
 }
 
 
@@ -73,11 +73,13 @@ function setAirStations() {
     pressure_ready = true;
 }
 
-setInterval( function() {
+function refresh_pressure() {
     if(pressure_ready) {
         plot_pressure_graph();
     }
-}, pressure_refreshrate); 
+}
+
+setInterval(refresh_pressure, pressure_refreshrate); 
 
 
 
