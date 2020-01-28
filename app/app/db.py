@@ -1,17 +1,14 @@
-import datetime
 import os
 from copy import deepcopy
-from pprint import pprint
-import pytz
 from logging import getLogger
-import pytz
+
 from geopy import distance
+
 from app import fileaccess
+from app import util
 from app import wsmc
 from app.const import TRACK_CACHE_DIR
 from app.fileaccess import generate_track_distance_cache, get_track_distances
-from app import util
-
 
 logger = getLogger(__name__)
 
@@ -48,7 +45,6 @@ def get_stations(station_id=None,
                  timezone=None,
                  offset=None
                  ):
-
     def remove_empty_locals():
         parameters = locals()
         for local in parameters:
@@ -162,13 +158,6 @@ def get_timezone_by_offset(offset):
             return timezone
 
 
-def convert_tz(measurements, source_tz, dest_tz):
-    for measurement in measurements:
-        measurement = pytz.timezone(pytz.timezone(source_tz)).localize(measurement)
-        measurement = measurement[0].astimezone(pytz.timezone(dest_tz))
-    return measurements
-
-
 def generate_track_to_station_cache(force=False):
     success, tracks = get_racing_tracks()
 
@@ -181,7 +170,7 @@ def generate_track_to_station_cache(force=False):
         success, stations = get_stations(limit=16000)
         for station in stations:
             _distance = round(distance.distance([float(track["latitude"]), float(track["longitude"])],
-                                    (float(station["latitude"]), float(station["longitude"]))).km)
+                                                (float(station["latitude"]), float(station["longitude"]))).km)
             distances.append((station["id"], _distance))
         distances.sort(key=lambda distances: distances[0])
         generate_track_distance_cache(distances, track["id"])

@@ -1,3 +1,4 @@
+
 .login_wrapper {
     margin-top: 100px;
     height: 85vh;
@@ -17,6 +18,7 @@
 .container .login_container .form_container .login_input_styling {
     height: 60px;
     margin-top: 10px;
+    border-radius: 20px;
 }
 
 .container .login_container .form_container .login_btn {
@@ -24,7 +26,6 @@
     color: #e2063b; 
     border: 1px solid gold; 
     background-color: #091e49;
-    border-radius: 10px;
     cursor: pointer;
 }
 
