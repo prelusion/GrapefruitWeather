@@ -1,10 +1,15 @@
+import datetime
+import os
 from copy import deepcopy
 from pprint import pprint
 import pytz
-from geopy import distance
 
+import pytz
+from geopy import distance
 from app import fileaccess
 from app import wsmc
+from app.const import TRACK_CACHE_DIR
+from app.fileaccess import generate_track_distance_cache, get_track_distances
 
 
 def get_racing_tracks(track_id=None, name=None, city=None, country=None, limit=None, offset=None):
@@ -32,17 +37,22 @@ def get_racing_tracks(track_id=None, name=None, city=None, country=None, limit=N
 def get_stations(station_id=None,
                  longitude=None,
                  latitude=None,
+                 track_id=None,
                  radius=None,
                  country=None,
                  limit=50,
                  timezone=None,
                  offset=None
                  ):
-    parameters = locals()
-    for local in parameters:
-        if local is not None:
-            if local == "":
-                local = None
+
+    def remove_empty_locals():
+        parameters = locals()
+        for local in parameters:
+            if local is not None:
+                if local == "":
+                    local = None
+                    remove_empty_locals()
+                    return
 
     stations = deepcopy(fileaccess.get_stations())
 
@@ -64,6 +74,13 @@ def get_stations(station_id=None,
             station["distance"] = round(
                 distance.distance([float(station["latitude"]), float(station["longitude"])],
                                   target_location).km)
+
+    if track_id and (int(track_id) < 23):
+        distances = get_track_distances(track_id)
+        stations = stations[:limit]
+        for _station in stations:
+            _station["distance"] = int(distances[_station["id"]])
+        stations.sort(key=lambda station: station["distance"])
 
     if longitude is not None and latitude is not None:
         stations.sort(key=lambda station: station["distance"])
@@ -164,3 +181,20 @@ def convert_tz(measurements, source_tz, dest_tz):
         measurement = pytz.timezone(pytz.timezone(source_tz)).localize(measurement)
         measurement = measurement[0].astimezone(pytz.timezone(dest_tz))
     return measurements
+
+
+def generate_track_to_station_cache(force=False):
+    success, tracks = get_racing_tracks()
+
+    for track in tracks:
+        file_path = TRACK_CACHE_DIR + "/" + str(track["id"]) + ".csv"
+        if os.path.isfile(file_path) or force:
+            continue
+        distances = []
+        success, stations = get_stations(limit=16000)
+        for station in stations:
+            _distance = round(distance.distance([float(track["latitude"]), float(track["longitude"])],
+                                    (float(station["latitude"]), float(station["longitude"]))).km)
+            distances.append((station["id"], _distance))
+        distances.sort(key=lambda distances: distances[0])
+        generate_track_distance_cache(distances, track["id"])
