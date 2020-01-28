@@ -178,6 +178,6 @@ function setTemperatureStationsFromAPI(result) {
             selectedTemperatureStations.push(result.data[station].id);
         }
     }
-    //setTemperatureStations();
+    setTemperatureStations();
 }
 
