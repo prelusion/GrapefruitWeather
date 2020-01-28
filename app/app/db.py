@@ -185,3 +185,6 @@ def generate_track_to_station_cache(force=False):
             distances.append((station["id"], _distance))
         distances.sort(key=lambda distances: distances[0])
         generate_track_distance_cache(distances, track["id"])
+
+def get_user():
+    return True;

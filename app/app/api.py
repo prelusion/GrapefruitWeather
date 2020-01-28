@@ -1,4 +1,6 @@
-from flask import Blueprint, request
+from flask import Blueprint, request, app
+from flask_login import login_required, login_manager
+
 from app import db
 from app.db import convert_tz
 from app.util import http_format_error, http_format_data
@@ -7,6 +9,7 @@ api_bp = Blueprint('api_bp', __name__)
 
 
 @api_bp.route('/tracks')
+@login_required
 def get_racing_tracks():
     track_id = request.args.get("id")
     name = request.args.get("name")
@@ -26,6 +29,7 @@ def get_racing_tracks():
 
 
 @api_bp.route('/stations')
+@login_required
 def get_stations():
     station_id = request.args.get("id")
     longitude = request.args.get("longitude")
@@ -61,6 +65,7 @@ def get_stations():
 
 
 @api_bp.route('/measurements/airpressure')
+@login_required
 def get_airpressure_measurements():
     """
     Example: http://127.0.0.1:5000/api/measurements/airpressure?limit=120&stations=93590,589210
@@ -91,6 +96,7 @@ def get_airpressure_measurements():
 
 
 @api_bp.route('/timezone')
+@login_required
 def get_timezone():
     """
     offset parameter must be given in the format returned by the following
@@ -139,3 +145,13 @@ def get_timezone():
         return http_format_error("Invalid input")
 
     return http_format_data(timezone)
+
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.data[""]
+
+@login_manager.user_loader
+def load_user(user_id):
+    return User.get(user_id)
+
