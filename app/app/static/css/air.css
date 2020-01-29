@@ -23,3 +23,7 @@
     text-align: left;
     font-weight: bold;
 }
+
+.air .timezone {
+    display: none;
+}

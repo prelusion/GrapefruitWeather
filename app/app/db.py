@@ -5,6 +5,7 @@ from logging import getLogger
 from flask_login import login_manager
 from geopy import distance
 
+from app import const
 from app import fileaccess
 from app import util
 from app import wsmc
@@ -36,16 +37,8 @@ def get_racing_tracks(track_id=None, name=None, city=None, country=None, limit=N
     return True, racing_tracks
 
 
-def get_stations(station_id=None,
-                 longitude=None,
-                 latitude=None,
-                 track_id=None,
-                 radius=None,
-                 country=None,
-                 limit=50,
-                 timezone=None,
-                 offset=None
-                 ):
+def get_stations(station_id=None, longitude=None, latitude=None, track_id=None,
+                 radius=None, country=None, limit=50, timezone=None, offset=None):
     def remove_empty_locals():
         parameters = locals()
         for local in parameters:
@@ -55,7 +48,7 @@ def get_stations(station_id=None,
                     remove_empty_locals()
                     return
 
-    if limit == None:
+    if limit is None:
         limit = 50
 
     stations = deepcopy(fileaccess.get_stations())
@@ -64,10 +57,10 @@ def get_stations(station_id=None,
         return False, "Latitude or longitude not set."
 
     if station_id is not None:
-        stations = list(filter(lambda station: int(station["id"]) == int(station_id), stations))
+        stations = list(filter(lambda st: int(st["id"]) == int(station_id), stations))
 
     if country is not None:
-        stations = list(filter(lambda station: station["country-id"].lower() == country.lower(), stations))
+        stations = list(filter(lambda st: st["country-id"].lower() == country.lower(), stations))
 
     for station in stations:
         if not timezone:
@@ -80,19 +73,19 @@ def get_stations(station_id=None,
                                   target_location).km)
 
     if track_id and (int(track_id) < 23):
-        distances = get_track_distances(track_id)
+        distances = fileaccess.get_track_distances(track_id)
         for _station in stations:
             _station["distance"] = int(distances[_station["id"]])
-        stations.sort(key=lambda station: station["distance"])
+        stations.sort(key=lambda st: st["distance"])
         stations = stations[:int(limit)]
         if radius and int(radius) > 0:
             stations = list(filter(lambda station: station["distance"] < float(radius), stations))
 
     if longitude is not None and latitude is not None:
-        stations.sort(key=lambda station: station["distance"])
+        stations.sort(key=lambda st: st["distance"])
 
     if longitude is not None and latitude is not None and radius is not None:
-        stations = list(filter(lambda station: station["distance"] < float(radius), stations))
+        stations = list(filter(lambda st: st["distance"] < float(radius), stations))
 
     try:
         stations = util.limit_and_offset(stations, limit, offset)
@@ -107,7 +100,7 @@ def get_most_recent_air_pressure_average(station_ids, limit, interval):
     offset = 0
 
     while limit > 0:
-        rawdata = wsmc.load_data_per_file(offset)
+        rawdata = wsmc.load_data_per_file(const.MEASUREMENTS_DIR, offset)
 
         if len(rawdata) == 0:
             break
@@ -163,7 +156,7 @@ def generate_track_to_station_cache(force=False):
     success, tracks = get_racing_tracks()
 
     for track in tracks:
-        file_path = TRACK_CACHE_DIR + "/" + str(track["id"]) + ".csv"
+        file_path = const.TRACK_CACHE_DIR + "/" + str(track["id"]) + ".csv"
         if os.path.isfile(file_path) or force:
             continue
         logger.info(f"Generating distances for track {track['id']}")
@@ -173,7 +166,7 @@ def generate_track_to_station_cache(force=False):
             _distance = round(distance.distance([float(track["latitude"]), float(track["longitude"])],
                                                 (float(station["latitude"]), float(station["longitude"]))).km)
             distances.append((station["id"], _distance))
-        distances.sort(key=lambda distances: distances[0])
-        generate_track_distance_cache(distances, track["id"])
+        distances.sort(key=lambda dist: dist[0])
+        fileaccess.generate_track_distance_cache(distances, track["id"])
 
 

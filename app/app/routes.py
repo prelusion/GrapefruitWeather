@@ -3,6 +3,8 @@ from flask import render_template
 from flask_login import login_user, UserMixin, login_required
 
 from app import db, get_user
+from flask import render_template, send_from_directory
+import os
 
 
 @app.route("/")
@@ -24,3 +26,6 @@ def login():
     return render_template('login.html', error=error)
 
 
+@app.route('/favicon.ico')
+def favicon():
+    return send_from_directory(os.path.join(app.root_path, 'static'), 'favicon.ico', mimetype='image/vnd.microsoft.icon')
