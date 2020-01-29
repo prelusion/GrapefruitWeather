@@ -75,7 +75,7 @@ def get_stations(station_id=None, longitude=None, latitude=None, track_id=None,
             _station["distance"] = int(distances[_station["id"]])
         stations.sort(key=lambda st: st["distance"])
         stations = stations[:int(limit)]
-        if radius is not None and int(radius) > 0:
+        if radius and int(radius) > 0:
             stations = list(filter(lambda station: station["distance"] < float(radius), stations))
 
     if longitude is not None and latitude is not None:
