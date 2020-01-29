@@ -59,15 +59,14 @@ def determine_chunksize(prefsize=500000):
     return chunks * MEASUREMENT_BYTE_COUNT
 
 
-def get_wsmc_files():
-    datadir = const.MEASUREMENTS_DIR
+def get_wsmc_files(datadir):
     files = os.listdir(datadir)
     files = list(filter(lambda file: file.endswith(".wsmc"), files))
     files.sort(key=lambda name: int(re.sub('\D', '', name)))
     return list(((name, os.path.join(datadir, name)) for name in files if ".wsmc" in name))
 
 
-def load_data_per_file(offset):
+def load_data_per_file(datadir, offset):
     """ Loads wsmc data from the file system.
     Data is loaded backwards, which implies that the newest data is loaded first.
     Data is loaded per file, so data from multiple files can not be loaded into memory
@@ -77,7 +76,7 @@ def load_data_per_file(offset):
     :param offset: amount of chunks skipped when loading into memory
     :return: data in bytes
     """
-    files = get_wsmc_files()
+    files = get_wsmc_files(datadir)
 
     index = (len(files) - 1) - offset
     if index < 0:

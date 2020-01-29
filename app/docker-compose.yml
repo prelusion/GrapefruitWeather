@@ -7,6 +7,8 @@ services:
           - "5000:5000"
         volumes:
             - "./measurements:/database/measurements"
+        environment:
+            MEASUREMENTS_DB=/database/measurements
     nfs:
         image: erichough/nfs-server:2.2.1
         privileged: true
