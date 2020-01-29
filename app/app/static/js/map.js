@@ -54,14 +54,15 @@ function movingTrigger(event) {
 }
 
 function getCurrentMapCoordsStations(latitude, longitude) {
-    let url = "http://127.0.0.1:5000/api/stations?latitude="+latitude+"&longitude="+longitude;
+    let url = "/api/stations?latitude="+latitude+"&longitude="+longitude;
     if($("#limit").val()) {
-        url + "&limit=" + $("#limit").val(); 
+        url + "&limit=" + $("#limit").val();
     }
     if($("#range").val()) {
         url + "&range=" + $("#range").val();
     }
     $.get(url, function(result) {
+    $.get("/api/stations?latitude="+latitude+"&longitude="+longitude+"&limit="+$("#limit").val()+"&range="+$("#range").val(), function(result) {
         for(station in result.data) {
             if(!currentStations.includes(result.data[station].id)) {
                 currentStations.push(result.data[station].id);
@@ -145,7 +146,7 @@ function deselectMarkers() {
 function setAirStationsFromAPI(result) {
     for(station in result.data) {
         selectedAirStations.push(result.data[station].id);
-        if(!currentStations.includes(result.data[station].id)) {    
+        if(!currentStations.includes(result.data[station].id)) {
             currentStations.push(result.data[station].id);
 
             let marker = L.marker([result.data[station].latitude, result.data[station].longitude], {icon: weatherstationIconSelected} ).addTo(markers)
