@@ -36,7 +36,7 @@
 // function get_pressure_data() {
 //     if(graphAirStations.length != 0) {
 //         let pressure_station_string = graphAirStations.join();
-//         $.get("http://127.0.0.1:5000/api/measurements/airpressure?limit=" + pressure_call_limit +"&stations=" + pressure_station_string, function(result) {
+//         $.get("/api/measurements/airpressure?limit=" + pressure_call_limit +"&stations=" + pressure_station_string, function(result) {
 //             if(pressure_timelist.length == 0){
 //                 for(x = pressure_timeinterval - 1; x >= 0; x--){
 //                     pressure_timelist.push(("" + result.data[x][0].substring(17,25)));

@@ -54,7 +54,7 @@ function movingTrigger(event) {
 }
 
 function getCurrentMapCoordsStations(latitude, longitude) {
-    $.get("http://127.0.0.1:5000/api/stations?latitude="+latitude+"&longitude="+longitude+"&limit="+$("#limit").val()+"&range="+$("#range").val(), function(result) {
+    $.get("/api/stations?latitude="+latitude+"&longitude="+longitude+"&limit="+$("#limit").val()+"&range="+$("#range").val(), function(result) {
         for(station in result.data) {
             if(!currentStations.includes(result.data[station].id)) {
                 currentStations.push(result.data[station].id);

@@ -54,7 +54,7 @@ function process_temperature_data(result){
 function plotTemperature() {
     if(tempPlotPermission){
         if(graphTempStations.length != 0) {
-            $.get("http://127.0.0.1:5000/api/measurements/airpressure?limit=" + temperatureCallLimit +"&stations=" + graphTempStations.join(), function(result) {
+            $.get("/api/measurements/airpressure?limit=" + temperatureCallLimit +"&stations=" + graphTempStations.join(), function(result) {
                 process_temperature_data(result);
                 if(temperatureTimelist.length == chartTimeInterval && temperaturelist.length == chartTimeInterval){
                     drawTempChart(temperatureTimelist, temperaturelist);
