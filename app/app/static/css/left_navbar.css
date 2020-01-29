@@ -61,3 +61,21 @@
     margin-top: 5px;
     display: none;
 }
+
+.left_navbar .download_container {
+    padding: 5px;
+    height: 2em;
+    width: 90%;
+    cursor: pointer;
+    background-color: none;
+    color: #848689 ;
+    display: none;
+    overflow: hidden;
+}
+
+.left_navbar .download_container:hover {
+    color: #e2063b;
+    border: 1px solid gold;
+    border-radius: 5px;
+    margin-left: 5px;
+}

@@ -23,3 +23,8 @@
     text-align: left;
     font-weight: bold;
 }
+
+.temperature .timezone {
+    display: none;
+    margin-top: -50px;
+}

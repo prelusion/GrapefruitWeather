@@ -54,21 +54,30 @@ function movingTrigger(event) {
 }
 
 function getCurrentMapCoordsStations(latitude, longitude) {
-    $.get("http://127.0.0.1:5000/api/stations?latitude="+latitude+"&longitude="+longitude+"&limit="+$("#limit").val()+"&range="+$("#range").val(), function(result) {
-        for(station in result.data) {
-            if(!currentStations.includes(result.data[station].id)) {
-                currentStations.push(result.data[station].id);
-                let marker = L.marker([result.data[station].latitude, result.data[station].longitude], {icon: weatherstationIcon} ).addTo(markers)
-                .bindPopup("Name:" + result.data[station].name);
-                marker.highlighted = false;
-                marker.profile = "station";     
-                marker.distance = result.data[station].distance;
-                marker.station_id = result.data[station].id;
-                marker.latitude = result.data[station].latitude;
-                marker.longitude = result.data[station].longitude;       
+    let url = "/api/stations?latitude="+latitude+"&longitude="+longitude;
+    if($("#limit").val()) {
+        url + "&limit=" + $("#limit").val();
+    }
+    if($("#range").val()) {
+        url + "&range=" + $("#range").val();
+    }
+    $.get(url, function(result) {
+        $.get("/api/stations?latitude="+latitude+"&longitude="+longitude+"&limit="+$("#limit").val()+"&range="+$("#range").val(), function(result) {
+            for(station in result.data) {
+                if(!currentStations.includes(result.data[station].id)) {
+                    currentStations.push(result.data[station].id);
+                    let marker = L.marker([result.data[station].latitude, result.data[station].longitude], {icon: weatherstationIcon} ).addTo(markers)
+                    .bindPopup("Name:" + result.data[station].name);
+                    marker.highlighted = false;
+                    marker.profile = "station";
+                    marker.distance = result.data[station].distance;
+                    marker.station_id = result.data[station].id;
+                    marker.latitude = result.data[station].latitude;
+                    marker.longitude = result.data[station].longitude;
+                }
             }
-        }
-    });
+        });
+       });
 }
 
 function markerClick(event) {
@@ -80,6 +89,7 @@ function markerClick(event) {
         } else {
             event.layer.setIcon(weatherstationIcon);
             selectedAirStations = removeValueOutArray(selectedAirStations, event.layer.station_id);
+            // setNewAirStations();
         }
         event.layer.highlighted = false;
     } else {
@@ -94,7 +104,7 @@ function markerClick(event) {
             event.layer.setIcon(weatherstationIconSelected);
             event.layer.highlighted = true;
             selectedAirStations.push(event.layer.station_id);
-            setAirStations();
+            // setNewAirStations();
         }  
     }
 }
@@ -134,10 +144,20 @@ function deselectMarkers() {
     }
 }
 
+function clearMapOfStations() {
+    deselectMarkers();
+    currentStations = [];
+    for(mark in markers._layers) {
+        if(markers._layers[mark].profile === "station") { 
+            markers.removeLayer(markers._layers[mark]); 
+        }
+    }
+}
+
 function setAirStationsFromAPI(result) {
     for(station in result.data) {
         selectedAirStations.push(result.data[station].id);
-        if(!currentStations.includes(result.data[station].id)){
+        if(!currentStations.includes(result.data[station].id)) {
             currentStations.push(result.data[station].id);
 
             let marker = L.marker([result.data[station].latitude, result.data[station].longitude], {icon: weatherstationIconSelected} ).addTo(markers)
@@ -158,20 +178,13 @@ function setAirStationsFromAPI(result) {
             }
         }
     }
-    setNewTempStations(selectedTemperatureStations);
+    // setNewAirStations(selectedTemperatureStations);
 }
 
 function setMapView(latitude, longitude, zoom) {
     map.invalidateSize();
     map.setView([latitude, longitude], zoom);
 }
-
-function getAirStations() {
-    return selectedAirStations;
-}
-// function getTemperatureStations() {
-//     return selectedTemperatureStations;
-// }
 
 function setTemperatureStationsFromAPI(result) {
     for(station in result.data) {

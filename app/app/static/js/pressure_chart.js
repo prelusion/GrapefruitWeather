@@ -86,3 +86,18 @@ function setNewAirStations(newstations){
              pressureCallLimit, graphPressureStations);
     }
 }
+
+// setInterval(refresh_pressure, pressure_refreshrate); 
+
+
+// $("#air_timezone").on("click", function() {
+//     if($(this).text() === "Local timezone") {
+//         $(this).text("Destination timezone");
+//         $(this).addClass("btn-danger");
+//         $(this).removeClass("btn-success");
+//     } else {
+//         $(this).text("Local timezone");
+//         $(this).addClass("btn-success");
+//         $(this).removeClass("btn-danger");
+//     }
+// });
