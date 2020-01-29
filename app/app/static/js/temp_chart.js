@@ -3,7 +3,7 @@ var temperatureTimelist = [];
 var temperaturelist = [];
 var graphTempStations = [];
 var temperatureCallLimit = 120;
-var tempPlotPermission = false;
+var intervalId = null;
 const chartTimeInterval = 120;
 const temperatureRefreshrate = 1000;
 
@@ -29,6 +29,7 @@ function drawTempChart(times, temperatures) {
             events: []
         }
     });
+    $("#temperature_chart").show();
     $("#temp_time_label").text("Time (realtime): " + temperatureTimelist[temperatureTimelist.length-1]);
     $("#temperature_label").text("Temperature (realtime): " + temperaturelist[temperaturelist.length-1]);
 }
@@ -40,7 +41,6 @@ function processTemperatureData(result){
             temperaturelist.push(result.data[x][1]);
         }
         temperatureCallLimit = 1;
-        tempPlotPermission = true;
     } else {
         // if(!result.data[0][0].substring(17,25) == temperatureTimelist[temperatureTimelist.length - 1]) {
             temperatureTimelist.shift();
@@ -53,31 +53,33 @@ function processTemperatureData(result){
 }
 
 function plotTemperature() {
-    if(tempPlotPermission){
-        if(graphTempStations.length != 0) {
-            $.get("http://127.0.0.1:5000/api/measurements/airpressure?limit=" + temperatureCallLimit +"&stations=" + graphTempStations.join(), function(result) {
-                processTemperatureData(result);
-                if(temperatureTimelist.length == chartTimeInterval && temperaturelist.length == chartTimeInterval){
-                    drawTempChart(temperatureTimelist, temperaturelist);
-                }
-            });  
-        } else {
-            console.log("NO STATIONS SELECTED!!");
-            $("#temperature_chart").hide();
-        }
+    if(graphTempStations.length != 0) {
+        console.log(temperatureCallLimit);
+        $.get("http://127.0.0.1:5000/api/measurements/airpressure?limit=" + temperatureCallLimit +"&stations=" + graphTempStations.join(), function(result) {
+            console.log("stations die in de url komen: ", graphTempStations)
+            console.log(result);
+            console.log(temperatureCallLimit);
+            processTemperatureData(result);
+            if(temperatureTimelist.length == chartTimeInterval && temperaturelist.length == chartTimeInterval){
+                drawTempChart(temperatureTimelist, temperaturelist);
+            }
+        });  
     } else {
-        console.log("no permission");
+        console.log("NO STATIONS SELECTED!!");
+        $("#temperature_chart").hide();
     }
 }
 
 function setNewTempStations(stations){
-    tempPlotPermission = false;
+    console.clear();
+    clearInterval(intervalId);
+    console.log("stations die deo vraagt: ", stations);
     temperatureTimelist = [];
     temperaturelist = [];
     graphTempStations = [];
     temperatureCallLimit = 120;
     graphTempStations = stations;
-    tempPlotPermission = true;
+    if(stations.length != 0){
+        intervalId = setInterval(plotTemperature, temperatureRefreshrate); 
+    }
 }
-
-setInterval(plotTemperature, temperatureRefreshrate); 
