@@ -3,7 +3,7 @@ const pressure_timeinterval = 120;
 var pressure_call_limit = 120;
 var pressure_timelist = [];
 var pressurelist = [];
-const pressure_refreshrate = 3000;
+const pressure_refreshrate = 1000;
 var pressure_ready = false;
 
 function draw_pressure() {

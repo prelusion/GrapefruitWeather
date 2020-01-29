@@ -3,7 +3,7 @@ const temperature_timeInterval = 120;
 var temperature_call_limit = 120;
 var temperature_timelist = [];
 var temperaturelist = [];
-const temperature_refreshrate = 3000;
+const temperature_refreshrate = 1000;
 var temperature_ready = false;
 
 function draw_temp() {
