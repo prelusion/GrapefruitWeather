@@ -6,33 +6,33 @@
 // const pressure_refreshrate = 1000;
 // var pressure_ready = false;
 
-function draw_pressure() {
-    if(pressurelist.length == pressure_timeinterval && pressure_timelist.length == pressure_timeinterval){
-        $("#pressure_loading_label").hide();
-        new Chart($("#pressure_chart"), {
-            type: 'line',
-            data: {
-                labels: pressure_timelist,
-                datasets: [{ 
-                    data: pressurelist,
-                    label: "airpressure",
-                    borderColor: "#3e95cd",
-                    fill: true
-                }]
-            },
-            options: {
-                title: {
-                    display: true,
-                    text: "Airpressure"
-                },
-                animation: false
-            }
-        });
-        $("#pressure_time_label").text("Time (realtime): " + pressure_timelist[pressure_timelist.length-1]);
-        $("#pressure_label").text("Airpressure (realtime): " + pressurelist[pressurelist.length-1]);
-        $("#air_timezone").show();
-    }
-}
+// function draw_pressure() {
+//     if(pressurelist.length == pressure_timeinterval && pressure_timelist.length == pressure_timeinterval){
+//         $("#pressure_loading_label").hide();
+//         new Chart($("#pressure_chart"), {
+//             type: 'line',
+//             data: {
+//                 labels: pressure_timelist,
+//                 datasets: [{ 
+//                     data: pressurelist,
+//                     label: "airpressure",
+//                     borderColor: "#3e95cd",
+//                     fill: true
+//                 }]
+//             },
+//             options: {
+//                 title: {
+//                     display: true,
+//                     text: "Airpressure"
+//                 },
+//                 animation: false
+//             }
+//         });
+//         $("#pressure_time_label").text("Time (realtime): " + pressure_timelist[pressure_timelist.length-1]);
+//         $("#pressure_label").text("Airpressure (realtime): " + pressurelist[pressurelist.length-1]);
+//         $("#air_timezone").show();
+//     }
+// }
 
 // function get_pressure_data() {
 //     if(graphAirStations.length != 0) {
@@ -83,14 +83,14 @@ function draw_pressure() {
 // setInterval(refresh_pressure, pressure_refreshrate); 
 
 
-$("#air_timezone").on("click", function() {
-    if($(this).text() === "Local timezone") {
-        $(this).text("Destination timezone");
-        $(this).addClass("btn-danger");
-        $(this).removeClass("btn-success");
-    } else {
-        $(this).text("Local timezone");
-        $(this).addClass("btn-success");
-        $(this).removeClass("btn-danger");
-    }
-});
+// $("#air_timezone").on("click", function() {
+//     if($(this).text() === "Local timezone") {
+//         $(this).text("Destination timezone");
+//         $(this).addClass("btn-danger");
+//         $(this).removeClass("btn-success");
+//     } else {
+//         $(this).text("Local timezone");
+//         $(this).addClass("btn-success");
+//         $(this).removeClass("btn-danger");
+//     }
+// });

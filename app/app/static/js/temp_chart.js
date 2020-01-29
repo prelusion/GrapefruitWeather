@@ -90,8 +90,7 @@ function refresh_temperature() {
     }
 }
 
-setInterval(refresh_temperature, temperature_refreshrate); 
-
+setInterval(plotTemperature, temperatureRefreshrate); 
 
 $("#temperature_timezone").on("click", function() {
     if($(this).text() === "Local timezone") {
@@ -106,5 +105,3 @@ $("#temperature_timezone").on("click", function() {
 });
 
 
-
-setInterval(plotTemperature, temperatureRefreshrate); 
