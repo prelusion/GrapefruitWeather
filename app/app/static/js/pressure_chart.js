@@ -31,8 +31,8 @@ function drawPressureChart(times, pressures) {
         }
     });
     $("#pressure_chart").show();
-    // $("#temp_time_label").text("Time (realtime): " + pressureTimeList[pressureTimeList.length-1]);
-    // $("#temperature_label").text("Temperature (realtime): " + pressureList[pressureList.length-1]);
+    // $("#pressure_time_label").text("Time (realtime): " + pressureTimeList[pressureTimeList.length-1]);
+    // $("#pressure_label").text("Pressure (realtime): " + pressureList[pressureList.length-1]);
 }
 
 function processPressureData(result){
