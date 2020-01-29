@@ -87,7 +87,7 @@ function markerClick(event) {
         } else {
             event.layer.setIcon(weatherstationIcon);
             selectedAirStations = removeValueOutArray(selectedAirStations, event.layer.station_id);
-            setAirStations();
+            // setNewAirStations();
         }
         event.layer.highlighted = false;
     } else {
@@ -102,7 +102,7 @@ function markerClick(event) {
             event.layer.setIcon(weatherstationIconSelected);
             event.layer.highlighted = true;
             selectedAirStations.push(event.layer.station_id);
-            // setAirStations();
+            // setNewAirStations();
         }  
     }
 }
@@ -142,6 +142,16 @@ function deselectMarkers() {
     }
 }
 
+function clearMapOfStations() {
+    deselectMarkers();
+    currentStations = [];
+    for(mark in markers._layers) {
+        if(markers._layers[mark].profile === "station") { 
+            markers.removeLayer(markers._layers[mark]); 
+        }
+    }
+}
+
 function setAirStationsFromAPI(result) {
     for(station in result.data) {
         selectedAirStations.push(result.data[station].id);
@@ -166,20 +176,13 @@ function setAirStationsFromAPI(result) {
             }
         }
     }
-    setNewTempStations(selectedTemperatureStations);
+    // setNewAirStations(selectedTemperatureStations);
 }
 
 function setMapView(latitude, longitude, zoom) {
     map.invalidateSize();
     map.setView([latitude, longitude], zoom);
 }
-
-function getAirStations() {
-    return selectedAirStations;
-}
-// function getTemperatureStations() {
-//     return selectedTemperatureStations;
-// }
 
 function setTemperatureStationsFromAPI(result) {
     for(station in result.data) {

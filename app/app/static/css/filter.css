@@ -14,10 +14,16 @@
 .filter .footer_container .input_container {
     margin-left: 10%;
     width: 80%;
-    margin-top: 10px;
 }
 
-.filter .input_container #filter_button {
+.filter .footer_container .half_input_container {
+    margin-left: 10%;
+    width: 35%;
+    margin-top: 10px;
+    float: left;
+}
+
+.filter .style_button {
     border-radius: 5px;
     cursor: pointer;
     border: 1px solid gold;
@@ -25,6 +31,6 @@
     color: #e2063b;
 }
 
-.filter .input_container #filter_button:hover {
+.filter .style_button:hover {
     background-color: #072768;
 }
