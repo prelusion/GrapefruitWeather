@@ -1,86 +1,88 @@
-// var graphAirStations = [];
-// const pressure_timeinterval = 120;
-// var pressure_call_limit = 120;
-// var pressure_timelist = [];
-// var pressurelist = [];
-// const pressure_refreshrate = 1000;
-// var pressure_ready = false;
+//global vars for history
+var pressureTimeList = [];
+var pressureList = [];
+var graphPressureStations = [];
+var pressureCallLimit = 120;
+var intervalId = null;
+const pressureHistoryInterval = 120;
+const pressureLock = 1000;
+var lock = false;
 
-// function draw_pressure() {
-//     if(pressurelist.length == pressure_timeinterval && pressure_timelist.length == pressure_timeinterval){
-//         $("#pressure_loading_label").hide();
-//         new Chart($("#pressure_chart"), {
-//             type: 'line',
-//             data: {
-//                 labels: pressure_timelist,
-//                 datasets: [{ 
-//                     data: pressurelist,
-//                     label: "airpressure",
-//                     borderColor: "#3e95cd",
-//                     fill: true
-//                 }]
-//             },
-//             options: {
-//                 title: {
-//                     display: true,
-//                     text: "Airpressure"
-//                 },
-//                 animation: false
-//             }
-//         });
-//         $("#pressure_time_label").text("Time (realtime): " + pressure_timelist[pressure_timelist.length-1]);
-//         $("#pressure_label").text("Airpressure (realtime): " + pressurelist[pressurelist.length-1]);
-//     }
-// }
+function drawPressureChart(times, pressures) {
+    $("#pressure_status_label").hide();
+    new Chart($("#pressure_chart"), {
+        type: 'line',
+        data: {
+            labels: times,
+            datasets: [{ 
+                data: pressures,
+                label: "pressure",
+                borderColor: "#091e49",
+                fill: true
+            }]
+        },
+        options: {
+            title: {
+                display: true,
+                text: "pressure"
+            },
+            animation: false,
+            events: []
+        }
+    });
+    $("#pressure_chart").show();
+    // $("#temp_time_label").text("Time (realtime): " + pressureTimeList[pressureTimeList.length-1]);
+    // $("#temperature_label").text("Temperature (realtime): " + pressureList[pressureList.length-1]);
+}
 
-// function get_pressure_data() {
-//     if(graphAirStations.length != 0) {
-//         let pressure_station_string = graphAirStations.join();
-//         $.get("http://127.0.0.1:5000/api/measurements/airpressure?limit=" + pressure_call_limit +"&stations=" + pressure_station_string, function(result) {
-//             if(pressure_timelist.length == 0){
-//                 for(x = pressure_timeinterval - 1; x >= 0; x--){
-//                     pressure_timelist.push(("" + result.data[x][0].substring(17,25)));
-//                     pressurelist.push(result.data[x][1]);
-//                 }
-//                 pressure_call_limit = 1;
-//             } else {
-//                 // if(!result.data[0][0].substring(17,25) == pressure_timelist[pressure_timelist.length - 1]) {
-//                     pressure_timelist.shift();
-//                     pressure_timelist.push("" + result.data[0][0].substring(17,25));
+function processPressureData(result){
+    if(pressureTimeList.length == 0){
+        for(x = pressureHistoryInterval - 1; x >= 0; x--){
+            pressureTimeList.push(("" + result.data[x][0].substring(17,25)));
+            pressureList.push(result.data[x][1]);
+        }
+        pressureCallLimit = 1;
+    } else {
+        // if(!result.data[0][0].substring(17,25) == pressureTimeList[pressureTimeList.length - 1]) {
+            pressureTimeList.shift();
+            pressureTimeList.push("" + result.data[0][0].substring(17,25));
 
-//                     pressurelist.shift();
-//                     pressurelist.push(result.data[0][1]);
-//                 // }
-//             }       
-//         });  
-//     }
-// }     
+            pressureList.shift();
+            pressureList.push(result.data[0][1]);
+        // }
+    }     
+}
 
-// function plot_pressure_graph() {
-//     get_pressure_data();
-//     draw_pressure();    
-// }
+//function is done before api is done
+function plotPressure(apilimit, pressStations) {
+    if(!lock){
+        lock = true;
+        $.get("http://127.0.0.1:5000/api/measurements/airpressure?limit=" + apilimit +"&stations=" + pressStations.join(), 
+            function(result) {
+                console.log(apilimit);
+                processPressureData(result);
+                if(pressureTimeList.length == pressureHistoryInterval && pressureList.length == pressureHistoryInterval){
+                    drawPressureChart(pressureTimeList, pressureList);
+            }
+        }); 
+        lock = false;
+    }else {
+        console.log("lock occured!");
+    }
+}
 
+function setNewAirStations(newstations){
+    console.log("called");
+    //if stations are changed, there is no need to keep downloading and plotting
+    clearInterval(intervalId);
 
-// //Reset all datalists and load new 120 records for new history records
-// function setAirStations() {
-//     graphAirStations = [];
-//     pressure_timelist = [];
-//     pressurelist = [];
-//     pressure_call_limit = 120;
-//     graphAirStations = getAirStations();
-//     plot_pressure_graph();
-//     pressure_ready = true;
-// }
+    graphPressureStations = newstations;
+    pressureTimeList = [];
+    pressureList = [];
+    pressureCallLimit = 120;
 
-// function refresh_pressure() {
-//     if(pressure_ready) {
-//         plot_pressure_graph();
-//     }
-// }
-
-// setInterval(refresh_pressure, pressure_refreshrate); 
-
-
-
-
+    if(graphPressureStations.length != 0){
+        intervalId = setInterval(plotPressure, pressureLock,
+             pressureCallLimit, graphPressureStations);
+    }
+}
