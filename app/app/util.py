@@ -1,4 +1,5 @@
 import csv
+import pytz
 from bisect import bisect_left
 from datetime import timedelta
 from flask import jsonify
@@ -81,3 +82,11 @@ def limit_and_offset(dataset, limit, offset):
             break;
         new_data_set.append(dataset[i + offset])
     return new_data_set
+
+
+def utc_to_local(utc_dt, timezone_name):
+    return pytz.timezone(timezone_name).localize(utc_dt, is_dst=None)
+
+
+def local_to_utc(local_dt):
+    return local_dt.astimezone(pytz.utc)
