@@ -1,6 +1,5 @@
 from flask import current_app as app, request, url_for, redirect, make_response, session
-from flask import render_template
-from flask_login import login_user, UserMixin, login_required
+from flask_login import login_user, login_required
 
 from app import db, get_user
 from flask import render_template, send_from_directory
