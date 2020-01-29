@@ -2,13 +2,14 @@ import os
 from copy import deepcopy
 from logging import getLogger
 
+from flask_login import login_manager
 from geopy import distance
 
 from app import fileaccess
 from app import util
 from app import wsmc
 from app.const import TRACK_CACHE_DIR
-from app.fileaccess import generate_track_distance_cache, get_track_distances
+from app.fileaccess import generate_track_distance_cache, get_track_distances, get_user
 
 logger = getLogger(__name__)
 
@@ -175,5 +176,4 @@ def generate_track_to_station_cache(force=False):
         distances.sort(key=lambda distances: distances[0])
         generate_track_distance_cache(distances, track["id"])
 
-def get_user():
-    return True;
+

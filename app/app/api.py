@@ -1,4 +1,4 @@
-from flask import Blueprint, request, app
+from flask import Blueprint, request, app, session
 from flask_login import login_required, login_manager
 
 from app import db
@@ -180,13 +180,3 @@ def get_timezone():
         return http_format_error("Invalid input")
 
     return http_format_data(timezone)
-
-
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    if request.data[""]
-
-@login_manager.user_loader
-def load_user(user_id):
-    return User.get(user_id)
-
