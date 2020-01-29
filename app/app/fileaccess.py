@@ -1,6 +1,8 @@
 import csv
 import os
 
+from flask_login import UserMixin
+
 from app import const, util
 from app.const import TRACK_CACHE_DIR
 from app.util import csv_to_array_of_dicts
@@ -9,6 +11,7 @@ _stations_data = None
 _tracks_data = None
 _countries_data = None
 _timezones_data = None
+_users_data = None
 _distance_data = {}
 
 
@@ -107,3 +110,35 @@ def get_track_distances(track_id):
                 _distance_data[track_id][row[0]] = row[1]
 
     return _distance_data[track_id]
+
+
+def get_user(user_id=None, username=None):
+    global _users_data
+
+    user_dict = None
+
+    if not _users_data:
+
+        _users_data = {}
+
+        with open(os.path.join(const.DATA_DIR, "users.csv")) as f:
+            user_dict = util.csv_to_array_of_dicts(f)
+
+        for user in user_dict:
+            new_user = UserMixin()
+            new_user.id = user["id"]
+            new_user.username = user["name"]
+            new_user.password = user["password"]
+
+            _users_data[new_user.get_id()] = new_user
+
+    if user_id is None:
+        for user in _users_data.values():
+            if user.username == username:
+                return user
+
+    return _users_data[user_id]
+
+
+
+
