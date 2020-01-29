@@ -80,6 +80,7 @@ function markerClick(event) {
         } else {
             event.layer.setIcon(weatherstationIcon);
             selectedAirStations = removeValueOutArray(selectedAirStations, event.layer.station_id);
+            setAirStations();
         }
         event.layer.highlighted = false;
     } else {
