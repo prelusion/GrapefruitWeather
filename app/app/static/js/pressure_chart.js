@@ -30,6 +30,7 @@
 //         });
 //         $("#pressure_time_label").text("Time (realtime): " + pressure_timelist[pressure_timelist.length-1]);
 //         $("#pressure_label").text("Airpressure (realtime): " + pressurelist[pressurelist.length-1]);
+//         $("#air_timezone").show();
 //     }
 // }
 
@@ -82,5 +83,14 @@
 // setInterval(refresh_pressure, pressure_refreshrate); 
 
 
-
-
+// $("#air_timezone").on("click", function() {
+//     if($(this).text() === "Local timezone") {
+//         $(this).text("Destination timezone");
+//         $(this).addClass("btn-danger");
+//         $(this).removeClass("btn-success");
+//     } else {
+//         $(this).text("Local timezone");
+//         $(this).addClass("btn-success");
+//         $(this).removeClass("btn-danger");
+//     }
+// });

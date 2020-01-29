@@ -25,11 +25,18 @@ function drawTempChart(times, temperatures) {
                 display: true,
                 text: "Temperature"
             },
-            animation: false
+            options: {
+                title: {
+                    display: true,
+                    text: "Temperature"
+                },
+                animation: false
+            }
         }
     });
-    $("#temp_time_label").text("Time (realtime): " + temperatureTimelist[temperatureTimelist.length-1]);
-    $("#temperature_label").text("Temperature (realtime): " + temperaturelist[temperaturelist.length-1]);
+    $("#temp_time_label").text("Time (realtime): " + temperature_timelist[temperature_timelist.length-1]);
+    $("#temperature_label").text("Temperature (realtime): " + temperaturelist[temperaturelist.length-1]);;
+    $("#temperature_timezone").show();
 }
 
 function process_temperature_data(result){
@@ -63,8 +70,6 @@ function plotTemperature() {
         } else {
             console.log("NO STATIONS SELECTED!!");
         }
-    } else {
-        console.log("no permission");
     }
 }
 
@@ -77,4 +82,24 @@ function setNewTempStations(stations){
     plotTemperature();
 }
 
+function refresh_temperature() {
+    if(temperature_ready) {
+        plot_temperature_graph();
+    }
+}
+
 setInterval(plotTemperature, temperatureRefreshrate); 
+
+$("#temperature_timezone").on("click", function() {
+    if($(this).text() === "Local timezone") {
+        $(this).text("Destination timezone");
+        $(this).addClass("btn-danger");
+        $(this).removeClass("btn-success");
+    } else {
+        $(this).text("Local timezone");
+        $(this).addClass("btn-success");
+        $(this).removeClass("btn-danger");
+    }
+});
+
+

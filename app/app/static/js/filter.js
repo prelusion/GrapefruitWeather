@@ -48,7 +48,12 @@ function getStationsFilter(custom = false, custom_latitude, custom_longitude, cu
     if(limit === "") {
         limit = 50;
     }
-    $.get("/api/stations?track_id="+trackID+"&limit="+limit+"&radius="+radius, function(result) {
+
+    let url = "/api/stations?track_id="+trackID+"&limit="+limit
+    if (radius) {
+        url + "&radius=" + radius;
+    }
+    $.get(url, function(result) {
         setAirStationsFromAPI(result);
     });
     $.get("/api/stations?country="+country, function(result) {
