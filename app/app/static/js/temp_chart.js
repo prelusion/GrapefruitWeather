@@ -28,8 +28,8 @@ $(document).ready(function(){
                 events: []
             }
         });
-        $("#temp_time_label").text("Time (realtime): " + timestamplist[timestamplist.length-1]);
-        $("#temperature_label").text("Temperature (realtime): " + templist[templist.length-1]);
+        $("#temp_time_label").text("Time (latest): " + timestamplist[timestamplist.length-1]);
+        $("#temperature_label").text("Temperature (latest): " + templist[templist.length-1]);
     }
     
 
