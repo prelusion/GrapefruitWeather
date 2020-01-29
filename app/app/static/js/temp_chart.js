@@ -32,11 +32,11 @@ function drawTempChart(times, temperatures) {
                 },
                 animation: false
             }
-        });
-        $("#temp_time_label").text("Time (realtime): " + temperature_timelist[temperature_timelist.length-1]);
-        $("#temperature_label").text("Temperature (realtime): " + temperaturelist[temperaturelist.length-1]);;
-        $("#temperature_timezone").show();
-    }
+        }
+    });
+    $("#temp_time_label").text("Time (realtime): " + temperature_timelist[temperature_timelist.length-1]);
+    $("#temperature_label").text("Temperature (realtime): " + temperaturelist[temperaturelist.length-1]);;
+    $("#temperature_timezone").show();
 }
 
 function process_temperature_data(result){
@@ -70,8 +70,6 @@ function plotTemperature() {
         } else {
             console.log("NO STATIONS SELECTED!!");
         }
-    } else {
-        console.log("no permission");
     }
 }
 
