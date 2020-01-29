@@ -3,7 +3,7 @@ const temperature_timeInterval = 120;
 var temperature_call_limit = 120;
 var temperature_timelist = [];
 var temperaturelist = [];
-const temperature_refreshrate = 1000;
+const temperature_refreshrate = 3000;
 var temperature_ready = false;
 
 function draw_temp() {
@@ -36,7 +36,7 @@ function draw_temp() {
 function get_temperature_data() {
     if(graphTempStations.length != 0) {
         let temperature_station_string = graphTempStations.join();
-        $.get("http://127.0.0.1:5000/api/measurements/airpressure?limit=" + temperature_call_limit +"&stations=" + temperature_station_string, function(result) {
+        $.get("/api/measurements/airpressure?limit=" + temperature_call_limit +"&stations=" + temperature_station_string, function(result) {
             if(temperature_timelist.length == 0){
                 for(x = temperature_timeInterval - 1; x >= 0; x--){
                     temperature_timelist.push(("" + result.data[x][0].substring(17,25)));
