@@ -1,8 +1,9 @@
 from flask import Blueprint, request
+
 from app import db
-from app.db import convert_tz
-from app.util import http_format_error, http_format_data
 from app import util
+from app.util import http_format_error, http_format_data
+
 api_bp = Blueprint('api_bp', __name__)
 
 
@@ -64,7 +65,33 @@ def get_stations():
 def get_airpressure_measurements():
     """
     Example: http://127.0.0.1:5000/api/measurements/airpressure?limit=120&stations=93590,589210
+
+
+    To convert measurement timestamps to browser timezone:
+
+        Execute in javascript:
+            offset = new Date().getTimezoneOffset();
+
+        Call timezone api with offset:
+            timezone_id = http://127.0.0.1:5000/api/timezone?offset=<offset>
+
+        Call air pressure api with timezone id:
+            http://127.0.0.1:5000/api/measurements/airpressure?limit=120&stations=93590,589210&timezone=timezone_id
+
+
+    To convert measurement timestamps to F1 circuit timezone:
+
+        Call timezone api with F1 track id:
+            timezone_id = http://127.0.0.1:5000/api/timezone?track_id=<track_id>
+
+        Call air pressure api with timezone id:
+            http://127.0.0.1:5000/api/measurements/airpressure?limit=120&stations=93590,589210&timezone=timezone_id
     """
+
+    def convert_measurement(measurement, timezone):
+        dt, value = measurement
+        return util.utc_to_local(dt, timezone), value
+
     stations = request.args.get("stations", [743700, 93590, 589210])
 
     if isinstance(stations, str):
@@ -76,9 +103,14 @@ def get_airpressure_measurements():
     stations = list(map(int, stations))
     interval = int(request.args.get("interval", 1))
     limit = int(request.args.get("limit", 120))
-    # timezone = int(request.args.get("timezone"))
+    timezone_id = request.args.get("timezone")
 
     measurements = db.get_most_recent_air_pressure_average(stations, limit, interval)
+
+    if timezone_id:
+        timezone = db.get_timezone_by_timezone_id(timezone_id)
+        measurements = list(map(
+            lambda measurement: convert_measurement(measurement, timezone["name"]), measurements))
 
     params = {
         "total": len(measurements),
@@ -109,9 +141,13 @@ def get_timezone():
         offset_hours = offset_mins / 60
         offset_opposite = offset_hours * -1
         offset_times_hundred = offset_opposite * 100
-        offset_rounded = f"0{int(offset_times_hundred)}"
-        converted = f"+{offset_rounded.strip()}" if int(offset_rounded) > 0 else offset_rounded
-        return converted
+        offset_rounded = int(offset_times_hundred)
+        offset_padded = str(offset_rounded).zfill(5 if offset_rounded < 0 else 4)
+
+        if int(offset_rounded) > 0:
+            return "+" + offset_padded
+
+        return offset_padded
 
     station_id = request.args.get("station_id")
     track_id = request.args.get("track_id")

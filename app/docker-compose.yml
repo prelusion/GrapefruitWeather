@@ -7,11 +7,13 @@ services:
           - "5000:5000"
         volumes:
             - "./measurements:/database/measurements"
+        environment:
+            - MEASUREMENTS_DB=/database/measurements
     nfs:
         image: erichough/nfs-server:2.2.1
         privileged: true
         environment:
-            - NFS_EXPORT_0=/nfsshare *(fsid=0,rw)
+            - NFS_EXPORT_0=/nfsshare *(fsid=0,rw,no_root_squash)
         ports:
             - "111:111"
             - "111:111/udp"
