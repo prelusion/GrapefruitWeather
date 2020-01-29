@@ -25,14 +25,15 @@ function drawTempChart(times, temperatures) {
                 display: true,
                 text: "Temperature"
             },
-            animation: false
+            animation: false,
+            events: []
         }
     });
     $("#temp_time_label").text("Time (realtime): " + temperatureTimelist[temperatureTimelist.length-1]);
     $("#temperature_label").text("Temperature (realtime): " + temperaturelist[temperaturelist.length-1]);
 }
 
-function process_temperature_data(result){
+function processTemperatureData(result){
     if(temperatureTimelist.length == 0){
         for(x = chartTimeInterval - 1; x >= 0; x--){
             temperatureTimelist.push(("" + result.data[x][0].substring(17,25)));
@@ -55,13 +56,14 @@ function plotTemperature() {
     if(tempPlotPermission){
         if(graphTempStations.length != 0) {
             $.get("http://127.0.0.1:5000/api/measurements/airpressure?limit=" + temperatureCallLimit +"&stations=" + graphTempStations.join(), function(result) {
-                process_temperature_data(result);
+                processTemperatureData(result);
                 if(temperatureTimelist.length == chartTimeInterval && temperaturelist.length == chartTimeInterval){
                     drawTempChart(temperatureTimelist, temperaturelist);
                 }
             });  
         } else {
             console.log("NO STATIONS SELECTED!!");
+            $("#temperature_chart").hide();
         }
     } else {
         console.log("no permission");
@@ -73,8 +75,9 @@ function setNewTempStations(stations){
     temperatureTimelist = [];
     temperaturelist = [];
     graphTempStations = [];
-    graphTempStations = stations
-    plotTemperature();
+    temperatureCallLimit = 120;
+    graphTempStations = stations;
+    tempPlotPermission = true;
 }
 
 setInterval(plotTemperature, temperatureRefreshrate); 
