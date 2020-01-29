@@ -92,34 +92,6 @@ def get_stations(station_id=None, longitude=None, latitude=None, track_id=None,
     return True, stations
 
 
-def get_most_recent_air_pressure_average(station_ids, limit, interval):
-    result = []
-    offset = 0
-
-    while limit > 0:
-        rawdata = wsmc.load_data_per_file(const.MEASUREMENTS_DIR, offset)
-
-        if len(rawdata) == 0:
-            break
-
-        measurementbytes_generator = wsmc.iterate_dataset_left(rawdata)
-        measurementbytes_generator = wsmc.filter_by_field(
-            measurementbytes_generator, "station_id", station_ids)
-        measurementbytes_generator = wsmc.filter_most_recent(
-            measurementbytes_generator, limit)
-        measurement_generator = wsmc.group_by_timestamp(
-            measurementbytes_generator, interval)
-        newresult = list(
-            wsmc.groups_to_average("air_pressure", measurement_generator))
-
-        result.extend(newresult)
-        limit -= len(newresult)
-
-        offset += 1
-
-    return result
-
-
 def get_timezone_by_station_id(station_id):
     success, result = get_stations(station_id=station_id, timezone=True)
 
@@ -165,3 +137,56 @@ def generate_track_to_station_cache(force=False):
             distances.append((station["id"], _distance))
         distances.sort(key=lambda dist: dist[0])
         fileaccess.generate_track_distance_cache(distances, track["id"])
+
+
+def get_most_recent_air_pressure_average(station_ids, limit, interval):
+    result = []
+    offset = 0
+
+    while limit > 0:
+        rawdata = wsmc.load_data_per_file(const.MEASUREMENTS_DIR, offset)
+
+        if len(rawdata) == 0:
+            break
+
+        measurementbytes_generator = wsmc.iterate_dataset_left(rawdata)
+        measurementbytes_generator = wsmc.filter_by_field(
+            measurementbytes_generator, "station_id", station_ids)
+        measurementbytes_generator = wsmc.filter_most_recent(
+            measurementbytes_generator, limit)
+        measurement_generator = wsmc.group_by_timestamp(
+            measurementbytes_generator, interval)
+        newresult = list(
+            wsmc.groups_to_average("air_pressure", measurement_generator))
+
+        result.extend(newresult)
+        limit -= len(newresult)
+
+        offset += 1
+
+    return result
+
+
+def get_all_measurements(station_ids, fields, hours):
+    result = []
+    offset = 0
+
+    while True:
+        print("offset:", offset)
+        rawdata = wsmc.load_data_per_file(const.MEASUREMENTS_DIR, offset)
+
+        if len(rawdata) == 0:
+            break
+
+        measurementbytes_generator = wsmc.iterate_dataset_left(rawdata)
+        measurementbytes_generator = wsmc.filter_by_field(
+            measurementbytes_generator, "station_id", station_ids)
+        measurementbytes_generator = wsmc.filter_most_recent(
+            measurementbytes_generator, hours * 60 * 60)
+        newresult = list(wsmc.decode_measurement_fields(measurementbytes_generator, fields))
+
+        result.extend(newresult)
+
+        offset += 1
+
+    return result

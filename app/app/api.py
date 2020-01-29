@@ -1,5 +1,5 @@
 from flask import Blueprint, request
-
+import time
 from app import db
 from app import util
 from app.util import http_format_error, http_format_data
@@ -175,3 +175,38 @@ def get_timezone():
         return http_format_error("Invalid input")
 
     return http_format_data(timezone)
+
+
+@api_bp.route('/measurements/export')
+def get_measurements_export():
+    hours = int(request.args.get("hours", 1))
+    fields = request.args.get("fields", ["temperature", "air_pressure"])
+    if isinstance(fields, str):
+        try:
+            fields = fields.split(",")
+        except AttributeError:
+            fields = [fields]
+
+    stations = request.args.get("stations", [743700, 93590, 589210])
+    if isinstance(stations, str):
+        try:
+            stations = stations.split(",")
+        except AttributeError:
+            stations = [stations]
+    stations = list(map(int, stations))
+
+    if "station_id" not in fields:
+        fields.append("station_id")
+
+    tstart = time.time()
+    measurements = db.get_all_measurements(stations, fields, hours)
+    duration = time.time() - tstart
+
+    params = {
+        "total": len(measurements),
+        "hours": hours,
+        "stations": stations,
+        "duration": duration,
+    }
+
+    return http_format_data(measurements, params)
