@@ -16,6 +16,14 @@ function setFilterValues(latitude, longitude, countryID, countryName) {
     $("#country").val(countryName);
 }
 
+$("#zoom_button").on("click", function(){
+    setMapView($("#latitude").val(), $("#longitude").val(), 11);
+});
+
+$("#clear_button").on("click", function(){
+    clearMapOfStations();
+});
+
 function getStationsFilter(custom = false, custom_latitude, custom_longitude, custom_country_id) {
     let trackID = $("#track").val();
     let latitude = (custom === false) ? $("#latitude").val() : custom_latitude;
