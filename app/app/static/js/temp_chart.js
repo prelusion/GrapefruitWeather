@@ -29,7 +29,8 @@ function draw_temp() {
             }
         });
         $("#temp_time_label").text("Time (realtime): " + temperature_timelist[temperature_timelist.length-1]);
-        $("#temperature_label").text("Temperature (realtime): " + temperaturelist[temperaturelist.length-1]);
+        $("#temperature_label").text("Temperature (realtime): " + temperaturelist[temperaturelist.length-1]);;
+        $("#temperature_timezone").show();
     }
 }
 
@@ -82,5 +83,16 @@ function refresh_temperature() {
 setInterval(refresh_temperature, temperature_refreshrate); 
 
 
+$("#temperature_timezone").on("click", function() {
+    if($(this).text() === "Local timezone") {
+        $(this).text("Destination timezone");
+        $(this).addClass("btn-danger");
+        $(this).removeClass("btn-success");
+    } else {
+        $(this).text("Local timezone");
+        $(this).addClass("btn-success");
+        $(this).removeClass("btn-danger");
+    }
+});
 
 

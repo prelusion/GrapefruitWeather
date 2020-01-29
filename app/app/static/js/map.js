@@ -54,7 +54,14 @@ function movingTrigger(event) {
 }
 
 function getCurrentMapCoordsStations(latitude, longitude) {
-    $.get("http://127.0.0.1:5000/api/stations?latitude="+latitude+"&longitude="+longitude+"&limit="+$("#limit").val()+"&range="+$("#range").val(), function(result) {
+    let url = "http://127.0.0.1:5000/api/stations?latitude="+latitude+"&longitude="+longitude;
+    if($("#limit").val()) {
+        url + "&limit=" + $("#limit").val(); 
+    }
+    if($("#range").val()) {
+        url + "&range=" + $("#range").val();
+    }
+    $.get(url, function(result) {
         for(station in result.data) {
             if(!currentStations.includes(result.data[station].id)) {
                 currentStations.push(result.data[station].id);
@@ -76,7 +83,7 @@ function markerClick(event) {
         if(event.layer.profile === "track") {
             deselectMarkers();
             event.layer.setIcon(racetrackIcon);
-            setTemperatureStations();
+            // setTemperatureStations();
         } else {
             event.layer.setIcon(weatherstationIcon);
             selectedAirStations = removeValueOutArray(selectedAirStations, event.layer.station_id);
@@ -94,7 +101,7 @@ function markerClick(event) {
             event.layer.setIcon(weatherstationIconSelected);
             event.layer.highlighted = true;
             selectedAirStations.push(event.layer.station_id);
-            setAirStations();
+            // setAirStations();
         }  
     }
 }
@@ -137,7 +144,7 @@ function deselectMarkers() {
 function setAirStationsFromAPI(result) {
     for(station in result.data) {
         selectedAirStations.push(result.data[station].id);
-        if(!currentStations.includes(result.data[station].id)){
+        if(!currentStations.includes(result.data[station].id)) {    
             currentStations.push(result.data[station].id);
 
             let marker = L.marker([result.data[station].latitude, result.data[station].longitude], {icon: weatherstationIconSelected} ).addTo(markers)
@@ -158,7 +165,7 @@ function setAirStationsFromAPI(result) {
             }
         }
     }
-    setAirStations();
+    // setAirStations();
 }
 
 function setMapView(latitude, longitude, zoom) {
