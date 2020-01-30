@@ -1,105 +1,86 @@
-//global vars for history
-var temperatureTimelist = [];
-var temperaturelist = [];
-var graphTempStations = [];
-var temperatureCallLimit = 120;
-var tempPlotPermission = false;
-const chartTimeInterval = 120;
-const temperatureRefreshrate = 1000;
+$(document).ready((function(){
 
-function drawTempChart(times, temperatures) {
-    $("#temp_status_label").hide();
-    new Chart($("#temperature_chart"), {
-        type: 'line',
-        data: {
-            labels: times,
-            datasets: [{ 
-                data: temperatures,
-                label: "Temperature",
-                borderColor: "#091e49",
-                fill: true
-            }]
-        },
-        options: {
-            title: {
-                display: true,
-                text: "Temperature"
+    timestamplist = [];
+    templist = [];
+
+    $("#temp_status_label").show();
+
+    function plot(timestamps, temperature){
+        $("#temp_status_label").hide();
+        var myLineChart = new Chart($("#temperature_chart"), {
+            type: 'line',
+            data: {
+                labels: timestamps,
+                datasets: [{ 
+                    data: temperature,
+                    label: "temperature",
+                    borderColor: "#3e95cd",
+                    fill: true
+                }]
+
             },
             options: {
                 title: {
                     display: true,
                     text: "Temperature"
                 },
-                animation: false
+                animation: false,
+                events: []
+            }
+        });
+        $("#temp_time_label").text("Time (latest): " + timestamplist[timestamplist.length-1]);
+        $("#temperature_label").text("Temperature (latest): " + templist[templist.length-1]);
+    }
+
+    function generator() {
+        var hours = new Date().getHours();
+        var minutes = new Date().getMinutes();
+        var seconds = new Date().getSeconds();
+
+        function convert_time(input){
+            if(input < 10){
+                return "0" + input;
+            } else {
+                return ""+ input;
             }
         }
-    });
-    $("#temp_time_label").text("Time (realtime): " + temperature_timelist[temperature_timelist.length-1]);
-    $("#temperature_label").text("Temperature (realtime): " + temperaturelist[temperaturelist.length-1]);;
-    $("#temperature_timezone").show();
-}
 
-function process_temperature_data(result){
-    if(temperatureTimelist.length == 0){
-        for(x = chartTimeInterval - 1; x >= 0; x--){
-            temperatureTimelist.push(("" + result.data[x][0].substring(17,25)));
-            temperaturelist.push(result.data[x][1]);
+        function createTimeStamp(){
+            return convert_time(hours) + ":" + convert_time(minutes) + ":" + convert_time(seconds);
         }
-        temperatureCallLimit = 1;
-        tempPlotPermission = true;
-    } else {
-        // if(!result.data[0][0].substring(17,25) == temperatureTimelist[temperatureTimelist.length - 1]) {
-            temperatureTimelist.shift();
-            temperatureTimelist.push("" + result.data[0][0].substring(17,25));
 
-            temperaturelist.shift();
-            temperaturelist.push(result.data[0][1]);
-        // }
-    }     
-}
-
-function plotTemperature() {
-    if(tempPlotPermission){
-        if(graphTempStations.length != 0) {
-            $.get("/api/measurements/airpressure?limit=" + temperatureCallLimit +"&stations=" + graphTempStations.join(), function(result) {
-                process_temperature_data(result);
-                if(temperatureTimelist.length == chartTimeInterval && temperaturelist.length == chartTimeInterval){
-                    drawTempChart(temperatureTimelist, temperaturelist);
-                }
-            });  
-        } else {
-            console.log("NO STATIONS SELECTED!!");
+        function list_generator(list, data) {
+            if(list.length == 6){
+                list.shift();
+                list[5] = data;
+                return list;
+            } else {
+                list.push(data);
+                return list;
+            }
         }
+
+        var time = list_generator(timestamplist, createTimeStamp());
+        var data = list_generator(templist, Math.floor((Math.random() * 1.1) + 15));
+
+        plot(time, data);
     }
-}
 
-function setNewTempStations(stations){
-    tempPlotPermission = false;
-    temperatureTimelist = [];
-    temperaturelist = [];
-    graphTempStations = [];
-    graphTempStations = stations
-    plotTemperature();
-}
+    setInterval(generator, 1000);
+})());
 
-function refresh_temperature() {
-    if(temperature_ready) {
-        plot_temperature_graph();
-    }
-}
+function setNewTempStations(parameter) {}
 
-setInterval(plotTemperature, temperatureRefreshrate); 
-
-$("#temperature_timezone").on("click", function() {
-    if($(this).text() === "Local timezone") {
-        $(this).text("Destination timezone");
-        $(this).addClass("btn-danger");
-        $(this).removeClass("btn-success");
-    } else {
-        $(this).text("Local timezone");
-        $(this).addClass("btn-success");
-        $(this).removeClass("btn-danger");
-    }
-});
+// $("#temperature_timezone").on("click", function() {
+//     if($(this).text() === "Local timezone") {
+//         $(this).text("Destination timezone");
+//         $(this).addClass("btn-danger");
+//         $(this).removeClass("btn-success");
+//     } else {
+//         $(this).text("Local timezone");
+//         $(this).addClass("btn-success");
+//         $(this).removeClass("btn-danger");
+//     }
+// });
 
 
