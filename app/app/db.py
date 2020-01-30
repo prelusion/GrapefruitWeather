@@ -95,7 +95,7 @@ def get_stations(station_id=None, longitude=None, latitude=None, track_id=None,
 def get_most_recent_air_pressure_average(station_ids, limit, interval):
     result = []
     offset = 0
-    extension = weatherdata.WSMC_EXTENSION\
+    extension = weatherdata.WSMC_EXTENSION
 
     while limit > 0:
         data = weatherdata.load_data_per_file(const.MEASUREMENTS_DIR, offset, extension)
@@ -103,13 +103,19 @@ def get_most_recent_air_pressure_average(station_ids, limit, interval):
         if len(data) == 0:
             break
 
-        measurementbytes_generator = weatherdata.iterate_dataset_left(data)
+        measurementbytes_generator = weatherdata.iterate_dataset_left(data, extension)
+        # for i, measurementbytes in enumerate(measurementbytes_generator):
+        #     if i == 2:
+        #         break
+        #     measurement = weatherdata.decode_measurement(measurementbytes, extension)
+        #     print(measurement)
+        # return jsonify({status: 200})
         measurementbytes_generator = weatherdata.filter_by_field(
             measurementbytes_generator, "station_id", station_ids, extension)
         measurementbytes_generator = weatherdata.filter_most_recent(
             measurementbytes_generator, limit, extension)
         measurement_generator = weatherdata.group_by_timestamp(
-            measurementbytes_generator, interval)
+            measurementbytes_generator, interval, extension)
         newresult = list(
             weatherdata.groups_to_average("air_pressure", measurement_generator))
 
@@ -171,20 +177,20 @@ def generate_track_to_station_cache(force=False):
 def get_all_measurements(station_ids, fields, hours):
     result = []
     offset = 0
-
+    extension = weatherdata.WSMC_EXTENSION
     while True:
         print("offset:", offset)
-        rawdata = weatherdata.load_data_per_file(const.MEASUREMENTS_DIR, offset)
+        rawdata = weatherdata.load_data_per_file(const.MEASUREMENTS_DIR, offset, extension)
 
         if len(rawdata) == 0:
             break
 
-        measurementbytes_generator = weatherdata.iterate_dataset_left(rawdata)
+        measurementbytes_generator = weatherdata.iterate_dataset_left(rawdata, extension)
         measurementbytes_generator = weatherdata.filter_by_field(
-            measurementbytes_generator, "station_id", station_ids)
+            measurementbytes_generator, "station_id", station_ids, extension)
         measurementbytes_generator = weatherdata.filter_most_recent(
-            measurementbytes_generator, hours * 60 * 60)
-        newresult = list(weatherdata.decode_measurement_fields(measurementbytes_generator, fields))
+            measurementbytes_generator, hours * 60 * 60, extension)
+        newresult = list(weatherdata.decode_measurement_fields(measurementbytes_generator, fields, extension))
 
         result.extend(newresult)
 

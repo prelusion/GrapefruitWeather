@@ -16,7 +16,7 @@ from app import util
 MAX_CHUNKSIZE = 100000000  # 100 MB
 
 WSMC_EXTENSION = ".wsmc"
-WSAMC_EXTENSION = ".wsamc"
+WSAMC_EXTENSION = ".wmsc"
 
 extformat = {
     WSMC_EXTENSION: {
@@ -87,14 +87,15 @@ extformat = {
     }
 }
 
+measurement_byte_count = {
+    WSMC_EXTENSION: sum(extformat[WSMC_EXTENSION]["bytecount"].values()),
+    WSAMC_EXTENSION: sum(extformat[WSAMC_EXTENSION]["bytecount"].values())
+}
 
-WSMC_MEASUREMENT_BYTE_COUNT = sum(extformat[WSMC_EXTENSION]["bytecount"].values())
-WSAMC_MEASUREMENT_BYTE_COUNT = sum(extformat[WSAMC_EXTENSION]["bytecount"].values())
 
-
-def determine_chunksize(prefsize=500000):
-    chunks = math.trunc(prefsize / WSMC_MEASUREMENT_BYTE_COUNT)
-    return chunks * WSMC_MEASUREMENT_BYTE_COUNT
+def determine_chunksize(extension, prefsize=500000):
+    chunks = math.trunc(prefsize / measurement_byte_count[extension])
+    return chunks * measurement_byte_count[extension]
 
 
 def get_files(datadir, extension):
@@ -127,10 +128,10 @@ def load_data_per_file(datadir, offset, extension):
         raise RuntimeError(
             f"Unable to load file with a size greater than max chunk size: {MAX_CHUNKSIZE}")
 
-    return read_file(filepath)
+    return read_file(filepath, extension)
 
 
-def load_data_per_chunk(chunksize, offset):
+def load_data_per_chunk(chunksize, offset, extension):
     """ DEPRECATED: Please use load_data_per_file instead.
     Based on most recent benchmarks, loading data per file performs better
     than loading data per chunk.
@@ -140,10 +141,10 @@ def load_data_per_chunk(chunksize, offset):
     :param chunksize: preferred amount of bytes loaded into memory
     :return: data in bytes
     """
-    return _load_data_per_chunk(determine_chunksize(chunksize), offset)
+    return _load_data_per_chunk(determine_chunksize(extension, chunksize), offset)
 
 
-def _load_data_per_chunk(chunksize, offset):
+def _load_data_per_chunk(chunksize, offset, extension):
     skipbytes = offset * chunksize
     spaceleft = chunksize
     files = get_files()
@@ -153,7 +154,7 @@ def _load_data_per_chunk(chunksize, offset):
     if index < 0:
         return []
 
-    while index >= 0 and spaceleft > WSMC_MEASUREMENT_BYTE_COUNT:
+    while index >= 0 and spaceleft > measurement_byte_count[extension]:
         filename, filepath = files[index]
         size = os.path.getsize(filepath)
 
@@ -170,7 +171,7 @@ def _load_data_per_chunk(chunksize, offset):
     return totaldata
 
 
-def read_file(filepath, bytecount=None, skipbytes=None):
+def read_file(filepath, extension, bytecount=None, skipbytes=None):
     """ Reads a .wsmc file into memory.
     This function also checks that the file does not include corrupt measurements.
     :param filepath: path to .wsmc file
@@ -186,7 +187,7 @@ def read_file(filepath, bytecount=None, skipbytes=None):
         else:
             data = f.read()
 
-    if len(data) % WSMC_MEASUREMENT_BYTE_COUNT != 0:
+    if len(data) % measurement_byte_count[extension] != 0:
         raise Exception("wsmc file is corrupt")
 
     return data
@@ -218,6 +219,7 @@ def decode_measurement(bindata, extension, skipfields=None):
 
     for field, bytecount in extformat[extension]["bytecount"].items():
         if skipfields and field in skipfields:
+            i += bytecount
             continue
         measurement[field] = decode_field(field, bindata[i:i + bytecount])
         i += bytecount
@@ -225,17 +227,17 @@ def decode_measurement(bindata, extension, skipfields=None):
     return measurement
 
 
-def iterate_dataset_left(data):
+def iterate_dataset_left(data, extension):
     """ Each iteration the value of the given fieldname is yielded. """
     i = len(data)
     while i > 0:
-        measurementaddr = (i - WSMC_MEASUREMENT_BYTE_COUNT)
-        yield data[measurementaddr:measurementaddr + WSMC_MEASUREMENT_BYTE_COUNT]
-        i -= WSMC_MEASUREMENT_BYTE_COUNT
+        measurementaddr = (i - measurement_byte_count[extension])
+        yield data[measurementaddr:measurementaddr + measurement_byte_count[extension]]
+        i -= measurement_byte_count[extension]
 
 
 def filter_by_field(measurementbytes_generator, fieldname, values, extension):
-    fieldaddr = extformat[extension]["bytestart"][fieldname]
+    fieldaddr = extformat[extension]["startbyte"][fieldname]
     field_bc = extformat[extension]["bytecount"][fieldname]
 
     for measurementbytes in measurementbytes_generator:
@@ -247,7 +249,7 @@ def filter_by_field(measurementbytes_generator, fieldname, values, extension):
 
 
 def filter_by_timestamp(measurementbytes_generator, dt1, dt2, extension):
-    fieldaddr = extformat[extension]["bytestart"]["timestamp"]
+    fieldaddr = extformat[extension]["startbyte"]["timestamp"]
     field_bc = extformat[extension]["bytecount"]["timestamp"]
 
     for measurementbytes in measurementbytes_generator:
@@ -261,7 +263,7 @@ def filter_by_timestamp(measurementbytes_generator, dt1, dt2, extension):
 
 
 def filter_most_recent(measurementbytes_generator, seconds, extension):
-    fieldaddr = extformat[extension]["bytestart"]["timestamp"]
+    fieldaddr = extformat[extension]["startbyte"]["timestamp"]
     field_bc = extformat[extension]["bytecount"]["timestamp"]
     first = None
 
@@ -278,12 +280,12 @@ def filter_most_recent(measurementbytes_generator, seconds, extension):
         yield timestamp, measurementbytes
 
 
-def group_by_timestamp(measurementbytes_generator, interval):
+def group_by_timestamp(measurementbytes_generator, interval, extension):
     measurements = []
     currtimestamp = None
 
     for timestamp, measurementbytes in measurementbytes_generator:
-        measurement = decode_measurement(measurementbytes, skipfields=["timestamp"])
+        measurement = decode_measurement(measurementbytes, extension, skipfields=["timestamp"])
         measurement["timestamp"] = timestamp
 
         if not currtimestamp:
@@ -311,7 +313,7 @@ def decode_measurement_fields(measurementbytes_generator, fields, extension):
         for field in fields:
             if field == "timestamp":
                 continue
-            fieldaddr = extformat[extension]["bytestart"][field]
+            fieldaddr = extformat[extension]["startbyte"][field]
             field_bc = extformat[extension]["bytecount"][field]
             bytevalue = measurementbytes[fieldaddr:fieldaddr + field_bc]
             measurement[field] = decode_field(field, bytevalue)
