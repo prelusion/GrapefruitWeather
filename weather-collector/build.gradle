@@ -18,6 +18,8 @@ dependencies {
     compile group: 'com.google.guava', name: 'guava', version: '28.1-jre'
     compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.30'
     compile group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.30'
+    compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.9'
+
 }
 
 jar {

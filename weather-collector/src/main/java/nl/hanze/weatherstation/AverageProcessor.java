@@ -1,10 +1,11 @@
 package nl.hanze.weatherstation;
 
+import com.google.common.util.concurrent.Futures;
 import lombok.val;
 import nl.hanze.weatherstation.models.AverageMeasurement;
 import nl.hanze.weatherstation.models.Measurement;
-import org.slf4j.LoggerFactory;
 
+import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -13,15 +14,18 @@ import java.util.Queue;
 
 public class AverageProcessor implements Runnable {
     private final Queue<Measurement> measurementAverageQueue;
+    private final Queue<Measurement> measurementAverageLoadQueue;
     private final HashMap<Integer, List<AverageMeasurement>> measurementAverages;
     private final FileAverageHandler fileAverageHandler;
 
     public AverageProcessor(
             Queue<Measurement> measurementAverageQueue,
+            Queue<Measurement> measurementAverageLoadQueue,
             HashMap<Integer, List<AverageMeasurement>> measurementAverages,
             FileAverageHandler fileAverageHandler
     ) {
         this.measurementAverageQueue = measurementAverageQueue;
+        this.measurementAverageLoadQueue = measurementAverageLoadQueue;
         this.measurementAverages = measurementAverages;
         this.fileAverageHandler = fileAverageHandler;
     }
@@ -37,33 +41,51 @@ public class AverageProcessor implements Runnable {
         }
     }
 
+    private AverageMeasurement getAverage(int stationId, LocalDateTime date) {
+        if (measurementAverages.containsKey(stationId)) {
+            for (AverageMeasurement averageMeasurement: measurementAverages.get(stationId)) {
+                if (averageMeasurement.getDate().isEqual(date.truncatedTo(ChronoUnit.HOURS))) {
+                    return averageMeasurement;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private AverageMeasurement loadAverage(int stationId, LocalDateTime date) {
+        if (measurementAverages.containsKey(stationId)) {
+            for (AverageMeasurement averageMeasurement: measurementAverages.get(stationId)) {
+                if (averageMeasurement.getDate().isEqual(date.truncatedTo(ChronoUnit.HOURS))) {
+                    return averageMeasurement;
+                }
+            }
+        } else {
+            measurementAverages.put(stationId, new ArrayList<>());
+        }
+
+        AverageMeasurement averageMeasurement = fileAverageHandler.loadAverageFromFileSystem(stationId, date);
+
+        if (averageMeasurement == null) {
+            averageMeasurement = new AverageMeasurement(date);
+        }
+
+        measurementAverages.get(stationId).add(averageMeasurement);
+
+        return averageMeasurement;
+    }
+
     private void process() {
         synchronized (measurementAverages) {
             Measurement measurement;
             while ((measurement = measurementAverageQueue.poll()) != null) {
-                Measurement finalMeasurement = measurement;
-                if (!measurementAverages.containsKey(measurement.getStationId())) {
-                    measurementAverages.put(measurement.getStationId(), new ArrayList<>());
+                val average = getAverage(measurement.getStationId(), measurement.getTimestamp());
+
+                if (average != null) {
+                    average.addMeasurement(measurement);
+                } else {
+                    measurementAverageLoadQueue.offer(measurement);
                 }
-
-                AverageMeasurement averageMeasurement = measurementAverages.get(measurement.getStationId())
-                        .stream()
-                        .filter(a -> a.getDate().isEqual(finalMeasurement.getTimestamp().truncatedTo(ChronoUnit.HOURS)))
-                        .findFirst()
-                        .orElse(null);
-
-                if (averageMeasurement == null) {
-                    averageMeasurement = fileAverageHandler.loadAverageFromFileSystem(measurement.getStationId(), measurement.getTimestamp());
-                    if (averageMeasurement != null) {
-                        measurementAverages.get(measurement.getStationId()).add(averageMeasurement);
-                    }
-                }
-
-                if (averageMeasurement == null) {
-                    measurementAverages.get(measurement.getStationId()).add(averageMeasurement = new AverageMeasurement(finalMeasurement.getTimestamp()));
-                }
-
-                averageMeasurement.addMeasurement(measurement);
             }
         }
     }
