@@ -213,11 +213,13 @@ def decode_field(field, data):
         raise ValueError("Unnown field")
 
 
-def decode_measurement(bindata):
+def decode_measurement(bindata, skipfields=None):
     measurement = OrderedDict()
     i = 0
 
     for field, bytecount in WSMC_PROTOCOL_FORMAT_BC.items():
+        if skipfields and field in skipfields:
+            continue
         measurement[field] = decode_field(field, bindata[i:i + bytecount])
         i += bytecount
 
@@ -274,16 +276,16 @@ def filter_most_recent(measurementbytes_generator, seconds):
         if timestamp < first - datetime.timedelta(seconds=seconds):
             break
 
-        yield measurementbytes
+        yield timestamp, measurementbytes
 
 
 def group_by_timestamp(measurementbytes_generator, interval):
     measurements = []
     currtimestamp = None
 
-    for measurementbytes in measurementbytes_generator:
-        measurement = decode_measurement(measurementbytes)
-        timestamp = measurement["timestamp"]
+    for timestamp, measurementbytes in measurementbytes_generator:
+        measurement = decode_measurement(measurementbytes, skipfields=["timestamp"])
+        measurement["timestamp"] = timestamp
 
         if not currtimestamp:
             currtimestamp = timestamp
@@ -301,3 +303,17 @@ def groups_to_average(fieldname, measurement_generator):
     for measurements in measurement_generator:
         temperatures = [measurement[fieldname] for measurement in measurements]
         yield measurements[0]["timestamp"], round(util.avg(temperatures), 2)
+
+
+def decode_measurement_fields(measurementbytes_generator, fields):
+    for timestamp, measurementbytes in measurementbytes_generator:
+        measurement = OrderedDict()
+        measurement["timestamp"] = timestamp
+        for field in fields:
+            if field == "timestamp":
+                continue
+            fieldaddr = WSMC_PROTOCOL_FORMAT_BS[field]
+            field_bc = WSMC_PROTOCOL_FORMAT_BS[field]
+            bytevalue = measurementbytes[fieldaddr:fieldaddr + field_bc]
+            measurement[field] = decode_field(field, bytevalue)
+        yield measurement

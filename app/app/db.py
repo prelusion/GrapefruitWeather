@@ -4,7 +4,8 @@ from logging import getLogger
 
 from geopy import distance
 
-from app import const, weatherdata
+from app import const
+from app import weatherdata
 from app import fileaccess
 from app import util
 
@@ -167,3 +168,26 @@ def generate_track_to_station_cache(force=False):
         fileaccess.generate_track_distance_cache(distances, track["id"])
 
 
+def get_all_measurements(station_ids, fields, hours):
+    result = []
+    offset = 0
+
+    while True:
+        print("offset:", offset)
+        rawdata = weatherdata.load_data_per_file(const.MEASUREMENTS_DIR, offset)
+
+        if len(rawdata) == 0:
+            break
+
+        measurementbytes_generator = weatherdata.iterate_dataset_left(rawdata)
+        measurementbytes_generator = weatherdata.filter_by_field(
+            measurementbytes_generator, "station_id", station_ids)
+        measurementbytes_generator = weatherdata.filter_most_recent(
+            measurementbytes_generator, hours * 60 * 60)
+        newresult = list(weatherdata.decode_measurement_fields(measurementbytes_generator, fields))
+
+        result.extend(newresult)
+
+        offset += 1
+
+    return result
