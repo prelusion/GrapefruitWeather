@@ -136,8 +136,10 @@ def get_user(user_id=None, username=None):
         for user in _users_data.values():
             if user.username == username:
                 return user
-
-    return _users_data[user_id]
+    if user_id in _users_data:
+        return _users_data[user_id]
+    else:
+        return False
 
 
 
