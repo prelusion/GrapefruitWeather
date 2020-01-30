@@ -69,7 +69,6 @@ function getStationsFilter(custom = false, custom_latitude, custom_longitude, cu
     if (radius > 0) {
         url = url + "&radius=" + radius;
     }
-    console.log(url);
     $.get(url, function(result) {
         setAirStationsFromAPI(result);
     });
