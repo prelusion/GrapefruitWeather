@@ -3,6 +3,7 @@ import pytz
 from bisect import bisect_left
 from datetime import timedelta
 from flask import jsonify
+from passlib.hash import argon2
 
 
 def avg(lst):
@@ -90,3 +91,7 @@ def utc_to_local(utc_dt, timezone_name):
 
 def local_to_utc(local_dt):
     return local_dt.astimezone(pytz.utc)
+
+
+def encrypt(var):
+    return argon2.encrypt(var)
