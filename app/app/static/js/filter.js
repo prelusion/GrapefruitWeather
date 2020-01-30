@@ -25,7 +25,7 @@ $("#clear_button").on("click", function(){
 });
 
 $("#limit").on("input", function(){
-    if($(this).val() > 500) {
+    if($(this).val() > 300) {
         $(this).popover('show')
     } else {
         $(this).popover('hide')
