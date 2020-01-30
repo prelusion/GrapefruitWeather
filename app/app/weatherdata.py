@@ -18,79 +18,78 @@ MAX_CHUNKSIZE = 100000000  # 100 MB
 WSMC_EXTENSION = ".wsmc"
 WSAMC_EXTENSION = ".wsamc"
 
-# Byte count for each field within a measurement
-WSMC_PROTOCOL_FORMAT_BC = OrderedDict({
-    "station_id": 3,
-    "timestamp": 4,
-    "null_indication": 2,
-    "temperature": 3,
-    "dew_point": 3,
-    "air_pressure": 3,
-    "sea_air_pressure": 3,
-    "visibility": 2,
-    "air_speed": 2,
-    "rainfall": 3,
-    "snowfall": 2,
-    "events": 1,
-    "cloud_pct": 2,
-    "wind_direction": 2,
-})
+extformat = {
+    WSMC_EXTENSION: {
+        "bytecount": OrderedDict({
+            "station_id": 3,
+            "timestamp": 4,
+            "null_indication": 2,
+            "temperature": 3,
+            "dew_point": 3,
+            "air_pressure": 3,
+            "sea_air_pressure": 3,
+            "visibility": 2,
+            "air_speed": 2,
+            "rainfall": 3,
+            "snowfall": 2,
+            "events": 1,
+            "cloud_pct": 2,
+            "wind_direction": 2,
+        }),
+        "startbyte": OrderedDict({
+            "station_id": 0,
+            "timestamp": 3,
+            "null_indication": 7,
+            "temperature": 9,
+            "dew_point": 12,
+            "air_pressure": 15,
+            "sea_air_pressure": 18,
+            "visibility": 21,
+            "air_speed": 23,
+            "rainfall": 25,
+            "snowfall": 28,
+            "events": 30,
+            "cloud_pct": 31,
+            "wind_direction": 33,
+        })
+    },
+    WSAMC_EXTENSION: {
+        "bytecount": OrderedDict({
+            "station_id": 3,
+            "timestamp": 4,
+            "count": 2,
+            "temperature": 3,
+            "dew_point": 3,
+            "air_pressure": 3,
+            "sea_air_pressure": 3,
+            "visibility": 2,
+            "air_speed": 2,
+            "rainfall": 3,
+            "snowfall": 3,
+            "cloud_pct": 2,
+            "wind_direction": 2,
+        }),
+        "startbyte": OrderedDict({
+            "station_id": 0,
+            "timestamp": 3,
+            "count": 7,
+            "temperature": 9,
+            "dew_point": 12,
+            "air_pressure": 15,
+            "sea_air_pressure": 18,
+            "visibility": 21,
+            "air_speed": 23,
+            "rainfall": 25,
+            "snowfall": 28,
+            "cloud_pct": 31,
+            "wind_direction": 33,
+        })
+    }
+}
 
-# Starting byte for each field within a measurement
-WSMC_PROTOCOL_FORMAT_BS = OrderedDict({
-    "station_id": 0,
-    "timestamp": 3,
-    "null_indication": 7,
-    "temperature": 9,
-    "dew_point": 12,
-    "air_pressure": 15,
-    "sea_air_pressure": 18,
-    "visibility": 21,
-    "air_speed": 23,
-    "rainfall": 25,
-    "snowfall": 28,
-    "events": 30,
-    "cloud_pct": 31,
-    "wind_direction": 33,
-})
 
-WSMC_MEASUREMENT_BYTE_COUNT = sum(WSMC_PROTOCOL_FORMAT_BC.values())
-
-# Byte count for each field within an average measurement
-WSAMC_PROTOCOL_FORMAT_BC = OrderedDict({
-    "station_id": 3,
-    "timestamp": 4,
-    "count": 2,
-    "temperature": 3,
-    "dew_point": 3,
-    "air_pressure": 3,
-    "sea_air_pressure": 3,
-    "visibility": 2,
-    "air_speed": 2,
-    "rainfall": 3,
-    "snowfall": 3,
-    "cloud_pct": 2,
-    "wind_direction": 2,
-})
-
-# Starting byte for each field within an average measurement
-WSAMC_PROTOCOL_FORMAT_BS = OrderedDict({
-    "station_id": 0,
-    "timestamp": 3,
-    "count": 7,
-    "temperature": 9,
-    "dew_point": 12,
-    "air_pressure": 15,
-    "sea_air_pressure": 18,
-    "visibility": 21,
-    "air_speed": 23,
-    "rainfall": 25,
-    "snowfall": 28,
-    "cloud_pct": 31,
-    "wind_direction": 33,
-})
-
-WSAMC_MEASUREMENT_BYTE_COUNT = sum(WSAMC_PROTOCOL_FORMAT_BC.values())
+WSMC_MEASUREMENT_BYTE_COUNT = sum(extformat[WSMC_EXTENSION]["bytecount"].values())
+WSAMC_MEASUREMENT_BYTE_COUNT = sum(extformat[WSAMC_EXTENSION]["bytecount"].values())
 
 
 def determine_chunksize(prefsize=500000):
@@ -213,11 +212,11 @@ def decode_field(field, data):
         raise ValueError("Unnown field")
 
 
-def decode_measurement(bindata, skipfields=None):
+def decode_measurement(bindata, extension, skipfields=None):
     measurement = OrderedDict()
     i = 0
 
-    for field, bytecount in WSMC_PROTOCOL_FORMAT_BC.items():
+    for field, bytecount in extformat[extension]["bytecount"].items():
         if skipfields and field in skipfields:
             continue
         measurement[field] = decode_field(field, bindata[i:i + bytecount])
@@ -235,9 +234,9 @@ def iterate_dataset_left(data):
         i -= WSMC_MEASUREMENT_BYTE_COUNT
 
 
-def filter_by_field(measurementbytes_generator, fieldname, values):
-    fieldaddr = WSMC_PROTOCOL_FORMAT_BS[fieldname]
-    field_bc = WSMC_PROTOCOL_FORMAT_BC[fieldname]
+def filter_by_field(measurementbytes_generator, fieldname, values, extension):
+    fieldaddr = extformat[extension]["bytestart"][fieldname]
+    field_bc = extformat[extension]["bytecount"][fieldname]
 
     for measurementbytes in measurementbytes_generator:
         bytevalue = measurementbytes[fieldaddr:fieldaddr + field_bc]
@@ -247,9 +246,9 @@ def filter_by_field(measurementbytes_generator, fieldname, values):
             yield measurementbytes
 
 
-def filter_by_timestamp(measurementbytes_generator, dt1, dt2):
-    fieldaddr = WSMC_PROTOCOL_FORMAT_BS["timestamp"]
-    field_bc = WSMC_PROTOCOL_FORMAT_BC["timestamp"]
+def filter_by_timestamp(measurementbytes_generator, dt1, dt2, extension):
+    fieldaddr = extformat[extension]["bytestart"]["timestamp"]
+    field_bc = extformat[extension]["bytecount"]["timestamp"]
 
     for measurementbytes in measurementbytes_generator:
         bytevalue = measurementbytes[fieldaddr:fieldaddr + field_bc]
@@ -261,9 +260,9 @@ def filter_by_timestamp(measurementbytes_generator, dt1, dt2):
             break
 
 
-def filter_most_recent(measurementbytes_generator, seconds):
-    fieldaddr = WSMC_PROTOCOL_FORMAT_BS["timestamp"]
-    field_bc = WSMC_PROTOCOL_FORMAT_BC["timestamp"]
+def filter_most_recent(measurementbytes_generator, seconds, extension):
+    fieldaddr = extformat[extension]["bytestart"]["timestamp"]
+    field_bc = extformat[extension]["bytecount"]["timestamp"]
     first = None
 
     for measurementbytes in measurementbytes_generator:
@@ -305,15 +304,15 @@ def groups_to_average(fieldname, measurement_generator):
         yield measurements[0]["timestamp"], round(util.avg(temperatures), 2)
 
 
-def decode_measurement_fields(measurementbytes_generator, fields):
+def decode_measurement_fields(measurementbytes_generator, fields, extension):
     for timestamp, measurementbytes in measurementbytes_generator:
         measurement = OrderedDict()
         measurement["timestamp"] = timestamp
         for field in fields:
             if field == "timestamp":
                 continue
-            fieldaddr = WSMC_PROTOCOL_FORMAT_BS[field]
-            field_bc = WSMC_PROTOCOL_FORMAT_BS[field]
+            fieldaddr = extformat[extension]["bytestart"][field]
+            field_bc = extformat[extension]["bytecount"][field]
             bytevalue = measurementbytes[fieldaddr:fieldaddr + field_bc]
             measurement[field] = decode_field(field, bytevalue)
         yield measurement

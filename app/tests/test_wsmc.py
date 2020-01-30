@@ -45,7 +45,7 @@ class TestStringMethods(unittest.TestCase):
 
             measurementbytes_generator = weatherdata.iterate_dataset_left(data)
 
-            for measurement in weatherdata.decode_measurement(measurementbytes_generator)
+            for measurement in weatherdata.decode_measurement(measurementbytes_generator):
                 print(measurement)
 
             offset += 1

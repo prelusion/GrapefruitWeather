@@ -95,19 +95,19 @@ def get_stations(station_id=None, longitude=None, latitude=None, track_id=None,
 def get_most_recent_air_pressure_average(station_ids, limit, interval):
     result = []
     offset = 0
+    extension = weatherdata.WSMC_EXTENSION\
 
     while limit > 0:
-        data = weatherdata.load_data_per_file(
-            const.MEASUREMENTS_DIR, offset, weatherdata.WSMC_EXTENSION)
+        data = weatherdata.load_data_per_file(const.MEASUREMENTS_DIR, offset, extension)
 
         if len(data) == 0:
             break
 
         measurementbytes_generator = weatherdata.iterate_dataset_left(data)
         measurementbytes_generator = weatherdata.filter_by_field(
-            measurementbytes_generator, "station_id", station_ids)
+            measurementbytes_generator, "station_id", station_ids, extension)
         measurementbytes_generator = weatherdata.filter_most_recent(
-            measurementbytes_generator, limit)
+            measurementbytes_generator, limit, extension)
         measurement_generator = weatherdata.group_by_timestamp(
             measurementbytes_generator, interval)
         newresult = list(
