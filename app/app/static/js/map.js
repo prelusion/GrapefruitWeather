@@ -56,10 +56,10 @@ function movingTrigger(event) {
 function getCurrentMapCoordsStations(latitude, longitude) {
     let url = "/api/stations?latitude="+latitude+"&longitude="+longitude;
     if($("#limit").val()) {
-        url + "&limit=" + $("#limit").val();
+        url = url + "&limit=" + $("#limit").val();
     }
     if($("#range").val()) {
-        url + "&range=" + $("#range").val();
+        url = url + "&range=" + $("#range").val();
     }
     $.get(url, function(result) {
         for(station in result.data) {

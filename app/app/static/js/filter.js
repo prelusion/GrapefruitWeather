@@ -66,8 +66,8 @@ function getStationsFilter(custom = false, custom_latitude, custom_longitude, cu
     }
 
     let url = "/api/stations?track_id="+trackID+"&limit="+limit
-    if (radius) {
-        url + "&radius=" + radius;
+    if (radius > 0) {
+        url = url + "&radius=" + radius;
     }
     $.get(url, function(result) {
         setAirStationsFromAPI(result);
