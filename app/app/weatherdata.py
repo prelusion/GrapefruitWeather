@@ -15,8 +15,11 @@ from app import util
 
 MAX_CHUNKSIZE = 100000000  # 100 MB
 
+WSMC_EXTENSION = ".wsmc"
+WSAMC_EXTENSION = ".wsamc"
+
 # Byte count for each field within a measurement
-PROTOCOL_FORMAT_BC = OrderedDict({
+WSMC_PROTOCOL_FORMAT_BC = OrderedDict({
     "station_id": 3,
     "timestamp": 4,
     "null_indication": 2,
@@ -34,7 +37,7 @@ PROTOCOL_FORMAT_BC = OrderedDict({
 })
 
 # Starting byte for each field within a measurement
-PROTOCOL_FORMAT_BS = OrderedDict({
+WSMC_PROTOCOL_FORMAT_BS = OrderedDict({
     "station_id": 0,
     "timestamp": 3,
     "null_indication": 7,
@@ -51,22 +54,58 @@ PROTOCOL_FORMAT_BS = OrderedDict({
     "wind_direction": 33,
 })
 
-MEASUREMENT_BYTE_COUNT = sum(PROTOCOL_FORMAT_BC.values())
+WSMC_MEASUREMENT_BYTE_COUNT = sum(WSMC_PROTOCOL_FORMAT_BC.values())
+
+# Byte count for each field within an average measurement
+WSAMC_PROTOCOL_FORMAT_BC = OrderedDict({
+    "station_id": 3,
+    "timestamp": 4,
+    "count": 2,
+    "temperature": 3,
+    "dew_point": 3,
+    "air_pressure": 3,
+    "sea_air_pressure": 3,
+    "visibility": 2,
+    "air_speed": 2,
+    "rainfall": 3,
+    "snowfall": 3,
+    "cloud_pct": 2,
+    "wind_direction": 2,
+})
+
+# Starting byte for each field within an average measurement
+WSAMC_PROTOCOL_FORMAT_BS = OrderedDict({
+    "station_id": 0,
+    "timestamp": 3,
+    "count": 7,
+    "temperature": 9,
+    "dew_point": 12,
+    "air_pressure": 15,
+    "sea_air_pressure": 18,
+    "visibility": 21,
+    "air_speed": 23,
+    "rainfall": 25,
+    "snowfall": 28,
+    "cloud_pct": 31,
+    "wind_direction": 33,
+})
+
+WSAMC_MEASUREMENT_BYTE_COUNT = sum(WSAMC_PROTOCOL_FORMAT_BC.values())
 
 
 def determine_chunksize(prefsize=500000):
-    chunks = math.trunc(prefsize / MEASUREMENT_BYTE_COUNT)
-    return chunks * MEASUREMENT_BYTE_COUNT
+    chunks = math.trunc(prefsize / WSMC_MEASUREMENT_BYTE_COUNT)
+    return chunks * WSMC_MEASUREMENT_BYTE_COUNT
 
 
-def get_wsmc_files(datadir):
+def get_files(datadir, extension):
     files = os.listdir(datadir)
-    files = list(filter(lambda file: file.endswith(".wsmc"), files))
+    files = list(filter(lambda file: file.endswith(extension), files))
     files.sort(key=lambda name: int(re.sub('\D', '', name)))
-    return list(((name, os.path.join(datadir, name)) for name in files if ".wsmc" in name))
+    return list(((name, os.path.join(datadir, name)) for name in files if extension in name))
 
 
-def load_data_per_file(datadir, offset):
+def load_data_per_file(datadir, offset, extension):
     """ Loads wsmc data from the file system.
     Data is loaded backwards, which implies that the newest data is loaded first.
     Data is loaded per file, so data from multiple files can not be loaded into memory
@@ -76,7 +115,7 @@ def load_data_per_file(datadir, offset):
     :param offset: amount of chunks skipped when loading into memory
     :return: data in bytes
     """
-    files = get_wsmc_files(datadir)
+    files = get_files(datadir, extension)
 
     index = (len(files) - 1) - offset
     if index < 0:
@@ -108,14 +147,14 @@ def load_data_per_chunk(chunksize, offset):
 def _load_data_per_chunk(chunksize, offset):
     skipbytes = offset * chunksize
     spaceleft = chunksize
-    files = get_wsmc_files()
+    files = get_files()
     totaldata = []
 
     index = len(files) - 1
     if index < 0:
         return []
 
-    while index >= 0 and spaceleft > MEASUREMENT_BYTE_COUNT:
+    while index >= 0 and spaceleft > WSMC_MEASUREMENT_BYTE_COUNT:
         filename, filepath = files[index]
         size = os.path.getsize(filepath)
 
@@ -148,7 +187,7 @@ def read_file(filepath, bytecount=None, skipbytes=None):
         else:
             data = f.read()
 
-    if len(data) % MEASUREMENT_BYTE_COUNT != 0:
+    if len(data) % WSMC_MEASUREMENT_BYTE_COUNT != 0:
         raise Exception("wsmc file is corrupt")
 
     return data
@@ -178,7 +217,7 @@ def decode_measurement(bindata):
     measurement = OrderedDict()
     i = 0
 
-    for field, bytecount in PROTOCOL_FORMAT_BC.items():
+    for field, bytecount in WSMC_PROTOCOL_FORMAT_BC.items():
         measurement[field] = decode_field(field, bindata[i:i + bytecount])
         i += bytecount
 
@@ -189,14 +228,14 @@ def iterate_dataset_left(data):
     """ Each iteration the value of the given fieldname is yielded. """
     i = len(data)
     while i > 0:
-        measurementaddr = (i - MEASUREMENT_BYTE_COUNT)
-        yield data[measurementaddr:measurementaddr + MEASUREMENT_BYTE_COUNT]
-        i -= MEASUREMENT_BYTE_COUNT
+        measurementaddr = (i - WSMC_MEASUREMENT_BYTE_COUNT)
+        yield data[measurementaddr:measurementaddr + WSMC_MEASUREMENT_BYTE_COUNT]
+        i -= WSMC_MEASUREMENT_BYTE_COUNT
 
 
 def filter_by_field(measurementbytes_generator, fieldname, values):
-    fieldaddr = PROTOCOL_FORMAT_BS[fieldname]
-    field_bc = PROTOCOL_FORMAT_BC[fieldname]
+    fieldaddr = WSMC_PROTOCOL_FORMAT_BS[fieldname]
+    field_bc = WSMC_PROTOCOL_FORMAT_BC[fieldname]
 
     for measurementbytes in measurementbytes_generator:
         bytevalue = measurementbytes[fieldaddr:fieldaddr + field_bc]
@@ -207,8 +246,8 @@ def filter_by_field(measurementbytes_generator, fieldname, values):
 
 
 def filter_by_timestamp(measurementbytes_generator, dt1, dt2):
-    fieldaddr = PROTOCOL_FORMAT_BS["timestamp"]
-    field_bc = PROTOCOL_FORMAT_BC["timestamp"]
+    fieldaddr = WSMC_PROTOCOL_FORMAT_BS["timestamp"]
+    field_bc = WSMC_PROTOCOL_FORMAT_BC["timestamp"]
 
     for measurementbytes in measurementbytes_generator:
         bytevalue = measurementbytes[fieldaddr:fieldaddr + field_bc]
@@ -221,8 +260,8 @@ def filter_by_timestamp(measurementbytes_generator, dt1, dt2):
 
 
 def filter_most_recent(measurementbytes_generator, seconds):
-    fieldaddr = PROTOCOL_FORMAT_BS["timestamp"]
-    field_bc = PROTOCOL_FORMAT_BC["timestamp"]
+    fieldaddr = WSMC_PROTOCOL_FORMAT_BS["timestamp"]
+    field_bc = WSMC_PROTOCOL_FORMAT_BC["timestamp"]
     first = None
 
     for measurementbytes in measurementbytes_generator:

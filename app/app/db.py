@@ -2,15 +2,11 @@ import os
 from copy import deepcopy
 from logging import getLogger
 
-from flask_login import login_manager
 from geopy import distance
 
-from app import const
+from app import const, weatherdata
 from app import fileaccess
 from app import util
-from app import wsmc
-from app.const import TRACK_CACHE_DIR
-from app.fileaccess import generate_track_distance_cache, get_track_distances, get_user
 
 logger = getLogger(__name__)
 
@@ -100,20 +96,21 @@ def get_most_recent_air_pressure_average(station_ids, limit, interval):
     offset = 0
 
     while limit > 0:
-        rawdata = wsmc.load_data_per_file(const.MEASUREMENTS_DIR, offset)
+        data = weatherdata.load_data_per_file(
+            const.MEASUREMENTS_DIR, offset, weatherdata.WSMC_EXTENSION)
 
-        if len(rawdata) == 0:
+        if len(data) == 0:
             break
 
-        measurementbytes_generator = wsmc.iterate_dataset_left(rawdata)
-        measurementbytes_generator = wsmc.filter_by_field(
+        measurementbytes_generator = weatherdata.iterate_dataset_left(data)
+        measurementbytes_generator = weatherdata.filter_by_field(
             measurementbytes_generator, "station_id", station_ids)
-        measurementbytes_generator = wsmc.filter_most_recent(
+        measurementbytes_generator = weatherdata.filter_most_recent(
             measurementbytes_generator, limit)
-        measurement_generator = wsmc.group_by_timestamp(
+        measurement_generator = weatherdata.group_by_timestamp(
             measurementbytes_generator, interval)
         newresult = list(
-            wsmc.groups_to_average("air_pressure", measurement_generator))
+            weatherdata.groups_to_average("air_pressure", measurement_generator))
 
         result.extend(newresult)
         limit -= len(newresult)
