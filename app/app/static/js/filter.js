@@ -1,6 +1,9 @@
 $(document).ready(function() {
     //$(#track).val() = the track id+1.
     $("#filter_button").on("click", function() {
+        if($("#track").val() == "-1") {
+            return;
+        }
         setFilterValues(jsonArray[$("#track").val()-1].latitude, jsonArray[$("#track").val()-1].longitude, jsonArray[$("#track").val()-1].country_id, jsonArray[$("#track").val()-1].country);
         setMapView($("#latitude").val(), $("#longitude").val(), map.getZoom());
         updateMarker($("#track").val()-1);
@@ -64,15 +67,15 @@ function getStationsFilter(custom = false, custom_latitude, custom_longitude, cu
     if(limit === "") {
         limit = 50;
     }
-
     let url = "/api/stations?track_id="+trackID+"&limit="+limit
+    $.get(url, function(result) {
+        setAirStationsFromAPI(result);
+    });
+    url = "/api/stations?country="+country;
     if (radius > 0) {
         url = url + "&radius=" + radius;
     }
     $.get(url, function(result) {
-        setAirStationsFromAPI(result);
-    });
-    $.get("/api/stations?country="+country, function(result) {
         setTemperatureStationsFromAPI(result);
     });
 }
