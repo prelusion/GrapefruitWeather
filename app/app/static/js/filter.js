@@ -24,6 +24,14 @@ $("#clear_button").on("click", function(){
     clearMapOfStations();
 });
 
+$("#limit").on("input", function(){
+    if($(this).val() > 500) {
+        $(this).popover('show')
+    } else {
+        $(this).popover('hide')
+    }
+});
+
 function getStationsFilter(custom = false, custom_latitude, custom_longitude, custom_country_id) {
     let trackID = $("#track").val();
     let latitude = (custom === false) ? $("#latitude").val() : custom_latitude;
