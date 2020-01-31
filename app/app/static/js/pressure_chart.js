@@ -101,15 +101,12 @@ function setNewAirStations(stations) {
         clearInterval(plotInterval);
     }
 
-    //reset all variables
     pressureTimeList = [];
     pressureList = [];
     queue = [];
     first = true;
     firstLoading = false;
     
-
-    //call api every 1000 miliseconds
     if(stations.length != 0){
         apiInterval = setInterval(retrieveData, 1000, stations, sessionId);
         plotInterval = setInterval(handleQueue, 1000);
@@ -126,14 +123,14 @@ function handleQueue() {
 plotInterval = setInterval(handleQueue, 1000);
 
 
-// $("#air_timezone").on("click", function() {
-//     if($(this).text() === "Local timezone") {
-//         $(this).text("Destination timezone");
-//         $(this).addClass("btn-danger");
-//         $(this).removeClass("btn-success");
-//     } else {
-//         $(this).text("Local timezone");
-//         $(this).addClass("btn-success");
-//         $(this).removeClass("btn-danger");
-//     }
-// });
+$("#air_timezone").on("click", function() {
+    if($(this).text() === "Local timezone") {
+        $(this).text("Destination timezone");
+        $(this).addClass("btn-danger");
+        $(this).removeClass("btn-success");
+    } else {
+        $(this).text("Local timezone");
+        $(this).addClass("btn-success");
+        $(this).removeClass("btn-danger");
+    }
+});
