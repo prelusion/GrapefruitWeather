@@ -9,7 +9,7 @@ let first = true;
 let firstLoading = false;
 let apiInterval = null;
 let plotInterval = null;
-let count = 1;
+let sessionId = 1;
 
 
 function drawPressureChart(times, pressures) {
@@ -73,7 +73,7 @@ function retrieveData(pressStations, currentCount) {
     $.get("http://127.0.0.1:5000/api/measurements/airpressure?limit=" + limit +"&stations=" + pressStations.join(), function(result) {
         console.log("callback count", currentCount);
 
-        if (currentCount != count) {
+        if (currentCount != sessionId) {
             return;
         }
 
@@ -88,11 +88,11 @@ function retrieveData(pressStations, currentCount) {
 function setNewAirStations(stations) {
     console.log("stations from deo: ", stations);
 
-    if (count > 100) {
-        count = 1;
+    if (sessionId > 100) {
+        sessionId = 1;
     }
     
-    count++;
+    sessionId++;
 
     if (apiInterval) {
         clearInterval(apiInterval);
@@ -111,7 +111,7 @@ function setNewAirStations(stations) {
 
     //call api every 1000 miliseconds
     if(stations.length != 0){
-        apiInterval = setInterval(retrieveData, 1000, stations, count);
+        apiInterval = setInterval(retrieveData, 1000, stations, sessionId);
         plotInterval = setInterval(handleQueue, 1000);
     }
 }
