@@ -191,7 +191,7 @@ function setTemperatureStationsFromAPI(result) {
             selectedTemperatureStations.push(result.data[station].id);
         }
     }
-    // setNewTempStations(selectedTemperatureStations);
+    setNewTempStations(selectedTemperatureStations);
 }
 
 function getTemperatureStations() {
