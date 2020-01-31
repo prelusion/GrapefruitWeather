@@ -16,7 +16,7 @@ from app import util
 MAX_CHUNKSIZE = 100000000  # 100 MB
 
 WSMC_EXTENSION = ".wsmc"
-WSAMC_EXTENSION = ".wmsc"
+WSAMC_EXTENSION = ".wsamc"
 
 extformat = {
     WSMC_EXTENSION: {
@@ -197,6 +197,8 @@ def decode_field(field, data):
     decoded = int.from_bytes(data, byteorder="big", signed=True)
 
     if field == "station_id":
+        return decoded
+    if field == "count":
         return decoded
     if field == "timestamp":
         return datetime.datetime.utcfromtimestamp(decoded)
