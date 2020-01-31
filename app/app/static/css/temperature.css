@@ -2,7 +2,22 @@
     text-align: center; 
     color: gold;
     border-radius: 5px;
-    background-color: #091e49; 
+    background-color: #091e49;
+    border: 1px solid black;
+    border-radius: 4px;
+    margin-top: 25px;
+}
+
+@media only screen and (min-width: 992px) {
+    .temperature .footer_container {
+        height: 29vh;
+    }    
+}
+
+@media only screen and (max-width: 992px) {
+    .temperature { 
+        margin-top: 200px;
+    }
 }
 
 .temperature .footer_container {
@@ -13,6 +28,7 @@
     border-radius: 5px;
     background-color: white;
 }
+
 
 .temperature .footer_container .temp_realtime_data{
     margin-top: 30px;
