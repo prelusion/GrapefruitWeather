@@ -1,7 +1,8 @@
-from flask import Blueprint, request, app, session
-from flask_login import login_required, login_manager
-
 import time
+
+from flask import Blueprint, request
+from flask_login import login_required
+
 from app import db
 from app import util
 from app.util import http_format_error, http_format_data
@@ -94,7 +95,6 @@ def get_airpressure_measurements():
     """
     stations = list(map(int, util.convert_array_param(
         request.args.get("stations", [743700, 93590, 589210]))))
-
     interval = int(request.args.get("interval", 1))
     limit = int(request.args.get("limit", 120))
     timezone_id = request.args.get("timezone")
@@ -104,7 +104,8 @@ def get_airpressure_measurements():
     if timezone_id:
         timezone = db.get_timezone_by_timezone_id(timezone_id)
         measurements = list(map(
-            lambda measurement: util.convert_measurement(measurement, timezone["name"]), measurements))
+            lambda measurement: util.convert_single_field_measurement_timezone(
+                measurement, timezone["name"]), measurements))
 
     params = {
         "total": len(measurements),
@@ -131,25 +132,11 @@ def get_timezone():
     (Australian Eastern Standard Time), -600 will be returned. Daylight savings time
     prevents this value from being a constant even for a given locale.
     """
-
-    def convert_js_offset_to_storage_offset(offset_mins):
-        offset_hours = offset_mins / 60
-        offset_opposite = offset_hours * -1
-        offset_times_hundred = offset_opposite * 100
-        offset_rounded = int(offset_times_hundred)
-        offset_padded = str(offset_rounded).zfill(5 if offset_rounded < 0 else 4)
-
-        if int(offset_rounded) > 0:
-            return "+" + offset_padded
-
-        return offset_padded
-
     station_id = request.args.get("station_id")
     track_id = request.args.get("track_id")
-    timezone_id = request.args.get("timezone_id")
     offset = request.args.get("offset")
 
-    if not util.only_one_is_true(station_id, track_id, timezone_id, offset):
+    if not util.only_one_is_true(station_id, track_id, offset):
         return http_format_error("Only one query parameter can be used simultaneously")
 
     timezone = None
@@ -158,37 +145,24 @@ def get_timezone():
         timezone = db.get_timezone_by_station_id(station_id)
     elif track_id:
         timezone = db.get_timezone_by_track_id(track_id)
-    elif timezone_id:
-        # TODO create get_timezone_offset_by_timezone_id function
-        # success, result = db.get_timezone_offset_by_timezone_id(timezone_id)
-        return http_format_error("Not implemented yet")
     elif offset:
-        offset = convert_js_offset_to_storage_offset(int(offset))
+        offset = util.convert_js_offset_to_storage_offset(int(offset))
         timezone = db.get_timezone_by_offset(offset)
 
     if not timezone:
-        return http_format_error("Invalid input")
+        return http_format_error("Failed to retrieve timezone")
 
     return http_format_data(timezone)
 
 
-@api_bp.route('/measurements/export')
-def get_measurements_export():
+@api_bp.route('/measurements/export', methods=['POST'])
+def create_measurements_export():
     hours = int(request.args.get("hours", 1))
-    fields = request.args.get("fields", ["temperature", "air_pressure"])
-    if isinstance(fields, str):
-        try:
-            fields = fields.split(",")
-        except AttributeError:
-            fields = [fields]
-
-    stations = request.args.get("stations", [743700, 93590, 589210])
-    if isinstance(stations, str):
-        try:
-            stations = stations.split(",")
-        except AttributeError:
-            stations = [stations]
-    stations = list(map(int, stations))
+    timezone_id = request.args.get("timezone")
+    fields = util.convert_array_param(
+        request.args.get("fields", ["temperature", "air_pressure"]))
+    stations = list(map(int, util.convert_array_param(
+        request.args.get("stations", [743700, 93590, 589210]))))
 
     if "station_id" not in fields:
         fields.append("station_id")
@@ -196,6 +170,10 @@ def get_measurements_export():
     tstart = time.time()
     measurements = db.get_all_measurements(stations, fields, hours)
     duration = time.time() - tstart
+
+    if timezone_id:
+        timezone = db.get_timezone_by_timezone_id(timezone_id)
+        #  TODO timezone conversion
 
     params = {
         "total": len(measurements),
@@ -211,7 +189,7 @@ def get_measurements_export():
 @login_required
 def get_temperature_measurements():
     stations = list(map(int, util.convert_array_param(
-        request.args.get("stations", [743700, 93590, 589210]))))
+        request.args.get("stations", [85210]))))
     interval = int(request.args.get("interval", 1))  # hours
     limit = int(request.args.get("limit", 120))
     offset = int(request.args.get("offset", 0))
@@ -222,7 +200,8 @@ def get_temperature_measurements():
     if timezone_id:
         timezone = db.get_timezone_by_timezone_id(timezone_id)
         measurements = list(map(
-            lambda measurement: util.convert_measurement(measurement, timezone["name"]), measurements))
+            lambda measurement: util.convert_single_field_measurement_timezone(
+                measurement, timezone["name"]), measurements))
 
     params = {
         "total": len(measurements),
