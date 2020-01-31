@@ -136,7 +136,7 @@ function setNewTempStations(stations) {
     if(stations.length != 0){
         $("#temp_status_label").text("Loading history...").show();
         tempApiInterval = setInterval(retrieveTempData, 1000, stations, temperatureSessionId);
-        tempPlotInterval = setInterval(handletemperatureQueue, 1000);
+        tempPlotInterval = setInterval(handletemperatureQueue, temperatureRefreshRate);
     } else {
         $("#temp_status_label").text("There are no temperature stations available. Try selecting a different track!").show();
     }

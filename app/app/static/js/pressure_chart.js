@@ -35,7 +35,7 @@ function drawPressureChart(times, pressures) {
             datasets: [{ 
                 data: pressures,
                 label: "pressure",
-                borderColor: "#091e49",
+                borderColor: "#ea1c2e",
                 fill: true
             }]
         },
@@ -135,7 +135,7 @@ function setNewAirStations(stations) {
     if(stations.length != 0){
         $("#pressure_status_label").text("Loading history...").show();
         apiInterval = setInterval(retrieveData, 1000, stations, sessionId);
-        plotInterval = setInterval(handleQueue, 1000);
+        plotInterval = setInterval(handleQueue, pressureRefreshRate);
     } else {
         $("#pressure_status_label").text("There are no airpressure stations available. Try selecting a track!").show();
     }
