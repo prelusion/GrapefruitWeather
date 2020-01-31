@@ -55,30 +55,21 @@ public class AverageLoadProcessor implements Runnable {
 
         val loadedAverages = FileAverageHandler.loadAveragesFromFileSystem(ids);
 
-        measurements.forEach(measurement1 -> {
-            val averages = measurementAverages.computeIfAbsent(measurement1.getStationId(), i -> new ArrayList<>());
+        measurements.forEach(m -> {
+            val averages = measurementAverages.computeIfAbsent(m.getStationId(), i -> new ArrayList<>());
             val average = averages.stream()
-                    .filter(averageMeasurement -> averageMeasurement.getDate().equals(measurement1.getTimestamp()))
+                    .filter(averageMeasurement -> averageMeasurement.getDate().equals(m.getTimestamp()))
                     .findFirst();
 
             if (average.isEmpty()) {
-                val a = loadedAverages.getOrDefault(measurement1.getStationId(), new ArrayList<>())
+                val a = loadedAverages.getOrDefault(m.getStationId(), new ArrayList<>())
                         .stream()
-                        .filter(averageMeasurement -> measurement1.getTimestamp().isEqual(averageMeasurement.getDate()))
+                        .filter(averageMeasurement -> m.getTimestamp().isEqual(averageMeasurement.getDate()))
                         .findFirst()
-                        .orElse(new AverageMeasurement(measurement1.getTimestamp()));
-                measurementAverages.get(measurement1.getStationId()).add(a);
+                        .orElse(new AverageMeasurement(m.getTimestamp()));
+                measurementAverages.get(m.getStationId()).add(a);
             }
         });
-
-        /*loadedAverages.forEach((stationId, averageMeasurements) -> {
-            val averages = measurementAverages.computeIfAbsent(stationId, i -> new ArrayList<>());
-            averageMeasurements.forEach(averageMeasurement -> {
-                if (averages.stream().filter(averageMeasurement1 -> averageMeasurement1.getDate().isEqual(averageMeasurement.getDate())).count() == 0) {
-                    averages.add(averageMeasurement);
-                }
-            });
-        });*/
 
         for (Measurement m: measurements) {
             measurementAverageQueue.offer(m);
