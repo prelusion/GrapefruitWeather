@@ -7,7 +7,10 @@ var queue = [];
 const pressureHistoryInterval = 120;
 let first = true;
 let firstLoading = false;
-let intervalId = null;
+let apiInterval = null;
+let plotInterval = null;
+let count = 1;
+
 
 function drawPressureChart(times, pressures) {
     $("#pressure_status_label").hide();
@@ -39,8 +42,8 @@ function drawPressureChart(times, pressures) {
 function processPressureData(result){
     if(pressureTimeList.length == 0){
         for(x = pressureHistoryInterval - 1; x >= 0; x--){
-            console.log(result.data[x][0].substring(17,25));
-            console.log(result.data[x][1]);
+            // console.log(result.data[x][0].substring(17,25));
+            // console.log(result.data[x][1]);
             pressureTimeList.push(("" + result.data[x][0].substring(17,25)));
             pressureList.push(result.data[x][1]);
         }
@@ -56,8 +59,8 @@ function processPressureData(result){
 }
 
 
-function retrieveData(pressStations) { 
-    
+function retrieveData(pressStations, currentCount) { 
+    console.log("retrievedata count", currentCount);
     if (first && firstLoading) {
         return;
     } else if (first) {
@@ -65,8 +68,15 @@ function retrieveData(pressStations) {
     }
 
     let limit = first ? 120 : 1;
+    console.log(limit);
 
     $.get("http://127.0.0.1:5000/api/measurements/airpressure?limit=" + limit +"&stations=" + pressStations.join(), function(result) {
+        console.log("callback count", currentCount);
+
+        if (currentCount != count) {
+            return;
+        }
+
         if (first) {
             first = false;
             firstLoading = false;
@@ -77,25 +87,32 @@ function retrieveData(pressStations) {
 
 function setNewAirStations(stations) {
     console.log("stations from deo: ", stations);
+
+    if (count > 100) {
+        count = 1;
+    }
     
-    if (intervalId) {
-        clearInterval(intervalId);
+    count++;
+
+    if (apiInterval) {
+        clearInterval(apiInterval);
+    }
+    if (plotInterval) {
+        clearInterval(plotInterval);
     }
 
     //reset all variables
     pressureTimeList = [];
     pressureList = [];
-    let graphPressureStations = [];
     queue = [];
     first = true;
     firstLoading = false;
     
-    //set station var
-    graphPressureStations = stations;
 
     //call api every 1000 miliseconds
-    if(graphPressureStations.length != 0){
-        intervalId = setInterval(retrieveData, 1000, graphPressureStations);
+    if(stations.length != 0){
+        apiInterval = setInterval(retrieveData, 1000, stations, count);
+        plotInterval = setInterval(handleQueue, 1000);
     }
 }
 
@@ -106,7 +123,7 @@ function handleQueue() {
     }
 }
 
-setInterval(handleQueue, 1000);
+plotInterval = setInterval(handleQueue, 1000);
 
 
 // $("#air_timezone").on("click", function() {
