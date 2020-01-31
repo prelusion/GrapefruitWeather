@@ -151,8 +151,8 @@ public class FileAverageHandler implements Runnable {
 
             try {
                 process();
-            }catch (Exception e) {
-                logger.error("Saving averages failed", e);
+            } catch (Exception exception) {
+                logger.error("Exception in average file processor", exception);
             }
         }
     }

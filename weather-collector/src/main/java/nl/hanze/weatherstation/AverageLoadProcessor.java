@@ -4,6 +4,8 @@ import lombok.val;
 import nl.hanze.weatherstation.models.AverageMeasurement;
 import nl.hanze.weatherstation.models.Measurement;
 import org.apache.commons.lang3.tuple.Pair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -13,12 +15,14 @@ import java.util.Queue;
 import java.util.stream.Collectors;
 
 public class AverageLoadProcessor implements Runnable {
+    private final Logger logger;
     private final Queue<Measurement> measurementAverageQueue;
     private final Queue<Measurement> measurementAverageLoadQueue;
     private final HashMap<Integer, List<AverageMeasurement>> measurementAverages;
     private final FileAverageHandler fileAverageHandler;
 
     public AverageLoadProcessor(Queue<Measurement> measurementAverageQueue, Queue<Measurement> measurementAverageLoadQueue, HashMap<Integer, List<AverageMeasurement>> measurementAverages, FileAverageHandler fileAverageHandler) {
+        this.logger = LoggerFactory.getLogger(getClass());
         this.measurementAverageQueue = measurementAverageQueue;
         this.measurementAverageLoadQueue = measurementAverageLoadQueue;
         this.measurementAverages = measurementAverages;
@@ -32,7 +36,11 @@ public class AverageLoadProcessor implements Runnable {
                 return;
             }
 
-            process();
+            try {
+                process();
+            } catch (Exception exception) {
+                logger.error("Exception in load average processor", exception);
+            }
         }
     }
 

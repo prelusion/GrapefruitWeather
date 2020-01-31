@@ -178,7 +178,7 @@ public class MeasurementConverter {
         writeIntToByteArray(byteArray, 18, 3, (int)(averageMeasurement.getSeaAirPressure() * 10));
         writeIntToByteArray(byteArray, 21, 2, (int)(averageMeasurement.getVisibility() * 10));
         writeIntToByteArray(byteArray, 23, 2, (int)(averageMeasurement.getAirSpeed() * 10));
-        writeIntToByteArray(byteArray, 25, 3, (int)(averageMeasurement.getRainFall() * 10));
+        writeIntToByteArray(byteArray, 25, 3, (int)(averageMeasurement.getRainFall() * 100));
         writeIntToByteArray(byteArray, 28, 3, (int)(averageMeasurement.getSnowFall() * 10));
         writeIntToByteArray(byteArray, 31, 2, (int)(averageMeasurement.getCloudPercentage() * 10));
         writeIntToByteArray(byteArray, 33, 2, averageMeasurement.getWindDirection());
@@ -197,7 +197,7 @@ public class MeasurementConverter {
         averageMeasurement.setSeaAirPressure(getIntFromByteArray(byteArray, 18, 3) / 10.0);
         averageMeasurement.setVisibility(getIntFromByteArray(byteArray, 21, 2) / 10.0);
         averageMeasurement.setAirSpeed(getIntFromByteArray(byteArray, 23, 2) / 10.0);
-        averageMeasurement.setRainFall(getIntFromByteArray(byteArray, 25, 3) / 10.0);
+        averageMeasurement.setRainFall(getIntFromByteArray(byteArray, 25, 3) / 100.0);
         averageMeasurement.setSnowFall(getIntFromByteArray(byteArray, 28, 3) / 10.0);
         averageMeasurement.setCloudPercentage(getIntFromByteArray(byteArray, 31, 2) / 10.0);
         averageMeasurement.setWindDirection(getIntFromByteArray(byteArray, 33, 2));

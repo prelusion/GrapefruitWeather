@@ -35,7 +35,11 @@ public class FileMeasurementSaver implements Runnable {
                 return;
             }
 
-            process();
+            try {
+                process();
+            } catch (Exception exception) {
+                logger.error("Exception in file measurement saver", exception);
+            }
         }
     }
 
