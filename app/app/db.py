@@ -61,6 +61,8 @@ def get_stations(station_id=None, longitude=None, latitude=None, track_id=None,
 
     if country is not None:
         stations = list(filter(lambda st: st["country-id"].lower() == country.lower(), stations))
+        if station_id is None and longitude is None and latitude is None:
+            return True, stations
 
     for station in stations:
         if not timezone:
