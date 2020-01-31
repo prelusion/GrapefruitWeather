@@ -31,37 +31,39 @@ def get_racing_tracks():
 @api_bp.route('/stations')
 @login_required
 def get_stations():
-    station_id = request.args.get("id")
     longitude = request.args.get("longitude")
     latitude = request.args.get("latitude")
     track_id = request.args.get("track_id")
     radius = request.args.get("radius")
-    country = request.args.get("country")
+    country_id = request.args.get("country")
     limit = request.args.get("limit")
-    timezone = request.args.get("timezone")
-    offset = request.args.get("offset")
+    result = []
 
-    success, result = db.get_stations(station_id=station_id,
-                                      longitude=longitude,
-                                      latitude=latitude,
-                                      track_id=track_id,
-                                      radius=radius,
-                                      country=country,
-                                      limit=limit,
-                                      timezone=timezone,
-                                      offset=offset
-                                      )
+    if track_id:
+        if country_id:
+            print("track_id, country_id")
+            result = db.get_stations_for_track_by_country_id(track_id, country_id, radius)
+        elif limit:
+            print("track_id, limit")
+            result = db.get_stations_for_track_id_by_limit(track_id, limit)
+    elif latitude and longitude:
+        print("latitude and longitude")
+        if limit is None:
+            limit = 50
+        result = db.get_stations_by_coordinates(latitude, longitude, limit)
+    else:
+        return http_format_error("Invalid parameters")
 
     params = {
-        "total": len(result),
         "limit": limit,
         "offset": limit,
+        "total": len(result),
     }
 
-    if success is False:
-        return http_format_error(result)
-    else:
-        return http_format_data(result, params)
+    if not result:
+        return http_format_error("Unable to retrieve data")
+
+    return http_format_data(result, params)
 
 
 @api_bp.route('/measurements/airpressure')
