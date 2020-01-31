@@ -31,6 +31,7 @@
 //         $("#temp_time_label").text("Time (latest): " + timestamplist[timestamplist.length-1]);
 //         $("#temperature_label").text("Temperature (latest): " + templist[templist.length-1]);
 //     }
+        $("#amount_temperature_stations").text("Temperature stations: " + getTemperatureStations().length);
 
 //     function generator() {
 //         var hours = new Date().getHours();

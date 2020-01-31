@@ -59,7 +59,7 @@ function getCurrentMapCoordsStations(latitude, longitude) {
         url = url + "&limit=" + $("#limit").val();
     }
     if($("#range").val()) {
-        url = url + "&range=" + $("#range").val();
+        url = url + "&radius=" + $("#range").val();
     }
     $.get(url, function(result) {
         for(station in result.data) {
@@ -193,3 +193,6 @@ function setTemperatureStationsFromAPI(result) {
     setNewTempStations(selectedTemperatureStations);
 }
 
+function getTemperatureStations() {
+    return selectedTemperatureStations;
+}

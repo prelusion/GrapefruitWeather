@@ -4,6 +4,7 @@
         <div class="input_container">
             <label for="track">Select a racing track <label>
             <select id="track" name="track" class="form-control">
+                <option value="-1">Choose a track</option>
                 {% for track in racing_tracks %}
                     <option value="{{ track.id }}">{{ track.title }} | {{ track.city }} | {{ track.country }}</option>
                 {% endfor %}
@@ -19,11 +20,11 @@
             <div style="clear: both;"></div>
         </div>
         <div class="input_container" style="margin-top: 10px;">
-            <label for="limit">Limit the amount of weather stations</label>
+            <label for="limit">Air Pressure Stations Limit</label>
             <input id="limit" data-toggle="popover" data-trigger="focus" data-placement="top" data-content="Using the limit above (300) might lag the browser when it is used." class="form-control" type="text" value="3" name="limit">
         </div>
-        <div class="input_container">
-            <label for="range">The range in kilometers</label>
+        <div class="input_container" style="margin-top: 5px;">
+            <label for="range">Temperature Stations Radius</label>
             <input id="range" class="form-control" type="text" name="range">
         </div>
         <div class="input_container">
