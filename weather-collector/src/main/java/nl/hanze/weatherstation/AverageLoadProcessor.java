@@ -19,14 +19,12 @@ public class AverageLoadProcessor implements Runnable {
     private final Queue<Measurement> measurementAverageQueue;
     private final Queue<Measurement> measurementAverageLoadQueue;
     private final HashMap<Integer, List<AverageMeasurement>> measurementAverages;
-    private final FileAverageHandler fileAverageHandler;
 
-    public AverageLoadProcessor(Queue<Measurement> measurementAverageQueue, Queue<Measurement> measurementAverageLoadQueue, HashMap<Integer, List<AverageMeasurement>> measurementAverages, FileAverageHandler fileAverageHandler) {
+    public AverageLoadProcessor(Queue<Measurement> measurementAverageQueue, Queue<Measurement> measurementAverageLoadQueue, HashMap<Integer, List<AverageMeasurement>> measurementAverages) {
         this.logger = LoggerFactory.getLogger(getClass());
         this.measurementAverageQueue = measurementAverageQueue;
         this.measurementAverageLoadQueue = measurementAverageLoadQueue;
         this.measurementAverages = measurementAverages;
-        this.fileAverageHandler = fileAverageHandler;
     }
 
     @Override
@@ -55,21 +53,23 @@ public class AverageLoadProcessor implements Runnable {
 
         val loadedAverages = FileAverageHandler.loadAveragesFromFileSystem(ids);
 
-        measurements.forEach(m -> {
-            val averages = measurementAverages.computeIfAbsent(m.getStationId(), i -> new ArrayList<>());
-            val average = averages.stream()
-                    .filter(averageMeasurement -> averageMeasurement.getDate().equals(m.getTimestamp()))
-                    .findFirst();
+        synchronized (measurementAverages) {
+            measurements.stream().map(m -> Pair.of(m.getStationId(), m.getTimestamp().truncatedTo(ChronoUnit.HOURS))).forEach(m -> {
+                val averages = measurementAverages.computeIfAbsent(m.getLeft(), i -> new ArrayList<>());
+                val average = averages.stream()
+                        .filter(averageMeasurement -> averageMeasurement.getDate().equals(m.getRight()))
+                        .findFirst();
 
-            if (average.isEmpty()) {
-                val a = loadedAverages.getOrDefault(m.getStationId(), new ArrayList<>())
-                        .stream()
-                        .filter(averageMeasurement -> m.getTimestamp().isEqual(averageMeasurement.getDate()))
-                        .findFirst()
-                        .orElse(new AverageMeasurement(m.getTimestamp()));
-                measurementAverages.get(m.getStationId()).add(a);
-            }
-        });
+                if (average.isEmpty()) {
+                    val a = loadedAverages.getOrDefault(m.getLeft(), new ArrayList<>())
+                            .stream()
+                            .filter(averageMeasurement -> m.getRight().isEqual(averageMeasurement.getDate()))
+                            .findFirst()
+                            .orElse(new AverageMeasurement(m.getRight()));
+                    averages.add(a);
+                }
+            });
+        }
 
         for (Measurement m: measurements) {
             measurementAverageQueue.offer(m);

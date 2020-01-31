@@ -2,12 +2,10 @@ package nl.hanze.weatherstation;
 
 import lombok.val;
 import nl.hanze.weatherstation.models.Measurement;
-import nl.hanze.weatherstation.models.AverageMeasurement;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executors;
@@ -36,7 +34,7 @@ public class WeatherStation {
         val measurementProcessorThread = new Thread(new MeasurementProcessor(measurementCorrector, rawDataQueue, measurementQueue, measurementHistory));
         val averageProcessorThread = new Thread(new AverageProcessor(measurementAverageQueue, measurementAverageLoadQueue, measurementAverages, fileAverageHandler));
         val measurementSaverThread = new Thread(new FileMeasurementSaver(measurementQueue, measurementAverageQueue));
-        val averageLoadProcessorThread = new Thread(new AverageLoadProcessor(measurementAverageQueue, measurementAverageLoadQueue, measurementAverages, fileAverageHandler));
+        val averageLoadProcessorThread = new Thread(new AverageLoadProcessor(measurementAverageQueue, measurementAverageLoadQueue, measurementAverages));
         val executor = Executors.newScheduledThreadPool(1);
         executor.scheduleAtFixedRate(fileAverageHandler, 0, 1, TimeUnit.MINUTES);
 

@@ -1,6 +1,5 @@
 package nl.hanze.weatherstation;
 
-import com.google.common.util.concurrent.Futures;
 import lombok.val;
 import nl.hanze.weatherstation.models.AverageMeasurement;
 import nl.hanze.weatherstation.models.Measurement;
@@ -9,7 +8,6 @@ import org.slf4j.LoggerFactory;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Queue;
@@ -19,7 +17,6 @@ public class AverageProcessor implements Runnable {
     private final Queue<Measurement> measurementAverageQueue;
     private final Queue<Measurement> measurementAverageLoadQueue;
     private final HashMap<Integer, List<AverageMeasurement>> measurementAverages;
-    private final FileAverageHandler fileAverageHandler;
 
     public AverageProcessor(
             Queue<Measurement> measurementAverageQueue,
@@ -31,7 +28,6 @@ public class AverageProcessor implements Runnable {
         this.measurementAverageQueue = measurementAverageQueue;
         this.measurementAverageLoadQueue = measurementAverageLoadQueue;
         this.measurementAverages = measurementAverages;
-        this.fileAverageHandler = fileAverageHandler;
     }
 
     @Override
@@ -59,28 +55,6 @@ public class AverageProcessor implements Runnable {
         }
 
         return null;
-    }
-
-    private AverageMeasurement loadAverage(int stationId, LocalDateTime date) {
-        if (measurementAverages.containsKey(stationId)) {
-            for (AverageMeasurement averageMeasurement: measurementAverages.get(stationId)) {
-                if (averageMeasurement.getDate().isEqual(date.truncatedTo(ChronoUnit.HOURS))) {
-                    return averageMeasurement;
-                }
-            }
-        } else {
-            measurementAverages.put(stationId, new ArrayList<>());
-        }
-
-        AverageMeasurement averageMeasurement = fileAverageHandler.loadAverageFromFileSystem(stationId, date);
-
-        if (averageMeasurement == null) {
-            averageMeasurement = new AverageMeasurement(date);
-        }
-
-        measurementAverages.get(stationId).add(averageMeasurement);
-
-        return averageMeasurement;
     }
 
     private void process() {

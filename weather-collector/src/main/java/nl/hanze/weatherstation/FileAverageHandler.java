@@ -102,46 +102,6 @@ public class FileAverageHandler implements Runnable {
         return result;
     }
 
-    public AverageMeasurement loadAverageFromFileSystem(int stationId, LocalDateTime date) {
-        int timestamp = (int) date.truncatedTo(ChronoUnit.HOURS).toEpochSecond(ZoneOffset.UTC);
-
-        byte[] idCompareBuffer = new byte[7];
-        MeasurementConverter.writeIntToByteArray(idCompareBuffer, 0, 3, stationId);
-        MeasurementConverter.writeIntToByteArray(idCompareBuffer, 3, 4, timestamp);
-
-        val files = FileHelper.extractExtensionSequences("/measurements", "wsamc")
-                .stream()
-                .map(id -> new File("/measurements/" + id + ".wsamc"))
-                .collect(Collectors.toList());
-
-        for (File file : files) {
-            try {
-                byte[] idBuffer = new byte[7];
-
-                val randomAccessFile = new RandomAccessFile(file, "r");
-                val measurementCount = (int)(file.length() / 35);
-
-                for (int i = measurementCount; i > 0; i--) {
-                    // Read the station id and timestamp to the buffer.
-                    randomAccessFile.seek((i - 1) * 35);
-                    randomAccessFile.readFully(idBuffer);
-                    if (Arrays.equals(idCompareBuffer, idBuffer)) {
-                        byte[] fullBuffer = new byte[35];
-                        randomAccessFile.seek((i - 1) * 35);
-                        randomAccessFile.readFully(fullBuffer);
-
-                        return MeasurementConverter.convertByteArrayToAverage(fullBuffer);
-                    }
-                }
-                randomAccessFile.close();
-            } catch (IOException exception) {
-                logger.error("", exception);
-            }
-        }
-
-        return null;
-    }
-
     @Override
     public void run() {
         while (true) {
