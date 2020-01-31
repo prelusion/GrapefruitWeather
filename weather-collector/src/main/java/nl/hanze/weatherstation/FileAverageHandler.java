@@ -178,7 +178,7 @@ public class FileAverageHandler implements Runnable {
             logger.error("", exception);
         }
 
-        if (file.length() > (1024 * 1024 * 30)) {
+        if (file.length() > (1024 * 1024 * 60)) {
             collectionId++;
         }
     }

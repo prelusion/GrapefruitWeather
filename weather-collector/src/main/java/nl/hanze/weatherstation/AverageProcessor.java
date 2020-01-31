@@ -21,8 +21,7 @@ public class AverageProcessor implements Runnable {
     public AverageProcessor(
             Queue<Measurement> measurementAverageQueue,
             Queue<Measurement> measurementAverageLoadQueue,
-            HashMap<Integer, List<AverageMeasurement>> measurementAverages,
-            FileAverageHandler fileAverageHandler
+            HashMap<Integer, List<AverageMeasurement>> measurementAverages
     ) {
         this.logger = LoggerFactory.getLogger(getClass());
         this.measurementAverageQueue = measurementAverageQueue;

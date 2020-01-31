@@ -62,7 +62,7 @@ public class FileMeasurementSaver implements Runnable {
             logger.error("Writing measurement to file failed", exception);
         }
 
-        if (file.length() > (1024 * 1024 * 30)) {
+        if (file.length() > (1024 * 1024 * 60)) {
             collectionId++;
         }
     }
