@@ -282,7 +282,7 @@ def filter_most_recent(measurementbytes_generator, seconds, extension):
         yield timestamp, measurementbytes
 
 
-def group_by_timestamp(measurementbytes_generator, interval, extension):
+def group_by_timestamp(measurementbytes_generator, interval_seconds, extension):
     measurements = []
     currtimestamp = None
 
@@ -293,7 +293,7 @@ def group_by_timestamp(measurementbytes_generator, interval, extension):
         if not currtimestamp:
             currtimestamp = timestamp
 
-        if currtimestamp - timestamp < datetime.timedelta(seconds=interval):
+        if currtimestamp - timestamp < datetime.timedelta(seconds=interval_seconds):
             measurements.append(measurement)
             continue
         else:
@@ -301,11 +301,14 @@ def group_by_timestamp(measurementbytes_generator, interval, extension):
             yield measurements
             measurements = [measurement]
 
+    if measurements:
+        yield measurements
+
 
 def groups_to_average(fieldname, measurement_generator):
     for measurements in measurement_generator:
-        temperatures = [measurement[fieldname] for measurement in measurements]
-        yield measurements[0]["timestamp"], round(util.avg(temperatures), 2)
+        values = [measurement[fieldname] for measurement in measurements]
+        yield measurements[0]["timestamp"], round(util.avg(values), 2)
 
 
 def decode_measurement_fields(measurementbytes_generator, fields, extension):

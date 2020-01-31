@@ -1,7 +1,7 @@
 import os
 from copy import deepcopy
 from logging import getLogger
-
+from pprint import pprint
 from geopy import distance
 
 from app import const
@@ -92,39 +92,7 @@ def get_stations(station_id=None, longitude=None, latitude=None, track_id=None,
     return True, stations
 
 
-def get_most_recent_air_pressure_average(station_ids, limit, interval):
-    result = []
-    offset = 0
-    extension = weatherdata.WSMC_EXTENSION
 
-    while limit > 0:
-        data = weatherdata.load_data_per_file(const.MEASUREMENTS_DIR, offset, extension)
-
-        if len(data) == 0:
-            break
-
-        measurementbytes_generator = weatherdata.iterate_dataset_left(data, extension)
-        # for i, measurementbytes in enumerate(measurementbytes_generator):
-        #     if i == 2:
-        #         break
-        #     measurement = weatherdata.decode_measurement(measurementbytes, extension)
-        #     print(measurement)
-        # return jsonify({status: 200})
-        measurementbytes_generator = weatherdata.filter_by_field(
-            measurementbytes_generator, "station_id", station_ids, extension)
-        measurementbytes_generator = weatherdata.filter_most_recent(
-            measurementbytes_generator, limit, extension)
-        measurement_generator = weatherdata.group_by_timestamp(
-            measurementbytes_generator, interval, extension)
-        newresult = list(
-            weatherdata.groups_to_average("air_pressure", measurement_generator))
-
-        result.extend(newresult)
-        limit -= len(newresult)
-
-        offset += 1
-
-    return result
 
 
 def get_timezone_by_station_id(station_id):
@@ -178,6 +146,7 @@ def get_all_measurements(station_ids, fields, hours):
     result = []
     offset = 0
     extension = weatherdata.WSMC_EXTENSION
+
     while True:
         print("offset:", offset)
         rawdata = weatherdata.load_data_per_file(const.MEASUREMENTS_DIR, offset, extension)
@@ -193,6 +162,63 @@ def get_all_measurements(station_ids, fields, hours):
         newresult = list(weatherdata.decode_measurement_fields(measurementbytes_generator, fields, extension))
 
         result.extend(newresult)
+
+        offset += 1
+
+    return result
+
+
+def get_most_recent_air_pressure_average(station_ids, limit, interval):
+    result = []
+    offset = 0
+    extension = weatherdata.WSMC_EXTENSION
+
+    while limit > 0:
+        data = weatherdata.load_data_per_file(const.MEASUREMENTS_DIR, offset, extension)
+
+        if len(data) == 0:
+            break
+
+        measurementbytes_generator = weatherdata.iterate_dataset_left(data, extension)
+        measurementbytes_generator = weatherdata.filter_by_field(
+            measurementbytes_generator, "station_id", station_ids, extension)
+        measurementbytes_generator = weatherdata.filter_most_recent(
+            measurementbytes_generator, limit, extension)
+        measurement_generator = weatherdata.group_by_timestamp(
+            measurementbytes_generator, interval, extension)
+        newresult = list(
+            weatherdata.groups_to_average("air_pressure", measurement_generator))
+
+        result.extend(newresult)
+        limit -= len(newresult)
+
+        offset += 1
+
+    return result
+
+
+def get_most_recent_temperature_averages(station_ids, limit, interval_hours, offset):
+    result = []
+    offset = 0
+    extension = weatherdata.WSAMC_EXTENSION
+    interval_seconds = interval_hours * 3600
+
+    while limit > 0:
+        data = weatherdata.load_data_per_file(const.MEASUREMENTS_DIR, offset, extension)
+
+        if len(data) == 0:
+            break
+
+        measurementbytes_generator = weatherdata.iterate_dataset_left(data, extension)
+        measurementbytes_generator = weatherdata.filter_most_recent(
+            measurementbytes_generator, limit, extension)
+        measurement_generator = weatherdata.group_by_timestamp(
+            measurementbytes_generator, interval_seconds, extension)
+        newresult = list(
+            weatherdata.groups_to_average("temperature", measurement_generator))
+
+        result.extend(newresult)
+        limit -= len(newresult)
 
         offset += 1
 

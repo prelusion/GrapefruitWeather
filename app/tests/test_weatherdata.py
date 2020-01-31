@@ -2,7 +2,7 @@ import timeit
 import unittest
 from app import const
 from app import weatherdata
-
+from app import db
 
 def load_all_data_per_file():
     offset = 0
@@ -36,6 +36,7 @@ class TestStringMethods(unittest.TestCase):
         print("Test load all data per chunk:",
               timeit.timeit('print(load_all_data_per_chunk())', number=1, globals=globals()))
 
+    @unittest.skip
     def test_iterate_wsamc(self):
         offset = 0
         extension = weatherdata.WSAMC_EXTENSION
@@ -55,6 +56,9 @@ class TestStringMethods(unittest.TestCase):
                 print(measurement)
 
             offset += 1
+
+    def test_get_most_recent_temperature_averages(self):
+        db.get_most_recent_temperature_averages()
 
 
 if __name__ == '__main__':
