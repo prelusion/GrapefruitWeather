@@ -1,7 +1,7 @@
 //global vars for history
 var pressureTimeList = [];
 var pressureList = [];
-// var graphPressureStations = [];
+
 
 var queue = [];
 const pressureHistoryInterval = 120;
@@ -35,8 +35,9 @@ function drawPressureChart(times, pressures) {
         }
     });
     $("#pressure_chart").show();
-    // $("#pressure_time_label").text("Time (latest): " + pressureTimeList[pressureTimeList.length-1]);
-    // $("#pressure_label").text("Pressure (latest): " + pressureList[pressureList.length-1]);
+    $("#pressure_time_label").text("Time (latest): " + pressures[pressures.length-1]).show();
+    $("#pressure_label").text("Pressure (latest): " + pressureList[pressures.length-1]).show();
+    //$("#amount_temperature_stations").text("Temperature stations: " + getTemperatureStations().length);
 }
 
 function processPressureData(result){
@@ -76,7 +77,6 @@ function retrieveData(pressStations, currentCount) {
         if (currentCount != sessionId) {
             return;
         }
-
         if (first) {
             first = false;
             firstLoading = false;
@@ -86,6 +86,9 @@ function retrieveData(pressStations, currentCount) {
 }
 
 function setNewAirStations(stations) {
+    $("#pressure_time_label").hide();
+    $("#pressure_label").hide();
+    $("#pressure_chart").hide();
     console.log("stations from deo: ", stations);
 
     if (sessionId > 100) {
@@ -108,8 +111,11 @@ function setNewAirStations(stations) {
     firstLoading = false;
     
     if(stations.length != 0){
+        $("#pressure_status_label").text("Loading history...").show();
         apiInterval = setInterval(retrieveData, 1000, stations, sessionId);
         plotInterval = setInterval(handleQueue, 1000);
+    } else {
+        $("#pressure_status_label").text("There are no airpressure stations available!").show();
     }
 }
 

@@ -84,6 +84,7 @@ function markerClick(event) {
             deselectMarkers();
             event.layer.setIcon(racetrackIcon);
             setNewTempStations(selectedTemperatureStations);
+            setNewAirStations(selectedAirStations);
         } else {
             event.layer.setIcon(weatherstationIcon);
             selectedAirStations = removeValueOutArray(selectedAirStations, event.layer.station_id);
