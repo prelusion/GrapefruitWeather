@@ -80,7 +80,7 @@ def limit_and_offset(dataset, limit, offset):
     new_data_set = []
     for i in range(limit + offset):
         if (i + offset + 1) > len(dataset):
-            break;
+            break
         new_data_set.append(dataset[i + offset])
     return new_data_set
 
@@ -95,3 +95,20 @@ def local_to_utc(local_dt):
 
 def encrypt(var):
     return argon2.encrypt(var)
+
+
+def convert_array_param(param):
+    if isinstance(param, list):
+        return param
+    try:
+        values = param.split(",")
+    except AttributeError:
+        values = [param]
+
+    return values
+
+
+def convert_measurement(measurement, timezone):
+    dt, value = measurement
+    return utc_to_local(dt, timezone), value
+

@@ -9,45 +9,47 @@ import java.util.HashMap;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 public class WeatherStation {
     public static void main(String[] args) throws IOException {
-
         // This queue will hold all raw unprocessed measurements.
         Queue<String> rawDataQueue = new ConcurrentLinkedQueue<>();
 
-        // This queue contains measurements that are just converted from xml, but not yet corrected.
+        // This queue contains measurements that are processed.
         Queue<Measurement> measurementQueue = new ConcurrentLinkedQueue<>();
 
-        // This queue contains measurements that have been corrected and are ready to be saved.
-        Queue<Measurement> measurementSaveQueue = new ConcurrentLinkedQueue<>();
+        // This queue contains measurements that will be converted to averages.
+        Queue<Measurement> measurementAverageQueue = new ConcurrentLinkedQueue<>();
+        Queue<Measurement> measurementAverageLoadQueue = new ConcurrentLinkedQueue<>();
 
         // This map holds 30 measurements per weather station so an average can be calculated when a result is missing.
         val measurementHistory = new HashMap<Integer, Queue<Measurement>>();
 
-        val fileMeasurementSaverInitializer = new FileMeasurementSaverInitializer();
+        val measurementAverages = FileAverageHandler.loadAveragesFromFileSystem();
 
-        val measurementProcessorThread = new Thread(new MeasurementProcessor(LoggerFactory.getLogger(MeasurementProcessor.class), rawDataQueue, measurementQueue));
-        val measurementCorrectorThread = new Thread(new MeasurementCorrecter(LoggerFactory.getLogger(MeasurementCorrecter.class), measurementQueue, measurementSaveQueue, measurementHistory));
-        val measurementSaverThread = new Thread(fileMeasurementSaverInitializer.initialize(LoggerFactory.getLogger(FileMeasurementSaver.class), measurementSaveQueue, new MeasurementConverter()));
+        val measurementCorrector = new HistoricalMeasurementCorrecter(measurementHistory);
+        val fileAverageHandler= new FileAverageHandler(measurementAverages);
+
+        val measurementProcessorThread = new Thread(new MeasurementProcessor(measurementCorrector, rawDataQueue, measurementQueue, measurementHistory));
+        val averageProcessorThread = new Thread(new AverageProcessor(measurementAverageQueue, measurementAverageLoadQueue, measurementAverages, fileAverageHandler));
+        val measurementSaverThread = new Thread(new FileMeasurementSaver(measurementQueue, measurementAverageQueue));
+        val averageLoadProcessorThread = new Thread(new AverageLoadProcessor(measurementAverageQueue, measurementAverageLoadQueue, measurementAverages));
+        val executor = Executors.newScheduledThreadPool(1);
+        executor.scheduleAtFixedRate(fileAverageHandler, 0, 1, TimeUnit.MINUTES);
 
         measurementProcessorThread.start();
-        measurementCorrectorThread.start();
+        averageProcessorThread.start();
         measurementSaverThread.start();
+        averageLoadProcessorThread.start();
 
         val healthLogger = LoggerFactory.getLogger("server-health");
-        ScheduledExecutorService healthExecutor = Executors.newScheduledThreadPool(1);
+        val healthExecutor = Executors.newScheduledThreadPool(1);
         healthExecutor.scheduleAtFixedRate(() -> {
-            val rawDataQueueSize = rawDataQueue.size();
-            val measurementQueueSize = measurementQueue.size();
-            val measurementSaveQueueSize = measurementSaveQueue.size();
-
-            healthLogger.info("Raw data queue size: {}, Measurement queue size: {}, Measurement save queue size: {}", rawDataQueueSize, measurementQueueSize, measurementSaveQueueSize);
+            healthLogger.info("Raw data queue size: {}, Measurement queue size: {}, Measurement average queue size: {}, Measurement average load queue size: {}", rawDataQueue.size(), measurementQueue.size(), measurementAverageQueue.size(), measurementAverageLoadQueue.size());
         }, 0, 5, TimeUnit.SECONDS);
 
-        Server server = new Server(LoggerFactory.getLogger(Server.class), 7789, rawDataQueue);
+        Server server = new Server(7789, rawDataQueue);
         server.listen();
     }
 }
