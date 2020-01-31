@@ -1,6 +1,8 @@
+import json
 import time
+from datetime import datetime
 
-from flask import Blueprint, request
+from flask import Blueprint, request, Response
 from flask_login import login_required
 
 from app import db
@@ -155,7 +157,7 @@ def get_timezone():
     return http_format_data(timezone)
 
 
-@api_bp.route('/measurements/export', methods=['POST'])
+@api_bp.route('/measurements/export/json')
 def create_measurements_export():
     hours = int(request.args.get("hours", 1))
     timezone_id = request.args.get("timezone")
@@ -185,13 +187,41 @@ def create_measurements_export():
     return http_format_data(measurements, params)
 
 
+@api_bp.route('/measurements/export/file', methods=['GET'])
+def get_measurements_export():
+    hours = int(request.args.get("hours", 1))
+    timezone_id = request.args.get("timezone")
+    fields = util.convert_array_param(
+        request.args.get("fields", ["temperature", "air_pressure"]))
+    stations = list(map(int, util.convert_array_param(
+        request.args.get("stations", [743700, 93590, 589210]))))
+
+    if "station_id" not in fields:
+        fields.append("station_id")
+
+    measurements = db.get_all_measurements(stations, fields, hours)
+
+    if timezone_id:
+        timezone = db.get_timezone_by_timezone_id(timezone_id)
+        #  TODO timezone conversion
+
+    content = json.dumps(measurements, indent=4, sort_keys=True, default=str)
+
+    export_id = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    return Response(
+        content,
+        mimetype='application/json',
+        headers={'Content-Disposition': f'attachment;filename={export_id}.json'})
+
+
 @api_bp.route('/measurements/temperature')
 @login_required
 def get_temperature_measurements():
     stations = list(map(int, util.convert_array_param(
         request.args.get("stations", [85210]))))
     interval = int(request.args.get("interval", 1))  # hours
-    limit = int(request.args.get("limit", 120))
+    limit = int(request.args.get("limit", 1200))
     offset = int(request.args.get("offset", 0))
     timezone_id = request.args.get("timezone")
 
