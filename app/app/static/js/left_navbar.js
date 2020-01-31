@@ -12,7 +12,7 @@ $(document).ready(function() {
     $(".track_container").on('click', function() { 
         setMapView($(this).children("p").attr("latitude"), $(this).children("p").attr("longitude"), 13);
         updateMarker(($(this).children("p").attr("trackID")-1));
-        $("#track option:eq("+($(this).children("p").attr("trackID")-1)+")").prop("selected", true);
+        $("#track option:eq("+($(this).children("p").attr("trackID"))+")").prop("selected", true);
         $("#latitude").val($(this).children("p").attr("latitude"));
         $("#longitude").val($(this).children("p").attr("longitude"));
         $("#country").val($(this).children("p").attr("country"));
