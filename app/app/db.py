@@ -210,6 +210,10 @@ def get_most_recent_temperature_averages(station_ids, limit, interval_hours, off
             break
 
         measurementbytes_generator = weatherdata.iterate_dataset_left(data, extension)
+        # for measurementbytes in measurementbytes_generator:
+        #     print(weatherdata.decode_measurement(measurementbytes, extension))
+        measurementbytes_generator = weatherdata.filter_by_field(
+            measurementbytes_generator, "station_id", station_ids, extension)
         measurementbytes_generator = weatherdata.filter_most_recent(
             measurementbytes_generator, limit, extension)
         measurement_generator = weatherdata.group_by_timestamp(
