@@ -116,7 +116,7 @@ def get_airpressure_measurements():
     timezone_offset = request.args.get("timezone")
 
     timezone_name = None
-    if timezone_offset:
+    if timezone_offset is not None:
         offset = util.convert_js_offset_to_storage_offset(int(timezone_offset))
         timezone_name = db.get_timezone_by_offset(offset)["name"]
 
@@ -140,7 +140,7 @@ def get_temperature_measurements():
     timezone_offset = request.args.get("timezone")
 
     timezone_name = None
-    if timezone_offset:
+    if timezone_offset is not None:
         offset = util.convert_js_offset_to_storage_offset(int(timezone_offset))
         timezone_name = db.get_timezone_by_offset(offset)["name"]
 
@@ -162,7 +162,7 @@ def get_measurements_export():
     timezone_offset = request.args.get("timezone")
 
     timezone_name = None
-    if timezone_offset:
+    if timezone_offset is not None:
         offset = util.convert_js_offset_to_storage_offset(int(timezone_offset))
         timezone_name = db.get_timezone_by_offset(offset)["name"]
 
