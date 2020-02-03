@@ -96,7 +96,7 @@ function retrieveData(pressStations, currentCount) {
 
     let limit = first ? 120 : 1;
 
-    $.get("/api/measurements/airpressure?limit=" + limit +"&stations=" + pressStations.join(), function(result) {
+    $.get("/api/measurements/airpressure?limit=" + limit +"&stations=" + pressStations.join() + "&timezone=" + new Date().getTimezoneOffset(), function(result) {
         if (currentCount != sessionId) {
             return;
         }

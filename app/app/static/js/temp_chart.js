@@ -98,7 +98,7 @@ function retrieveTempData(pressStations, currentCount) {
 
     let limit = temperatureFirst ? 120 : 1;
 
-    $.get("/api/measurements/temperature?limit=" + limit +"&stations=" + pressStations.join(), function(result) {
+    $.get("/api/measurements/temperature?limit=" + limit + "&stations=" + pressStations.join() + "&timezone=" + new Date().getTimezoneOffset(), function(result) {
         if (currentCount != temperatureSessionId) {
             return;
         }
