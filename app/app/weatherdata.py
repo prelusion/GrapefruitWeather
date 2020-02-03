@@ -293,7 +293,7 @@ def group_by_timestamp(measurementbytes_generator, interval_seconds, extension):
         if not currtimestamp:
             currtimestamp = timestamp
 
-        if currtimestamp - timestamp < datetime.timedelta(seconds=interval_seconds):
+        if currtimestamp == timestamp:
             measurements.append(measurement)
             continue
         else:
@@ -326,3 +326,11 @@ def decode_measurement_fields(measurementbytes_generator, fields, extension):
             bytevalue = measurementbytes[fieldaddr:fieldaddr + field_bc]
             measurement[field] = decode_field(field, bytevalue)
         yield measurement
+
+
+def limit_data(measurementbytes_generator, limit):
+    for count, measurementbytes in enumerate(measurementbytes_generator):
+        if count == limit:
+            break
+
+        yield measurementbytes

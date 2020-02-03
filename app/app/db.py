@@ -183,7 +183,9 @@ def get_most_recent_air_pressure_average(station_ids, limit, interval):
         measurementbytes_generator = weatherdata.filter_by_field(
             measurementbytes_generator, "station_id", station_ids, extension)
         measurementbytes_generator = weatherdata.filter_most_recent(
-            measurementbytes_generator, limit, extension)
+            measurementbytes_generator, 1, extension)
+        measurementbytes_generator = weatherdata.limit_data(
+            measurementbytes_generator, limit)
         measurement_generator = weatherdata.group_by_timestamp(
             measurementbytes_generator, interval, extension)
         newresult = list(
@@ -197,11 +199,11 @@ def get_most_recent_air_pressure_average(station_ids, limit, interval):
     return result
 
 
-def get_most_recent_temperature_averages(station_ids, limit, interval_hours, offset):
+def get_most_recent_temperature_averages(station_ids, limit, interval_hours):
     result = []
     offset = 0
     extension = weatherdata.WSAMC_EXTENSION
-    interval_seconds = interval_hours * 3600
+    interval_seconds = (interval_hours * 60 * 60) * 7 * 24
 
     while limit > 0:
         data = weatherdata.load_data_per_file(const.MEASUREMENTS_DIR, offset, extension)
@@ -215,16 +217,19 @@ def get_most_recent_temperature_averages(station_ids, limit, interval_hours, off
             measurementbytes_generator, "station_id", station_ids, extension)
 
         measurementbytes_generator = weatherdata.filter_most_recent(
-            measurementbytes_generator, interval_seconds * 24 * 7, extension)
+            measurementbytes_generator, interval_seconds, extension)
 
-        # for timestamp, measurementbytes in measurementbytes_generator:
-        #     print(weatherdata.decode_measurement(measurementbytes, extension))
+        measurementbytes_generator = weatherdata.limit_data(
+            measurementbytes_generator, limit)
 
         measurement_generator = weatherdata.group_by_timestamp(
             measurementbytes_generator, interval_seconds, extension)
 
         newresult = list(
             weatherdata.groups_to_average("temperature", measurement_generator))
+
+        # for measurement in newresult:
+        #     print(measurement)
 
         result.extend(newresult)
         limit -= len(newresult)

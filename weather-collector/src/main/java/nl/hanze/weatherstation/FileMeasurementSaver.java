@@ -2,8 +2,7 @@ package nl.hanze.weatherstation;
 
 import lombok.val;
 import nl.hanze.weatherstation.models.Measurement;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.log4j.Logger;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -21,7 +20,7 @@ public class FileMeasurementSaver implements Runnable {
             Queue<Measurement> measurementQueue,
             Queue<Measurement> measurementAverageQueue
     ) {
-        this.logger = LoggerFactory.getLogger(this.getClass());
+        this.logger = Logger.getLogger(this.getClass());
         this.measurementQueue = measurementQueue;
         this.measurementAverageQueue = measurementAverageQueue;
 
@@ -63,7 +62,7 @@ public class FileMeasurementSaver implements Runnable {
             logger.error("Writing measurement to file failed", exception);
         }
 
-        if (file.length() > (1024 * 1024 * 30)) {
+        if (file.length() > (1024 * 1024 * 60)) {
             collectionId++;
         }
     }
