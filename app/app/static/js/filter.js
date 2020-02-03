@@ -35,22 +35,13 @@ $("#limit").on("input", function(){
     }
 });
 
-function getStationsFilter(custom = false, custom_latitude, custom_longitude, custom_country_id) {
-    let trackID = $("#track").val();
-    let latitude = (custom === false) ? $("#latitude").val() : custom_latitude;
-    let longitude = (custom === false) ? $("#longitude").val() : custom_longitude;
+function getStationsFilter(custom = false, track_id, custom_country_id) {
+    let trackID = (custom === false) ?  $("#track").val() : track_id;
     let country = (custom === false) ?  $("#country").attr("countryid") : custom_country_id;
+    countryName = $("#country").val();
     let limit = $("#limit").val();
     let radius = $("#range").val();
     let error = false;
-    if (isNaN(latitude)) {
-        $("#latitude_error").show();
-        error = true;
-    }
-    if(isNaN(longitude)) {
-        $("#longitude_error").show();
-        error = true;
-    }
     if(isNaN(limit)) {
         $("#limit_error").show();
         error = true;
@@ -67,15 +58,26 @@ function getStationsFilter(custom = false, custom_latitude, custom_longitude, cu
     if(limit === "") {
         limit = 50;
     }
-    let url = "/api/stations?track_id="+trackID+"&limit="+limit
-    $.get(url, function(result) {
-        setAirStationsFromAPI(result);
-    });
-    url = "/api/stations?country="+country;
-    if (radius > 0) {
-        url = url + "&radius=" + radius;
-    }
-    $.get(url, function(result) {
-        setTemperatureStationsFromAPI(result);
-    });
+
+    setTimeout(function(){
+        let url = "/api/stations?track_id="+trackID+"&limit="+limit
+        $.get(url, function(result) {
+            setAirStationsFromAPI(result);
+        });
+     }, 100);
+
+   
+     
+    setTimeout(function(){
+        url = "/api/stations?track_id="+trackID+"&country="+country;
+        if (radius > 0) {
+            url = url + "&radius=" + radius;
+        }
+        $.get(url, function(result) {
+            setTemperatureStationsFromAPI(result);
+        });
+     }, 200);
+
+    
+
 }

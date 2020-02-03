@@ -57,8 +57,8 @@ class TestStringMethods(unittest.TestCase):
 
             offset += 1
 
-    def test_get_most_recent_temperature_averages(self):
-        db.get_most_recent_temperature_averages()
+    def test_data_export(self):
+        pass
 
 
 if __name__ == '__main__':

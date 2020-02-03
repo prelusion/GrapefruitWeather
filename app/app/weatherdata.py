@@ -282,18 +282,18 @@ def filter_most_recent(measurementbytes_generator, seconds, extension):
         yield timestamp, measurementbytes
 
 
-def group_by_timestamp(measurementbytes_generator, interval_seconds, extension):
+def group_by_timestamp(measurementbytes_generator, extension):
     measurements = []
     currtimestamp = None
 
-    for timestamp, measurementbytes in measurementbytes_generator:
-        measurement = decode_measurement(measurementbytes, extension, skipfields=["timestamp"])
-        measurement["timestamp"] = timestamp
+    for  measurementbytes in measurementbytes_generator:
+        measurement = decode_measurement(measurementbytes, extension)
+        timestamp = measurement["timestamp"]
 
         if not currtimestamp:
             currtimestamp = timestamp
 
-        if currtimestamp - timestamp < datetime.timedelta(seconds=interval_seconds):
+        if currtimestamp == timestamp:
             measurements.append(measurement)
             continue
         else:
@@ -326,3 +326,11 @@ def decode_measurement_fields(measurementbytes_generator, fields, extension):
             bytevalue = measurementbytes[fieldaddr:fieldaddr + field_bc]
             measurement[field] = decode_field(field, bytevalue)
         yield measurement
+
+
+def limit_data(measurementbytes_generator, limit):
+    for count, measurementbytes in enumerate(measurementbytes_generator):
+        if count == limit:
+            break
+
+        yield measurementbytes
