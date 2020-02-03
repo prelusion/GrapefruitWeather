@@ -5,6 +5,8 @@ from flask_login import UserMixin
 
 from app import const, util
 from app.const import TRACK_CACHE_DIR
+from copy import deepcopy
+from app.util import csv_to_array_of_dicts
 
 _stations_data = None
 _tracks_data = None
@@ -32,7 +34,7 @@ def get_stations():
                     "timezone": row[6]
                 })
 
-    return _stations_data
+    return deepcopy(_stations_data)
 
 
 def _convert_track(track):
@@ -107,7 +109,6 @@ def get_track_distances(track_id):
             reader = csv.reader(csvfile)
             for row in reader:
                 _distance_data[track_id][row[0]] = row[1]
-
     return _distance_data[track_id]
 
 
