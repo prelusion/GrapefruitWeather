@@ -48,18 +48,22 @@ public class WeatherStation {
         val healthExecutor = Executors.newScheduledThreadPool(1);
         healthExecutor.scheduleAtFixedRate(() -> {
             if (!measurementProcessorThread.isAlive()) {
+                healthLogger.warn("measurementProcessorThread restarted");
                 measurementProcessorThread.start();
             }
 
             if (!averageProcessorThread.isAlive()) {
+                healthLogger.warn("averageProcessorThread restarted");
                 averageProcessorThread.start();
             }
 
             if (!measurementSaverThread.isAlive()) {
+                healthLogger.warn("measurementSaverThread restarted");
                 measurementSaverThread.start();
             }
 
             if (!averageLoadProcessorThread.isAlive()) {
+                healthLogger.warn("averageLoadProcessorThread restarted");
                 averageLoadProcessorThread.start();
             }
 
