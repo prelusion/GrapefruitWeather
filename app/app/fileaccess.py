@@ -115,8 +115,6 @@ def get_track_distances(track_id):
 def get_user(user_id=None, username=None):
     global _users_data
 
-    user_dict = None
-
     if not _users_data:
 
         _users_data = {}
@@ -140,7 +138,3 @@ def get_user(user_id=None, username=None):
         return _users_data[user_id]
     else:
         return False
-
-
-
-

@@ -80,7 +80,7 @@ def limit_and_offset(dataset, limit, offset):
     new_data_set = []
     for i in range(limit + offset):
         if (i + offset + 1) > len(dataset):
-            break;
+            break
         new_data_set.append(dataset[i + offset])
     return new_data_set
 
@@ -95,3 +95,32 @@ def local_to_utc(local_dt):
 
 def encrypt(var):
     return argon2.encrypt(var)
+
+
+def convert_array_param(param):
+    if isinstance(param, list):
+        return param
+    try:
+        values = param.split(",")
+    except AttributeError:
+        values = [param]
+
+    return values
+
+
+def convert_single_field_measurement_timezone(measurement, timezone):
+    dt, value = measurement
+    return utc_to_local(dt, timezone), value
+
+
+def convert_js_offset_to_storage_offset(offset_mins):
+    offset_hours = offset_mins / 60
+    offset_opposite = offset_hours * -1
+    offset_times_hundred = offset_opposite * 100
+    offset_rounded = int(offset_times_hundred)
+    offset_padded = str(offset_rounded).zfill(5 if offset_rounded < 0 else 4)
+
+    if int(offset_rounded) > 0:
+        return "+" + offset_padded
+
+    return offset_padded

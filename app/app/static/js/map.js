@@ -7,6 +7,7 @@ $(document).ready(function() {
     currentStations = [];
     selectedAirStations = [];
     selectedTemperatureStations = [];
+    countryName = "";
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -81,10 +82,11 @@ function markerClick(event) {
             deselectMarkers();
             event.layer.setIcon(racetrackIcon);
             setNewTempStations(selectedTemperatureStations);
+            setNewAirStations(selectedAirStations);
         } else {
             event.layer.setIcon(weatherstationIcon);
             selectedAirStations = removeValueOutArray(selectedAirStations, event.layer.station_id);
-            // setNewAirStations();
+            setNewAirStations(selectedAirStations);
         }
         event.layer.highlighted = false;
     } else {
@@ -99,7 +101,7 @@ function markerClick(event) {
             event.layer.setIcon(weatherstationIconSelected);
             event.layer.highlighted = true;
             selectedAirStations.push(event.layer.station_id);
-            // setNewAirStations();
+            setNewAirStations(selectedAirStations);
         }  
     }
 }
@@ -173,7 +175,7 @@ function setAirStationsFromAPI(result) {
             }
         }
     }
-    // setNewAirStations(selectedTemperatureStations);
+    setNewAirStations(selectedAirStations);
 }
 
 function setMapView(latitude, longitude, zoom) {

@@ -8,13 +8,24 @@ services:
             - "7789:7789"
         volumes:
             - type: volume
+              source: logsmount
+              target: /logs
+              volume:
+                  nocopy: true
+            - type: volume
               source: nfsmount
               target: /measurements
               volume:
                   nocopy: true
 volumes:
+    logsmount:
+      driver: local
+      driver_opts:
+        type: none
+        o: bind
+        device: ${PWD}/logs
     nfsmount:
         driver_opts:
             type: nfs
-            o: addr=51.144.90.93,nolock,soft,rw,nfsvers=4
+            o: addr=azure19.hopto.org,nolock,soft,rw,nfsvers=4
             device: ":/"

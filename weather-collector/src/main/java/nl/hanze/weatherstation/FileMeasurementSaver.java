@@ -1,52 +1,45 @@
 package nl.hanze.weatherstation;
 
-import com.google.common.primitives.Bytes;
 import lombok.val;
 import nl.hanze.weatherstation.models.Measurement;
-import org.slf4j.Logger;
+import org.apache.log4j.Logger;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 import java.util.Queue;
 
 public class FileMeasurementSaver implements Runnable {
     private final Logger logger;
-    private final Queue<Measurement> measurementSaveQueue;
-    private final MeasurementConverter measurementConverter;
-    private final List<StationIndexEntry> stationIndex;
-    private final Map<Integer, Integer> indexInsertLocations;
+    private final Queue<Measurement> measurementQueue;
+    private final Queue<Measurement> measurementAverageQueue;
     private int collectionId;
     private int collectionCheckCounter = 100;
 
     public FileMeasurementSaver(
-            Logger logger,
-            Queue<Measurement> measurementSaveQueue,
-            MeasurementConverter measurementConverter,
-            List<StationIndexEntry> stationIndex,
-            Map<Integer, Integer> indexInsertLocations,
-            int startCollectionId
+            Queue<Measurement> measurementQueue,
+            Queue<Measurement> measurementAverageQueue
     ) {
-        this.logger = logger;
-        this.measurementSaveQueue = measurementSaveQueue;
-        this.measurementConverter = measurementConverter;
-        this.stationIndex = stationIndex;
-        this.indexInsertLocations = indexInsertLocations;
-        this.collectionId = startCollectionId;
+        this.logger = Logger.getLogger(this.getClass());
+        this.measurementQueue = measurementQueue;
+        this.measurementAverageQueue = measurementAverageQueue;
+
+        val files = FileHelper.extractExtensionSequences("/measurements", "wsmc");
+        this.collectionId = files.size() == 0 ? 0 : files.get(0);
     }
 
     @Override
     public void run() {
         while (true) {
             if (Thread.currentThread().isInterrupted()) {
-                logger.info(String.format("%s interrupted", this.getClass().toString()));
                 return;
             }
 
-            process();
+            try {
+                process();
+            } catch (Exception exception) {
+                logger.error("Exception in file measurement saver", exception);
+            }
         }
     }
 
@@ -58,15 +51,18 @@ public class FileMeasurementSaver implements Runnable {
 
             try (val outputStream = new FileOutputStream(file, true)) {
                 Measurement measurement;
-                while ((measurement = measurementSaveQueue.poll()) != null) {
-                    outputStream.write(measurementConverter.convertMeasurementToByteArray(measurement));
+                while ((measurement = measurementQueue.poll()) != null) {
+                    outputStream.write(MeasurementConverter.convertMeasurementToByteArray(measurement));
+
+                    // When the measurement is saved it can be offered to the average queue.
+                    measurementAverageQueue.offer(measurement);
                 }
             }
         } catch (IOException exception) {
             logger.error("Writing measurement to file failed", exception);
         }
 
-        if (file.length() > (1024 * 1024 * 30)) {
+        if (file.length() > (1024 * 1024 * 60)) {
             collectionId++;
         }
     }

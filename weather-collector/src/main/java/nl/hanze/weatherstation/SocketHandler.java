@@ -1,6 +1,6 @@
 package nl.hanze.weatherstation;
 
-import org.slf4j.Logger;
+import org.apache.log4j.Logger;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -9,14 +9,14 @@ import java.net.Socket;
 import java.util.Queue;
 
 public class SocketHandler implements Runnable {
+    private Logger logger;
     private Socket socket;
     private Queue<String> rawDataQueue;
-    private Logger logger;
 
-    public SocketHandler(Socket socket, Queue<String> rawDataQueue, Logger logger) {
+    public SocketHandler(Socket socket, Queue<String> rawDataQueue) {
+        this.logger = Logger.getLogger(this.getClass());
         this.socket = socket;
         this.rawDataQueue = rawDataQueue;
-        this.logger = logger;
     }
 
     @Override

@@ -38,6 +38,7 @@ $("#limit").on("input", function(){
 function getStationsFilter(custom = false, track_id, custom_country_id) {
     let trackID = (custom === false) ?  $("#track").val() : track_id;
     let country = (custom === false) ?  $("#country").attr("countryid") : custom_country_id;
+    countryName = $("#country").val();
     let limit = $("#limit").val();
     let radius = $("#range").val();
     let error = false;

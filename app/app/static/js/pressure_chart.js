@@ -1,191 +1,174 @@
-//global vars for history
-//var pressureTimeList = [];
-//var pressureList = [];
-//var graphPressureStations = [];
-//var pressureCallLimit = 120;
-//var intervalId = null;
-//const pressureHistoryInterval = 120;
-//const pressureLock = 1000;
-//var lock = false;
-//
-//function drawPressureChart(times, pressures) {
-//    $("#pressure_status_label").hide();
-//    new Chart($("#pressure_chart"), {
-//        type: 'line',
-//        data: {
-//            labels: times,
-//            datasets: [{
-//                data: pressures,
-//                label: "pressure",
-//                borderColor: "#091e49",
-//                fill: true
-//            }]
-//        },
-//        options: {
-//            title: {
-//                display: true,
-//                text: "pressure"
-//            },
-//            animation: false,
-//            events: []
-//        }
-//    });
-//    $("#pressure_chart").show();
-//    // $("#pressure_time_label").text("Time (latest): " + pressureTimeList[pressureTimeList.length-1]);
-//    // $("#pressure_label").text("Pressure (latest): " + pressureList[pressureList.length-1]);
-//}
-//
-//function processPressureData(result){
-//    if(pressureTimeList.length == 0){
-//        for(x = pressureHistoryInterval - 1; x >= 0; x--){
-//            pressureTimeList.push(("" + result.data[x][0].substring(17,25)));
-//            pressureList.push(result.data[x][1]);
-//        }
-//        pressureCallLimit = 1;
-//    } else {
-//        // if(!result.data[0][0].substring(17,25) == pressureTimeList[pressureTimeList.length - 1]) {
-//            pressureTimeList.shift();
-//            pressureTimeList.push("" + result.data[0][0].substring(17,25));
-//
-//            pressureList.shift();
-//            pressureList.push(result.data[0][1]);
-//        // }
-//    }
-//}
-//
-////function is done before api is done
-//function plotPressure(apilimit, pressStations) {
-//    if(!lock){
-//        lock = true;
-//        $.get("http://127.0.0.1:5000/api/measurements/airpressure?limit=" + apilimit +"&stations=" + pressStations.join(),
-//            function(result) {
-//                console.log(apilimit);
-//                processPressureData(result);
-//                if(pressureTimeList.length == pressureHistoryInterval && pressureList.length == pressureHistoryInterval){
-//                    drawPressureChart(pressureTimeList, pressureList);
-//            }
-//        });
-//        lock = false;
-//    }else {
-//        console.log("lock occured!");
-//    }
-//}
-//
-//function setNewAirStations(newstations){
-//    console.log("called");
-//    //if stations are changed, there is no need to keep downloading and plotting
-//    clearInterval(intervalId);
-//
-//    graphPressureStations = newstations;
-//    pressureTimeList = [];
-//    pressureList = [];
-//    pressureCallLimit = 120;
-//
-//    if(graphPressureStations.length != 0){
-//        intervalId = setInterval(plotPressure, pressureLock,
-//             pressureCallLimit, graphPressureStations);
-//    }
-//}
+/**
+ * Arrays variables.
+ */
+let pressureTimeList = [];
+let pressureList = [];
+let queue = [];
 
-// setInterval(refresh_pressure, pressure_refreshrate); 
+/**
+ * constant variables. 
+ */
+const pressureHistoryInterval = 120;
+const pressureRefreshRate = 1000;
+
+/**
+ * State variables.
+ */
+let first = true;
+let firstLoading = false;
+let apiInterval = null;
+let plotInterval = null;
+let sessionId = 1;
 
 
-// $("#air_timezone").on("click", function() {
-//     if($(this).text() === "Local timezone") {
-//         $(this).text("Destination timezone");
-//         $(this).addClass("btn-danger");
-//         $(this).removeClass("btn-success");
-//     } else {
-//         $(this).text("Local timezone");
-//         $(this).addClass("btn-success");
-//         $(this).removeClass("btn-danger");
-//     }
-// });
-
-$(document).ready((function(){
-
-    timestamplist = [];
-    preslist = [];
-
-    $("#pressure_status_label").show();
-
-    function air_pressure_plot(timestamps, temperature){
-        $("#temp_status_label").hide();
-        var myLineChart = new Chart($("#pressure_chart"), {
-            type: 'line',
-            data: {
-                labels: timestamps,
-                datasets: [{
-                    data: temperature,
-                    label: "air Pressure",
-                    borderColor: "#3e95cd",
-                    fill: true
-                }]
-
+/**
+ * drawPressureChart draws a graph from the data given by the parameters.
+ * @param  array times array with timestamps for x-axis.
+ * @param  array pressures array with y-axis value.
+ */
+function drawPressureChart(times, pressures) {
+    $("#pressure_status_label").hide();
+    new Chart($("#pressure_chart"), {
+        type: 'line',
+        data: {
+            labels: times,
+            datasets: [{ 
+                data: pressures,
+                label: "pressure",
+                borderColor: "#ea1c2e",
+                fill: true
+            }]
+        },
+        options: {
+            title: {
+                display: true,
+                text: "pressure"
             },
-            options: {
-                title: {
-                    display: true,
-                    text: "Air Pressure"
-                },
-                animation: false,
-                events: []
-            }
-        });
-        $("#pressure_time_label").text("Time (latest): " + timestamplist[timestamplist.length-1]);
-        $("#pressure_label").text("Air Pressure (latest): " + preslist[preslist.length-1]);
+            animation: false,
+            events: []
+        }
+    });
+    $("#pressure_chart").show();
+    $("#pressure_time_label").text("Time (latest): " + times[times.length-1]).show();
+    $("#pressure_label").text("Pressure (latest): " + pressureList[pressures.length-1]).show();
+
+    //commented for later implementation
+    // $("#air_timezone").show();
+}
+
+/**
+ * processPressureData processes the json result from the api into a timestamp and pressurelist.
+ * @param  json result with timestamps and airpressure measurements.
+ */
+function processPressureData(result){
+    if(pressureTimeList.length == 0){
+        for(x = pressureHistoryInterval - 1; x >= 0; x--){
+            pressureTimeList.push(("" + result.data[x][0].substring(17,25)));
+            pressureList.push(result.data[x][1]);
+        }
+    } else {
+        //following is commented for test purposes
+        // if(!result.data[0][0].substring(17,25) == pressureTimeList[pressureTimeList.length - 1]) {
+            pressureTimeList.shift();
+            pressureTimeList.push("" + result.data[0][0].substring(17,25));
+
+            pressureList.shift();
+            pressureList.push(result.data[0][1]);
+        // }
+    }     
+}
+
+/**
+ * retrieveData retrieves the airpressure data from an api.
+ * @param  array pressStations with pressure stations.
+ * @param  int currentCount with id of api session.
+ */
+function retrieveData(pressStations, currentCount) { 
+    if (first && firstLoading) {
+        return;
+    } else if (first) {
+        firstLoading = true;
     }
 
-    function air_pressure_generator() {
-        var hours = new Date().getHours();
-        var minutes = new Date().getMinutes();
-        var seconds = new Date().getSeconds();
+    let limit = first ? 120 : 1;
 
-        function convert_time(input){
-            if(input < 10){
-                return "0" + input;
-            } else {
-                return ""+ input;
-            }
+    $.get("http://127.0.0.1:5000/api/measurements/airpressure?limit=" + limit +"&stations=" + pressStations.join(), function(result) {
+        if (currentCount != sessionId) {
+            return;
         }
-
-        function createTimeStamp(){
-            return convert_time(hours) + ":" + convert_time(minutes) + ":" + convert_time(seconds);
+        if (first) {
+            first = false;
+            firstLoading = false;
         }
+        queue.push(result);
+    });
+}
 
-        function list_generator(list, data) {
-            if(list.length == 6){
-                list.shift();
-                list[5] = data;
-                return list;
-            } else {
-                list.push(data);
-                return list;
-            }
-        }
+/**
+ * setNewAirStations resets necessary variables and retrieves a new array with pressurestations.
+ * @param  array statons with station id's.
+ */
+function setNewAirStations(stations) {
+    $("#pressure_time_label").hide();
+    $("#pressure_label").hide();
+    $("#pressure_chart").hide();
 
-        var time = list_generator(timestamplist, createTimeStamp());
-        var data = list_generator(preslist, Math.floor((Math.random() * 50) + 1000));
+    if (sessionId > 100) {
+        sessionId = 1;
+    }
+    
+    sessionId++;
 
-        air_pressure_plot(time, data);
+    if (apiInterval) {
+        clearInterval(apiInterval);
+    }
+    if (plotInterval) {
+        clearInterval(plotInterval);
     }
 
+    pressureTimeList = [];
+    pressureList = [];
+    queue = [];
+    first = true;
+    firstLoading = false;
+    
+    if(stations.length != 0){
+        $("#pressure_status_label").text("Loading history...").show();
+        apiInterval = setInterval(retrieveData, 1000, stations, sessionId);
+        plotInterval = setInterval(handleQueue, pressureRefreshRate);
+    } else {
+        $("#pressure_status_label").text("There are no airpressure stations available. Try selecting a track!").show();
+    }
+}
 
-    setInterval(air_pressure_generator, 1000);
-})());
+/**
+ * handleQueue handles the processing of json objects to plots.
+ */
+function handleQueue() {
+    while (queue.length != 0) {
+        processPressureData(queue.shift());
+        drawPressureChart(pressureTimeList, pressureList);
+    }
+}
 
-function setNewAirStations(parameter) {}
+/**
+ * Sets refreshrate of graph.
+ * @param handleQueue function to be executed.
+ * @param refreshrate rate in miliseconds at which the function in first parameters should be called.   
+ */
+plotInterval = setInterval(handleQueue, pressureRefreshRate);
 
-// $("#temperature_timezone").on("click", function() {
-//     if($(this).text() === "Local timezone") {
-//         $(this).text("Destination timezone");
-//         $(this).addClass("btn-danger");
-//         $(this).removeClass("btn-success");
-//     } else {
-//         $(this).text("Local timezone");
-//         $(this).addClass("btn-success");
-//         $(this).removeClass("btn-danger");
-//     }
-// });
-
-
+/**
+ * Creates button to switch between timezones 
+ */
+$("#air_timezone").on("click", function() {
+    if($(this).text() === "Local timezone") {
+        $(this).text("Destination timezone");
+        $(this).addClass("btn-danger");
+        $(this).removeClass("btn-success");
+    } else {
+        $(this).text("Local timezone");
+        $(this).addClass("btn-success");
+        $(this).removeClass("btn-danger");
+    }
+});

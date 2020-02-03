@@ -1,77 +1,181 @@
-$(document).ready((function(){
+/**
+ * Arrays variables.
+ */
+let temperatureTimeList = [];
+let temperatureList = [];
+let temperatureQueue = [];
 
-    timestamplist = [];
-    templist = [];
+/**
+ * constant variables. 
+ */
+const temperatureHistoryInterval = 3;
+const temperatureRefreshRate = 1000;
 
-    $("#temp_status_label").show();
+/**
+ * State & other variables.
+ */
+let temperatureFirst = true;
+let temperatureFirstLoading = false;
+let tempApiInterval = null;
+let tempPlotInterval = null;
+let temperatureSessionId = 1;
+let country = "";
 
-    function plot(timestamps, temperature){
-        $("#temp_status_label").hide();
-        var myLineChart = new Chart($("#temperature_chart"), {
-            type: 'line',
-            data: {
-                labels: timestamps,
-                datasets: [{ 
-                    data: temperature,
-                    label: "temperature",
-                    borderColor: "#3e95cd",
-                    fill: true
-                }]
 
+/**
+ * drawTempChart draws a graph from the data given by the parameters.
+ * @param  array times array with timestamps for x-axis.
+ * @param  array pressures array with y-axis value.
+ */
+function drawTempChart(times, temperatures) {
+    $("#temp_status_label").hide();
+    new Chart($("#temperature_chart"), {
+        type: 'line',
+        data: {
+            labels: times,
+            datasets: [{ 
+                data: temperatures,
+                label: "Temperature",
+                borderColor: "#091e49",
+                fill: true
+            }]
+        },
+        options: {
+            title: {
+                display: true,
+                text: "Temperature"
             },
-            options: {
-                title: {
-                    display: true,
-                    text: "Temperature"
-                },
-                animation: false,
-                events: []
-            }
-        });
-        $("#temp_time_label").text("Time (latest): " + timestamplist[timestamplist.length-1]);
-        $("#temperature_label").text("Temperature (latest): " + templist[templist.length-1]);
-        $("#amount_temperature_stations").text("Temperature stations: " + getTemperatureStations().length);
+            animation: false,
+            events: []
+        }
+    });
+    $("#temperature_chart").show();
+    $("#temp_time_label").text("Time (latest): " + times[times.length-1]).show();
+    $("#temperature_label").text("temperature (latest): " + temperatures[temperatures.length-1]).show();
+    $("#temperature_country").text("Country: " + country).show();
+
+    //commented for later implementation
+    // $("#temperature_timezone").show();
+}
+
+/**
+ * processTempData processes the json result from the api into a timestamp and temperatureList.
+ * @param  json result with timestamps and temperature measurements.
+ */
+function processTempData(result){
+    if(temperatureTimeList.length == 0){
+        for(x = temperatureHistoryInterval - 1; x >= 0; x--){    
+            temperatureTimeList.push(("" + result.data[x][0].substring(17,25)));
+            temperatureList.push(result.data[x][1]);
+        }
+    } else {
+        //following is commented for test purposes
+        // if(!result.data[0][0].substring(17,25) == temperatureTimeList[temperatureTimeList.length - 1]) {
+            temperatureTimeList.shift();
+            temperatureTimeList.push("" + result.data[0][0].substring(17,25));
+
+            temperatureList.shift();
+            temperatureList.push(result.data[0][1]);
+        // }
+    }     
+}
+
+/**
+ * retrieveTempData retrieves the temperature data from an api.
+ * @param  array pressStations with pressure stations.
+ * @param  int currentCount with id of api session.
+ */
+function retrieveTempData(pressStations, currentCount) { 
+    if (temperatureFirst && temperatureFirstLoading) {
+        return;
+    } else if (temperatureFirst) {
+        temperatureFirstLoading = true;
     }
 
-    function generator() {
-        var hours = new Date().getHours();
-        var minutes = new Date().getMinutes();
-        var seconds = new Date().getSeconds();
+    let limit = temperatureFirst ? 120 : 1;
 
-        function convert_time(input){
-            if(input < 10){
-                return "0" + input;
-            } else {
-                return ""+ input;
-            }
+    $.get("http://127.0.0.1:5000/api/measurements/temperature?limit=" + limit +"&stations=" + pressStations.join(), function(result) {
+        if (currentCount != temperatureSessionId) {
+            return;
         }
-
-        function createTimeStamp(){
-            return convert_time(hours) + ":" + convert_time(minutes) + ":" + convert_time(seconds);
+        if (temperatureFirst) {
+            temperatureFirst = false;
+            temperatureFirstLoading = false;
         }
+        temperatureQueue.push(result);
+    });
+}
 
-        function list_generator(list, data) {
-            if(list.length == 6){
-                list.shift();
-                list[5] = data;
-                return list;
-            } else {
-                list.push(data);
-                return list;
-            }
-        }
+function toCountryName(inputStr) {
+    let newStr = "";
+    let words = inputStr.toLowerCase().split(" ");
+    for (index in words) {
+    	newStr += words[index].charAt(0).toUpperCase() + words[index].slice(1) + " ";
+    	newStr.trimRight();
+    }
+    return newStr;
+}
 
-        var time = list_generator(timestamplist, createTimeStamp());
-        var data = list_generator(templist, Math.floor((Math.random() * 1.1) + 15));
 
-        plot(time, data);
+/**
+ * setNewAirStations resets necessary variables and retrieves a new array with temperaturestations.
+ * @param  array statons with station id's.
+ */
+function setNewTempStations(stations) {
+    $("#temp_time_label").hide();
+    $("#temperature_label").hide();
+    $("#temperature_country").hide();
+    $("#temperature_chart").hide();
+
+    if (temperatureSessionId > 100) {
+        temperatureSessionId = 1;
+    }
+    
+    temperatureSessionId++;
+
+    if (tempApiInterval) {
+        clearInterval(tempApiInterval);
+    }
+    if (tempPlotInterval) {
+        clearInterval(tempPlotInterval);
     }
 
-    setInterval(generator, 1000);
-})());
+    temperatureTimeList = [];
+    temperatureList = [];
+    temperatureQueue = [];
+    temperatureFirst = true;
+    temperatureFirstLoading = false;
+    country = toCountryName(countryName);
+    
+    if(stations.length != 0){
+        $("#temp_status_label").text("Loading history...").show();
+        tempApiInterval = setInterval(retrieveTempData, 1000, stations, temperatureSessionId);
+        tempPlotInterval = setInterval(handletemperatureQueue, temperatureRefreshRate);
+    } else {
+        $("#temp_status_label").text("There are no temperature stations available. Try selecting a different track!").show();
+    }
+}
 
-function setNewTempStations(parameter) {}
+/**
+ * handletemperatureQueue handles the processing of json objects to plots.
+ */
+function handletemperatureQueue() {
+    while (temperatureQueue.length != 0) {
+        processTempData(temperatureQueue.shift());
+        drawTempChart(temperatureTimeList, temperatureList);
+    }
+}
 
+/**
+ * Sets refreshrate of graph.
+ * @param handletemperatureQueue function to be executed.
+ * @param refreshrate rate in miliseconds at which the function in first parameters should be called.   
+ */
+tempPlotInterval = setInterval(handletemperatureQueue, temperatureRefreshRate);
+
+/**
+ * Creates button to switch between timezones 
+ */
 // $("#temperature_timezone").on("click", function() {
 //     if($(this).text() === "Local timezone") {
 //         $(this).text("Destination timezone");
