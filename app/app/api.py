@@ -1,5 +1,6 @@
 import json
 import time
+from dicttoxml import dicttoxml
 from datetime import datetime
 
 from flask import Blueprint, request, Response
@@ -205,14 +206,15 @@ def get_measurements_export():
         timezone = db.get_timezone_by_timezone_id(timezone_id)
         #  TODO timezone conversion
 
-    content = json.dumps(measurements, indent=4, sort_keys=True, default=str)
-
+    # content = json.dumps(measurements, indent=4, sort_keys=True, default=str)
+    content = dicttoxml(measurements, custom_root='measurements', attr_type=False,
+                        item_func=lambda: "measurement")
     export_id = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
     return Response(
         content,
-        mimetype='application/json',
-        headers={'Content-Disposition': f'attachment;filename={export_id}.json'})
+        mimetype='text/xml',
+        headers={'Content-Disposition': f'attachment;filename={export_id}.xml'})
 
 
 @api_bp.route('/measurements/temperature')
