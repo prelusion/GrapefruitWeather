@@ -106,16 +106,17 @@ function retrieveTempData(pressStations, currentCount) {
     });
 }
 
-function toCountryName(name){
+function toCountryName(inputStr) {
     let newStr = "";
-    name.toLowerCase();
-    let words = name.split(" ");
+    let words = inputStr.toLowerCase().split(" ");
+    console.log(words);
     for (index in words) {
     	newStr += words[index].charAt(0).toUpperCase() + words[index].slice(1) + " ";
     	newStr.trimRight();
     }
     return newStr;
 }
+
 
 /**
  * setNewAirStations resets necessary variables and retrieves a new array with temperaturestations.
