@@ -5,7 +5,7 @@ from app import api
 from app.db import generate_track_to_station_cache
 import logging
 
-from app.fileaccess import get_user
+from app.fileaccess import get_user, get_tracks, get_track_distances
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -31,4 +31,8 @@ def create_app():
         logger.info("Generating distances for tracks... this takes one to two minutes")
         generate_track_to_station_cache()
         logger.info("Generating distances for tracks succesful, caching data for next time")
+
+        for track in get_tracks():
+            get_track_distances(track["id"])
+
     return app

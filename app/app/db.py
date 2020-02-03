@@ -37,6 +37,7 @@ def get_racing_tracks(track_id=None, name=None, city=None, country=None, limit=N
 
     return True, racing_tracks
 
+
 def get_stations_for_track_by_country_id(track_id, country_id, radius):
     stations = get_stations_and_sort_distance(track_id)
     if radius:
@@ -44,9 +45,11 @@ def get_stations_for_track_by_country_id(track_id, country_id, radius):
         return list(filter(lambda station: station["distance"] < float(radius), stations))
     return list(filter(lambda st: st["country-id"].lower() == country_id.lower(), stations))
 
+
 def get_stations_for_track_id_by_limit(track_id, limit):
     stations = get_stations_and_sort_distance(track_id)
     return stations[:int(limit)]
+
 
 def get_stations_and_sort_distance(track_id):
     stations = fileaccess.get_stations()
@@ -54,10 +57,11 @@ def get_stations_and_sort_distance(track_id):
     for station in stations:
         try:
             station["distance"] = int(distances[station["id"]])
-        except:   
+        except KeyError:
             print("Station not found")
     stations.sort(key=lambda st: st["distance"])
     return stations
+
 
 def get_stations_by_coordinates(latitude, longitude, limit):
     stations = fileaccess.get_stations()
@@ -66,7 +70,7 @@ def get_stations_by_coordinates(latitude, longitude, limit):
         station["distance"] = round(
             distance.distance([float(station["latitude"]), float(station["longitude"])],
                               target_location).km)
-    stations.sort(key=lambda st: st["distance"]);
+    stations.sort(key=lambda st: st["distance"])
     return stations[:int(limit)]
 
 
@@ -152,6 +156,7 @@ def get_most_recent_air_pressure_average(station_ids, limit, interval):
         offset += 1
 
     return result
+
 
 def get_timezone_by_station_id(station_id):
     stations = list(filter(lambda st: int(st["id"]) == int(station_id), fileaccess.get_stations()))
