@@ -112,7 +112,6 @@ def get_airpressure_measurements():
     """
     stations = list(map(int, util.convert_array_param(
         request.args.get("stations", [743700, 93590, 589210]))))
-    interval = int(request.args.get("interval", 1))
     limit = int(request.args.get("limit", 120))
     timezone_offset = request.args.get("timezone")
 
@@ -121,12 +120,11 @@ def get_airpressure_measurements():
         offset = util.convert_js_offset_to_storage_offset(int(timezone_offset))
         timezone_name = db.get_timezone_by_offset(offset)["name"]
 
-    measurements = db.get_most_recent_air_pressure_average(stations, limit, interval, timezone_name)
+    measurements = db.get_most_recent_air_pressure_average(stations, limit,  timezone_name)
 
     params = {
         "total": len(measurements),
         "limit": limit,
-        "interval": interval,
         "stations": stations,
     }
 
@@ -138,7 +136,6 @@ def get_airpressure_measurements():
 def get_temperature_measurements():
     stations = list(map(int, util.convert_array_param(
         request.args.get("stations", [85210]))))
-    interval = int(request.args.get("interval", 1))  # hours
     limit = int(request.args.get("limit", 24 * 7))
     timezone_offset = request.args.get("timezone")
 
@@ -147,12 +144,11 @@ def get_temperature_measurements():
         offset = util.convert_js_offset_to_storage_offset(int(timezone_offset))
         timezone_name = db.get_timezone_by_offset(offset)["name"]
 
-    measurements = db.get_most_recent_temperature_averages(stations, limit, interval, timezone_name)
+    measurements = db.get_most_recent_temperature_averages(stations, limit, timezone_name)
 
     params = {
         "total": len(measurements),
         "limit": limit,
-        "interval": interval,
         "stations": stations,
     }
 
@@ -170,8 +166,8 @@ def get_measurements_export():
         offset = util.convert_js_offset_to_storage_offset(int(timezone_offset))
         timezone_name = db.get_timezone_by_offset(offset)["name"]
 
-    air_measurements = db.get_most_recent_air_pressure_average(stations, 120, 1, timezone_name)
-    temp_measurements = db.get_most_recent_temperature_averages(stations, 24 * 7, 1, timezone_name)
+    air_measurements = db.get_most_recent_air_pressure_average(stations, 120, timezone_name)
+    temp_measurements = db.get_most_recent_temperature_averages(stations, 24 * 7, timezone_name)
 
     body = {
         "air_pressure": air_measurements,
