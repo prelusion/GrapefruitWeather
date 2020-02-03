@@ -1,11 +1,14 @@
 .filter {
     text-align: center; 
     color: gold;
+    background-color: #091e49;
+    border: 1px solid black;
+    border-radius: 4px;
 }
 
 .filter .footer_container {
     width: 100%;
-    height: 39vh;
+    height: 49VH;
     margin-top: 1vh;
     border-radius: 5px;
     border-top: black 1px solid;
@@ -14,5 +17,23 @@
 .filter .footer_container .input_container {
     margin-left: 10%;
     width: 80%;
+}
+
+.filter .footer_container .half_input_container {
+    margin-left: 10%;
+    width: 35%;
     margin-top: 10px;
+    float: left;
+}
+
+.filter .style_button {
+    border-radius: 5px;
+    cursor: pointer;
+    border: 1px solid gold;
+    background-color: #091e49;
+    color: #e2063b;
+}
+
+.filter .style_button:hover {
+    background-color: #072768;
 }

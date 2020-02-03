@@ -1,60 +1,81 @@
 $(document).ready(function() {
     //$(#track).val() = the track id+1.
-    $("#track").change(function() {
-        $("#latitude").val(jsonArray[$(this).val()-1].latitude);
-        $("#longitude").val(jsonArray[$(this).val()-1].longitude);
-        $("#country").val(jsonArray[$(this).val()-1].country);
-        getTrackFilter(true);
-    });
-
-    $("#latitude").on('input', function() {
-        getTrackFilter();
-    });
-    $("#longitude").on('input', function() {
-        getTrackFilter();
-    });
-
-    $("#limit").on('input', function() {
-        getTrackFilter();
-    });
-
-    $("#range").on('input', function() {
-        getTrackFilter();
-    });
-
-    function getTrackFilter(bool, obj) {
-        var trackID = $("#track").val();
-        var latitude = $("#latitude").val();
-        var longitude = $("#longitude").val();
-        var country = $("#country").val();
-        var limit = $("#limit").val();
-        var range = $("#range").val();
-        var error = false;
-        if (isNaN(latitude)) {
-            $("#latitude_error").show();
-            error = true;
+    $("#filter_button").on("click", function() {
+        if($("#track").val() == "-1") {
+            return;
         }
-        if(isNaN(longitude)) {
-            $("#longitude_error").show();
-            error = true;
-        }
-        if(isNaN(limit)) {
-            $("#limit_error").show();
-            error = true;
-        }
-        if(isNaN(range)) {
-            $("#range_error").show();
-            error = true;
-        }
-        if(error === true) return;
-        $("#latitude_error").hide();
-        $("#longitude_error").hide();
-        $("#limit_error").hide();
-        $("#range_error").hide();
+        setFilterValues(jsonArray[$("#track").val()-1].latitude, jsonArray[$("#track").val()-1].longitude, jsonArray[$("#track").val()-1].country_id, jsonArray[$("#track").val()-1].country);
+        setMapView($("#latitude").val(), $("#longitude").val(), map.getZoom());
+        updateMarker($("#track").val()-1);
+        getStationsFilter();
+    });
+    $("#filter_button").trigger("click");
+});
 
-        setMapView(latitude, longitude);
-        $.get("http://127.0.0.1:5000/api/tracks?id="+trackID+"&country="+country, function(result) {
-            
-        });
+function setFilterValues(latitude, longitude, countryID, countryName) {
+    $("#latitude").val(latitude);
+    $("#longitude").val(longitude);
+    $("#country").attr("countryid", countryID);
+    $("#country").val(countryName);
+}
+
+$("#zoom_button").on("click", function(){
+    setMapView($("#latitude").val(), $("#longitude").val(), 11);
+});
+
+$("#clear_button").on("click", function(){
+    clearMapOfStations();
+});
+
+$("#limit").on("input", function(){
+    if($(this).val() > 300) {
+        $(this).popover('show')
+    } else {
+        $(this).popover('hide')
     }
 });
+
+function getStationsFilter(custom = false, custom_latitude, custom_longitude, custom_country_id) {
+    let trackID = $("#track").val();
+    let latitude = (custom === false) ? $("#latitude").val() : custom_latitude;
+    let longitude = (custom === false) ? $("#longitude").val() : custom_longitude;
+    let country = (custom === false) ?  $("#country").attr("countryid") : custom_country_id;
+    let limit = $("#limit").val();
+    let radius = $("#range").val();
+    let error = false;
+    if (isNaN(latitude)) {
+        $("#latitude_error").show();
+        error = true;
+    }
+    if(isNaN(longitude)) {
+        $("#longitude_error").show();
+        error = true;
+    }
+    if(isNaN(limit)) {
+        $("#limit_error").show();
+        error = true;
+    }
+    if(isNaN(radius)) {
+        $("#range_error").show();
+        error = true;
+    }
+    if(error === true) return;
+    $("#latitude_error").hide();
+    $("#longitude_error").hide();
+    $("#limit_error").hide();
+    $("#range_error").hide();
+    if(limit === "") {
+        limit = 50;
+    }
+    let url = "/api/stations?track_id="+trackID+"&limit="+limit
+    $.get(url, function(result) {
+        setAirStationsFromAPI(result);
+    });
+    url = "/api/stations?country="+country;
+    if (radius > 0) {
+        url = url + "&radius=" + radius;
+    }
+    $.get(url, function(result) {
+        setTemperatureStationsFromAPI(result);
+    });
+}

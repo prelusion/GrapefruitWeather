@@ -4,21 +4,28 @@ body {
 }
 
 .maincontainer {
-    margin-top: 40px;
+    margin-top: 150px;
     max-height: 80vh;
     margin-left: 25%;
 }
 
-.maincontainer .row {
-    max-height: 40vh;
-    min-height: 40vh;
+.maincontainer .top_row {
+    max-height: 50vh;
+    min-height: 50vh;
+    margin-top: 24px;
+}
+
+.maincontainer .bot_row {
+    max-height: 30vh;
+    min-height: 30vh;
     margin-top: 24px;
 }
 
 .maincontainer .row .columns {
-    border: 1px solid black;
-    border-radius: 4px;
+    /* border: 1px solid black; */
+    /* border-radius: 4px; */
     padding: 0px;
+    margin-bottom: 40px;
 }
 
 
@@ -34,14 +41,25 @@ body {
     bottom: 35px;    
 }
 
+.footer {
+    height: 40px;
+}
+
 @media only screen and (max-width: 1200px) {
     .maincontainer {
         margin-left: 25%;
     }
 
-    .maincontainer .row {
-        max-height: 40vh;
-        min-height: 40vh;
+    .maincontainer .top_row {
+        max-height: 50vh;
+        min-height: 50vh;
+        margin-top: 24px;
+    }
+    
+    .maincontainer .bot_row {
+        max-height: 30vh;
+        min-height: 30vh;
+        margin-top: 24px;
     }
     
     .error_container {
@@ -55,12 +73,19 @@ body {
 
 @media only screen and (max-width: 1200px) and (min-width: 992px) {
     .maincontainer {
-        margin-left: 10%;
+        margin-left: 5%;
     }
     
-    .maincontainer .row {
-        max-height: 40vh;
-        min-height: 40vh;
+    .maincontainer .top_row {
+        max-height: 50vh;
+        min-height: 50vh;
+        margin-top: 24px;
+    }
+
+    .maincontainer .bot_row {
+        max-height: 30vh;
+        min-height: 30vh;
+        margin-top: 24px;
     }
 
     .maincontainer .row .columns {

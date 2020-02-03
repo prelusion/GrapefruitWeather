@@ -1,33 +1,42 @@
 <div class="filter">
     Filter
     <div class="footer_container">
-        <form>
-            <div class="input_container">
-                <label for="track">Select a racing track <label>
-                <select id="track" name="track" class="form-control">
-                    {% for track in racing_tracks %}
-                        <option value="{{ track.id }}">{{ track.title }} | {{ track.city }} | {{ track.country }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-            <div class="new_container">
-                <label for="latitude" style="float: left; width: 28%; margin-left: 4%;">latitude</label> 
-                <label for="longitude" style="float: left; width: 28%; margin-left: 4%;">longitude</label>
-                <label for="country" style="float: left; width: 28%; margin-left: 4%;">country</label>
-                <input id="latitude" value="" type="text" name="latitude" class="form-control" style="float: left; width: 28%; margin-left: 4%;">
-                <input id="longitude" value="" type="text" name="longitude" class="form-control" style="float: left; width: 28%; margin-left: 4%;">
-                <input id="country" value="" type="text" name="country" class="form-control" style="float: left; width: 28%; margin-left: 4%; ">
-                <div style="clear: both;"></div>
-            </div>
-            <div class="input_container" style="margin-top: 10px;">
-                <label for="limit">Limit the amount of weather stations</label>
-                <input id="limit" class="form-control" type="text" name="limit">
-            </div>
-            <div class="input_container">
-                <label for="range">The range in kilometers</label>
-                <input id="range" class="form-control" type="text" name="range">
-            </div>
-        </form>
+        <div class="input_container">
+            <label for="track">Select a racing track <label>
+            <select id="track" name="track" class="form-control">
+                <option value="-1">Choose a track</option>
+                {% for track in racing_tracks %}
+                    <option value="{{ track.id }}">{{ track.title }} | {{ track.city }} | {{ track.country }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="new_container">
+            <label for="latitude" style="float: left; width: 28%; margin-left: 4%;">latitude</label> 
+            <label for="longitude" style="float: left; width: 28%; margin-left: 4%;">longitude</label>
+            <label for="country" style="float: left; width: 28%; margin-left: 4%;">country</label>
+            <input readonly id="latitude" value="" type="text" name="latitude" class="form-control" style="float: left; width: 28%; margin-left: 4%;">
+            <input readonly id="longitude" value="" type="text" name="longitude" class="form-control" style="float: left; width: 28%; margin-left: 4%;">
+            <input readonly id="country"  countryid="" value="" type="text" name="country" class="form-control" style="float: left; width: 28%; margin-left: 4%; ">
+            <div style="clear: both;"></div>
+        </div>
+        <div class="input_container" style="margin-top: 10px;">
+            <label for="limit">Air Pressure Stations Limit</label>
+            <input id="limit" data-toggle="popover" data-trigger="focus" data-placement="top" data-content="Using the limit above (300) might lag the browser when it is used." class="form-control" type="text" value="3" name="limit">
+        </div>
+        <div class="input_container" style="margin-top: 5px;">
+            <label for="range">Temperature Stations Radius</label>
+            <input id="range" class="form-control" type="text" name="range">
+        </div>
+        <div class="input_container">
+            <input id="filter_button" class="form-control style_button" type="submit" name="filter_button" value="Filter">
+        </div>
+        <div class="half_input_container">
+            <input id="zoom_button" class="form-control style_button" type="submit" name="zoom_button" value="Zoom">
+        </div>
+        <div class="half_input_container">
+            <input id="clear_button" class="form-control style_button" type="submit" name="clear_button" value="Clear stations">
+        </div>
+        <div style="clear: both;"></div>
     </div>
 </div>
 <script src="{{ url_for('static', filename='js/filter.js') }}"></script>

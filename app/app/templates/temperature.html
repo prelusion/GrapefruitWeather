@@ -1,11 +1,20 @@
 <div class="temperature">
     Temperature
     <div class="footer_container">
-        <div class="temperature_chart">
-            
+        <canvas id="temperature_chart" ></canvas>
+        <div class="temp_realtime_data">
+            <p class="realtime_labels" id="temp_status_label">Loading history...</p>
+            <p class="realtime_labels" id="temp_time_label"></p>
+            <p class="realtime_labels" id="temperature_label"></p>
+            <p class="realtime_labels" id="amount_temperature_stations"></p>
+            <div style="float: right; margin-right: 15px;">
+                <button type="button" id="temperature_timezone" class="btn btn-success timezone">Local timezone</button>
+            </div>
+            <div style="clear: both;"></div>
         </div>
     </div>
-</div>
 
+
+</div>
 
 <script src="{{ url_for('static', filename='js/temp_chart.js') }}"></script>

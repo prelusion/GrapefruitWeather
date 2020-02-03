@@ -14,6 +14,7 @@ public class FileMeasurementSaver implements Runnable {
     private final Queue<Measurement> measurementQueue;
     private final Queue<Measurement> measurementAverageQueue;
     private int collectionId;
+    private int collectionCheckCounter = 100;
 
     public FileMeasurementSaver(
             Queue<Measurement> measurementQueue,

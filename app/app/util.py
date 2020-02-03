@@ -1,8 +1,9 @@
 import csv
+import pytz
 from bisect import bisect_left
 from datetime import timedelta
-
 from flask import jsonify
+from passlib.hash import argon2
 
 
 def avg(lst):
@@ -41,6 +42,29 @@ def binary_search(array, value):
         return -1
 
 
+def http_format_error(message):
+    return jsonify({"error": message})
+
+
+def http_format_data(data, params=None):
+    response = {"data": data}
+    if params:
+        for param, value in params.items():
+            response[param] = value
+
+    return jsonify(response)
+
+
+def csv_to_array_of_dicts(f):
+    return [{k: v for k, v in row.items()}
+            for row in csv.DictReader(f, skipinitialspace=True)]
+
+
+def only_one_is_true(*args):
+    it = iter(args)
+    return any(it) and not any(it)
+
+
 def limit_and_offset(dataset, limit, offset):
     if limit is None or "":
         from app.const import DEFAULT_LIMIT
@@ -56,24 +80,47 @@ def limit_and_offset(dataset, limit, offset):
     new_data_set = []
     for i in range(limit + offset):
         if (i + offset + 1) > len(dataset):
-            break;
+            break
         new_data_set.append(dataset[i + offset])
     return new_data_set
 
 
-def http_format_error(message):
-    return jsonify({"error": message})
+def utc_to_local(utc_dt, timezone_name):
+    return pytz.timezone(timezone_name).localize(utc_dt, is_dst=None)
 
 
-def http_format_data(data, params=None):
-    response = {"data": data}
-
-    for param, value in params.items():
-        response[param] = value
-
-    return jsonify(response)
+def local_to_utc(local_dt):
+    return local_dt.astimezone(pytz.utc)
 
 
-def csv_to_array_of_dicts(f):
-    return [{k: v for k, v in row.items()}
-            for row in csv.DictReader(f, skipinitialspace=True)]
+def encrypt(var):
+    return argon2.encrypt(var)
+
+
+def convert_array_param(param):
+    if isinstance(param, list):
+        return param
+    try:
+        values = param.split(",")
+    except AttributeError:
+        values = [param]
+
+    return values
+
+
+def convert_single_field_measurement_timezone(measurement, timezone):
+    dt, value = measurement
+    return utc_to_local(dt, timezone), value
+
+
+def convert_js_offset_to_storage_offset(offset_mins):
+    offset_hours = offset_mins / 60
+    offset_opposite = offset_hours * -1
+    offset_times_hundred = offset_opposite * 100
+    offset_rounded = int(offset_times_hundred)
+    offset_padded = str(offset_rounded).zfill(5 if offset_rounded < 0 else 4)
+
+    if int(offset_rounded) > 0:
+        return "+" + offset_padded
+
+    return offset_padded

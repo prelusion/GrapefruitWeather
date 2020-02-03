@@ -1,6 +1,7 @@
 .left_navbar {
+    margin-top: -54px;
     position: fixed;
-    height: 94vh;   
+    height: 100vh;   
     background-color: #091e49;
     background-image: linear-gradient(to bottom left, #091e49,#091e49,  #e2063b);
     width: 250px;
@@ -59,4 +60,22 @@
     cursor: pointer;
     margin-top: 5px;
     display: none;
+}
+
+.left_navbar .download_container {
+    padding: 5px;
+    height: 2em;
+    width: 90%;
+    cursor: pointer;
+    background-color: none;
+    color: #848689 ;
+    display: none;
+    overflow: hidden;
+}
+
+.left_navbar .download_container:hover {
+    color: #e2063b;
+    border: 1px solid gold;
+    border-radius: 5px;
+    margin-left: 5px;
 }

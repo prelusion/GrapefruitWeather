@@ -4,14 +4,14 @@
     <div class="tracks_container" style="display: none;">
         {% for track in racing_tracks %}
         <div class="track_container">
-            <p latitude="{{ track.latitude }}" longitude="{{ track.longitude }}" country="{{ track.country }}" trackID="{{ track.id }}">- {{ track.title }} </p>
+            <p latitude="{{ track.latitude }}" longitude="{{ track.longitude }}" country="{{ track.country }}" countryid="{{ track.country_id }}" trackID="{{ track.id }}">- {{ track.title }} </p>
         </div>
         {% endfor %}
     </div>
     
     <div class="open_container btn_container">Show download</div>
     <div class="close_container btn_container">Close download</div>
-    <div class="download_container"></div>
+    <div class="download_container">- Xml Download</div>
     
     <div class="open_container btn_container">Show settings</div>
     <div class="close_container btn_container">Close settings</div>
