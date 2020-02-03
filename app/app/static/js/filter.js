@@ -57,15 +57,26 @@ function getStationsFilter(custom = false, track_id, custom_country_id) {
     if(limit === "") {
         limit = 50;
     }
-    let url = "/api/stations?track_id="+trackID+"&limit="+limit
-    $.get(url, function(result) {
-        setAirStationsFromAPI(result);
-    });
-    url = "/api/stations?track_id="+trackID+"&country="+country;
-    if (radius > 0) {
-        url = url + "&radius=" + radius;
-    }
-    $.get(url, function(result) {
-        setTemperatureStationsFromAPI(result);
-    });
+
+    setTimeout(function(){
+        let url = "/api/stations?track_id="+trackID+"&limit="+limit
+        $.get(url, function(result) {
+            setAirStationsFromAPI(result);
+        });
+     }, 100);
+
+   
+     
+    setTimeout(function(){
+        url = "/api/stations?track_id="+trackID+"&country="+country;
+        if (radius > 0) {
+            url = url + "&radius=" + radius;
+        }
+        $.get(url, function(result) {
+            setTemperatureStationsFromAPI(result);
+        });
+     }, 200);
+
+    
+
 }

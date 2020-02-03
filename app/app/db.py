@@ -39,7 +39,7 @@ def get_racing_tracks(track_id=None, name=None, city=None, country=None, limit=N
 
 
 def get_stations_for_track_by_country_id(track_id, country_id, radius):
-    stations = get_stations_and_sort_distance(track_id)
+    stations = get_stations_and_sort_distance(track_id, radius, country_id)
     if radius:
         stations = list(filter(lambda st: st["country-id"].lower() == country_id.lower(), stations))
         return list(filter(lambda station: station["distance"] < float(radius), stations))
@@ -47,18 +47,19 @@ def get_stations_for_track_by_country_id(track_id, country_id, radius):
 
 
 def get_stations_for_track_id_by_limit(track_id, limit):
-    stations = get_stations_and_sort_distance(track_id)
+    stations = get_stations_and_sort_distance(track_id, limit)
     return stations[:int(limit)]
 
 
-def get_stations_and_sort_distance(track_id):
+def get_stations_and_sort_distance(track_id, value=None, country_id=None):
     stations = fileaccess.get_stations()
     distances = fileaccess.get_track_distances(track_id)
     for station in stations:
         try:
             station["distance"] = int(distances[station["id"]])
         except KeyError:
-            print("Station not found")
+            print("Station not found", KeyError)
+
     stations.sort(key=lambda st: st["distance"])
     return stations
 

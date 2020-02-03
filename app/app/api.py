@@ -41,13 +41,10 @@ def get_stations():
 
     if track_id:
         if country_id:
-            print("track_id, country_id")
             result = db.get_stations_for_track_by_country_id(track_id, country_id, radius)
         elif limit:
-            print("track_id, limit")
             result = db.get_stations_for_track_id_by_limit(track_id, limit)
     elif latitude and longitude:
-        print("latitude and longitude")
         if limit is None:
             limit = 50
         result = db.get_stations_by_coordinates(latitude, longitude, limit)
