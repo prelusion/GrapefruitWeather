@@ -106,6 +106,17 @@ function retrieveTempData(pressStations, currentCount) {
     });
 }
 
+function toCountryName(name){
+    let newStr = "";
+    name.toLowerCase();
+    let words = name.split(" ");
+    for (index in words) {
+    	newStr += words[index].charAt(0).toUpperCase() + words[index].slice(1) + " ";
+    	newStr.trimRight();
+    }
+    return newStr;
+}
+
 /**
  * setNewAirStations resets necessary variables and retrieves a new array with temperaturestations.
  * @param  array statons with station id's.
@@ -134,7 +145,8 @@ function setNewTempStations(stations) {
     temperatureQueue = [];
     temperatureFirst = true;
     temperatureFirstLoading = false;
-    country = countryName;
+    country = toCountryName(countryName);
+    console.log(country);
     
     if(stations.length != 0){
         $("#temp_status_label").text("Loading history...").show();
