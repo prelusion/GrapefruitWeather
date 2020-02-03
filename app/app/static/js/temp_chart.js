@@ -109,7 +109,6 @@ function retrieveTempData(pressStations, currentCount) {
 function toCountryName(inputStr) {
     let newStr = "";
     let words = inputStr.toLowerCase().split(" ");
-    console.log(words);
     for (index in words) {
     	newStr += words[index].charAt(0).toUpperCase() + words[index].slice(1) + " ";
     	newStr.trimRight();
@@ -147,7 +146,6 @@ function setNewTempStations(stations) {
     temperatureFirst = true;
     temperatureFirstLoading = false;
     country = toCountryName(countryName);
-    console.log(country);
     
     if(stations.length != 0){
         $("#temp_status_label").text("Loading history...").show();
