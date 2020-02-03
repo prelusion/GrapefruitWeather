@@ -8,7 +8,6 @@ let temperatureQueue = [];
 /**
  * constant variables. 
  */
-const temperatureHistoryInterval = 3;
 const temperatureRefreshRate = 1000;
 
 /**
@@ -20,6 +19,7 @@ let tempApiInterval = null;
 let tempPlotInterval = null;
 let temperatureSessionId = 1;
 let country = "";
+let temperatureHistoryInterval = 168;
 
 
 /**
@@ -51,7 +51,7 @@ function drawTempChart(times, temperatures) {
     });
     $("#temperature_chart").show();
     $("#temp_time_label").text("Time (latest): " + times[times.length-1]).show();
-    $("#temperature_label").text("temperature (latest): " + temperatures[temperatures.length-1]).show();
+    $("#temperature_label").text("temperature (latest): " + temperatures[temperatures.length-1] + " ℃").show();
     $("#temperature_country").text("Country: " + country).show();
 
     //commented for later implementation
@@ -63,20 +63,24 @@ function drawTempChart(times, temperatures) {
  * @param  json result with timestamps and temperature measurements.
  */
 function processTempData(result){
+    console.log(result);
     if(temperatureTimeList.length == 0){
+        if (result.total < temperatureHistoryInterval){
+            temperatureHistoryInterval = result.total;
+        }
         for(x = temperatureHistoryInterval - 1; x >= 0; x--){    
             temperatureTimeList.push(("" + result.data[x][0].substring(17,25)));
             temperatureList.push(result.data[x][1]);
         }
     } else {
         //following is commented for test purposes
-        // if(!result.data[0][0].substring(17,25) == temperatureTimeList[temperatureTimeList.length - 1]) {
+         if(result.data[0][0].substring(17,25) != temperatureTimeList[temperatureTimeList.length - 1]) {
             temperatureTimeList.shift();
             temperatureTimeList.push("" + result.data[0][0].substring(17,25));
 
             temperatureList.shift();
             temperatureList.push(result.data[0][1]);
-        // }
+         }
     }     
 }
 
@@ -94,7 +98,7 @@ function retrieveTempData(pressStations, currentCount) {
 
     let limit = temperatureFirst ? 120 : 1;
 
-    $.get("http://127.0.0.1:5000/api/measurements/temperature?limit=" + limit +"&stations=" + pressStations.join(), function(result) {
+    $.get("/api/measurements/temperature?limit=" + limit + "&stations=" + pressStations.join() + "&timezone=" + new Date().getTimezoneOffset(), function(result) {
         if (currentCount != temperatureSessionId) {
             return;
         }
