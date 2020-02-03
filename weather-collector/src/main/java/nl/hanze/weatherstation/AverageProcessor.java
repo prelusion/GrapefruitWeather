@@ -3,8 +3,7 @@ package nl.hanze.weatherstation;
 import lombok.val;
 import nl.hanze.weatherstation.models.AverageMeasurement;
 import nl.hanze.weatherstation.models.Measurement;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.log4j.Logger;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
@@ -21,10 +20,9 @@ public class AverageProcessor implements Runnable {
     public AverageProcessor(
             Queue<Measurement> measurementAverageQueue,
             Queue<Measurement> measurementAverageLoadQueue,
-            HashMap<Integer, List<AverageMeasurement>> measurementAverages,
-            FileAverageHandler fileAverageHandler
+            HashMap<Integer, List<AverageMeasurement>> measurementAverages
     ) {
-        this.logger = LoggerFactory.getLogger(getClass());
+        this.logger = Logger.getLogger(getClass());
         this.measurementAverageQueue = measurementAverageQueue;
         this.measurementAverageLoadQueue = measurementAverageLoadQueue;
         this.measurementAverages = measurementAverages;

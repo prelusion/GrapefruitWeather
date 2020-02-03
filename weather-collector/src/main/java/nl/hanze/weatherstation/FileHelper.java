@@ -17,7 +17,7 @@ public class FileHelper {
 
         val pattern = Pattern.compile("^([0-9]+)\\." + extension + "$");
 
-        List<Integer> sequences = Arrays.stream(files)
+        return Arrays.stream(files)
                 .map(f -> {
                     val matcher = pattern.matcher(f.getName());
 
@@ -25,10 +25,7 @@ public class FileHelper {
                 })
                 .filter(Objects::nonNull)
                 .map(Integer::parseInt)
+                .sorted(Collections.reverseOrder())
                 .collect(Collectors.toList());
-
-        Collections.reverse(sequences);
-
-        return sequences;
     }
 }
