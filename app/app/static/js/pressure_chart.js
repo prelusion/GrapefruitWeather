@@ -8,7 +8,6 @@ let queue = [];
 /**
  * constant variables. 
  */
-const pressureHistoryInterval = 120;
 const pressureRefreshRate = 1000;
 
 /**
@@ -19,6 +18,7 @@ let firstLoading = false;
 let apiInterval = null;
 let plotInterval = null;
 let sessionId = 1;
+let pressureHistoryInterval = 120;
 
 
 /**
@@ -50,7 +50,7 @@ function drawPressureChart(times, pressures) {
     });
     $("#pressure_chart").show();
     $("#pressure_time_label").text("Time (latest): " + times[times.length-1]).show();
-    $("#pressure_label").text("Pressure (latest): " + pressureList[pressures.length-1]).show();
+    $("#pressure_label").text("Pressure (latest): " + pressureList[pressures.length-1] + " mbar").show();
 
     //commented for later implementation
     // $("#air_timezone").show();
@@ -61,7 +61,11 @@ function drawPressureChart(times, pressures) {
  * @param  json result with timestamps and airpressure measurements.
  */
 function processPressureData(result){
+    console.log(result);
     if(pressureTimeList.length == 0){
+        if (result.total < pressureHistoryInterval){
+            pressureHistoryInterval = result.total;
+        }
         for(x = pressureHistoryInterval - 1; x >= 0; x--){
             pressureTimeList.push(("" + result.data[x][0].substring(17,25)));
             pressureList.push(result.data[x][1]);
@@ -92,7 +96,7 @@ function retrieveData(pressStations, currentCount) {
 
     let limit = first ? 120 : 1;
 
-    $.get("http://127.0.0.1:5000/api/measurements/airpressure?limit=" + limit +"&stations=" + pressStations.join(), function(result) {
+    $.get("/api/measurements/airpressure?limit=" + limit +"&stations=" + pressStations.join() + "&timezone=" + new Date().getTimezoneOffset(), function(result) {
         if (currentCount != sessionId) {
             return;
         }
