@@ -190,6 +190,10 @@ function setTemperatureStationsFromAPI(result) {
     setNewTempStations(selectedTemperatureStations);
 }
 
+function getPressureStations() {
+    return selectedAirStations;
+}
+
 function getTemperatureStations() {
     return selectedTemperatureStations;
 }
