@@ -2,16 +2,12 @@ package nl.hanze.weatherstation;
 
 import lombok.val;
 import nl.hanze.weatherstation.models.AverageMeasurement;
-import nl.hanze.weatherstation.models.Measurement;
-import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.log4j.Logger;
 
 import java.io.*;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -21,7 +17,7 @@ public class FileAverageHandler implements Runnable {
     private int collectionId;
 
     public FileAverageHandler(HashMap<Integer, List<AverageMeasurement>> measurementAverages) {
-        this.logger = LoggerFactory.getLogger(this.getClass());
+        this.logger = Logger.getLogger(this.getClass());
         this.measurementAverages = measurementAverages;
 
         val files = FileHelper.extractExtensionSequences("/measurements", "wsamc");

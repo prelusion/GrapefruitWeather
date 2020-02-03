@@ -2,7 +2,8 @@ package nl.hanze.weatherstation;
 
 import lombok.val;
 import nl.hanze.weatherstation.models.Measurement;
-import org.slf4j.LoggerFactory;
+import org.apache.log4j.Logger;
+import org.apache.log4j.PropertyConfigurator;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -32,7 +33,7 @@ public class WeatherStation {
         val fileAverageHandler= new FileAverageHandler(measurementAverages);
 
         val measurementProcessorThread = new Thread(new MeasurementProcessor(measurementCorrector, rawDataQueue, measurementQueue, measurementHistory));
-        val averageProcessorThread = new Thread(new AverageProcessor(measurementAverageQueue, measurementAverageLoadQueue, measurementAverages, fileAverageHandler));
+        val averageProcessorThread = new Thread(new AverageProcessor(measurementAverageQueue, measurementAverageLoadQueue, measurementAverages));
         val measurementSaverThread = new Thread(new FileMeasurementSaver(measurementQueue, measurementAverageQueue));
         val averageLoadProcessorThread = new Thread(new AverageLoadProcessor(measurementAverageQueue, measurementAverageLoadQueue, measurementAverages));
         val executor = Executors.newScheduledThreadPool(1);
@@ -43,11 +44,27 @@ public class WeatherStation {
         measurementSaverThread.start();
         averageLoadProcessorThread.start();
 
-        val healthLogger = LoggerFactory.getLogger("server-health");
+        val healthLogger = Logger.getLogger("server-health");
         val healthExecutor = Executors.newScheduledThreadPool(1);
         healthExecutor.scheduleAtFixedRate(() -> {
-            healthLogger.info("Raw data queue size: {}, Measurement queue size: {}, Measurement average queue size: {}, Measurement average load queue size: {}", rawDataQueue.size(), measurementQueue.size(), measurementAverageQueue.size(), measurementAverageLoadQueue.size());
-        }, 0, 5, TimeUnit.SECONDS);
+            if (!measurementProcessorThread.isAlive()) {
+                measurementProcessorThread.start();
+            }
+
+            if (!averageProcessorThread.isAlive()) {
+                averageProcessorThread.start();
+            }
+
+            if (!measurementSaverThread.isAlive()) {
+                measurementSaverThread.start();
+            }
+
+            if (!averageLoadProcessorThread.isAlive()) {
+                averageLoadProcessorThread.start();
+            }
+
+            healthLogger.info(String.format("Raw data queue size: %d, Measurement queue size: %d, Measurement average queue size: %d, Measurement average load queue size: %d", rawDataQueue.size(), measurementQueue.size(), measurementAverageQueue.size(), measurementAverageLoadQueue.size()));
+        }, 0, 10, TimeUnit.SECONDS);
 
         Server server = new Server(7789, rawDataQueue);
         server.listen();
