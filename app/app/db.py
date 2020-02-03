@@ -70,66 +70,7 @@ def get_stations_by_coordinates(latitude, longitude, limit):
                               target_location).km)
     stations.sort(key=lambda st: st["distance"])
     return stations[:int(limit)]
-
-
-# def get_stations(station_id=None, longitude=None, latitude=None, track_id=None,
-#                  radius=None, country=None, limit=50, timezone=None, offset=None):
-#     def remove_empty_locals():
-#         parameters = locals()
-#         for local in parameters:
-#             if local is not None:
-#                 if local == "":
-#                     local = None
-#                     remove_empty_locals()
-#                     return
-#
-#
-#     stations = deepcopy(fileaccess.get_stations())
-#
-#     if radius is not None and (latitude is not None or longitude is not None):
-#         return False, "Latitude or longitude not set."
-#
-#     if station_id is not None:
-#         stations = list(filter(lambda st: int(st["id"]) == int(station_id), stations))
-#
-#     if country is not None:
-#         stations = list(filter(lambda st: st["country-id"].lower() == country.lower(), stations))
-#
-#     for station in stations:
-#         if not timezone:
-#             station.pop("timezone")
-#
-#         if longitude is not None and latitude is not None:
-#             target_location = [float(latitude), float(longitude)]
-#             station["distance"] = round(
-#                 distance.distance([float(station["latitude"]), float(station["longitude"])],
-#                                   target_location).km)
-#
-#     if track_id and (int(track_id) < 23):
-#         distances = fileaccess.get_track_distances(track_id)
-#         for _station in stations:
-#             _station["distance"] = int(distances[_station["id"]])
-#         stations.sort(key=lambda st: st["distance"])
-#         stations = stations[:int(limit)]
-#         if radius and int(radius) > 0:
-#             stations = list(filter(lambda station: station["distance"] < float(radius), stations))
-#
-#     if longitude is not None and latitude is not None:
-#         stations.sort(key=lambda st: st["distance"])
-#
-#     if longitude is not None and latitude is not None and radius is not None:
-#         stations = list(filter(lambda st: st["distance"] < float(radius), stations))
-#
-#     try:
-#         stations = util.limit_and_offset(stations, limit, offset)
-#     except ValueError:
-#         return False, "Invalid limit given."
-#
-#     return True, stations
-
-
-
-
+    
 
 def get_timezone_by_station_id(station_id):
     stations = list(filter(lambda st: int(st["id"]) == int(station_id), fileaccess.get_stations()))
