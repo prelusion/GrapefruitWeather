@@ -119,8 +119,10 @@ def convert_js_offset_to_storage_offset(offset_mins):
     offset_times_hundred = offset_opposite * 100
     offset_rounded = int(offset_times_hundred)
     offset_padded = str(offset_rounded).zfill(5 if offset_rounded < 0 else 4)
+    offset_padded = "+" + offset_padded
 
+    print(offset_mins, offset_padded)
     if int(offset_rounded) > 0:
-        return "+" + offset_padded
+        return offset_padded
 
     return offset_padded
