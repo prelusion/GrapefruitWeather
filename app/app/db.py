@@ -92,9 +92,6 @@ def get_stations(station_id=None, longitude=None, latitude=None, track_id=None,
     return True, stations
 
 
-
-
-
 def get_timezone_by_station_id(station_id):
     success, result = get_stations(station_id=station_id, timezone=True)
 
@@ -142,7 +139,7 @@ def generate_track_to_station_cache(force=False):
         fileaccess.generate_track_distance_cache(distances, track["id"])
 
 
-def get_most_recent_air_pressure_average(station_ids, limit, interval, timezone_name=None):
+def get_most_recent_air_pressure_average(station_ids, limit, timezone_name=None):
     result = []
     offset = 0
     extension = weatherdata.WSMC_EXTENSION
@@ -158,14 +155,11 @@ def get_most_recent_air_pressure_average(station_ids, limit, interval, timezone_
         measurementbytes_generator = weatherdata.filter_by_field(
             measurementbytes_generator, "station_id", station_ids, extension)
 
-        measurementbytes_generator = weatherdata.filter_most_recent(
-            measurementbytes_generator, 1, extension)
-
         measurementbytes_generator = weatherdata.limit_data(
             measurementbytes_generator, limit)
 
         measurement_generator = weatherdata.group_by_timestamp(
-            measurementbytes_generator, interval, extension)
+            measurementbytes_generator, extension)
 
         newresult = list(
             weatherdata.groups_to_average("air_pressure", measurement_generator))
@@ -183,11 +177,10 @@ def get_most_recent_air_pressure_average(station_ids, limit, interval, timezone_
     return result
 
 
-def get_most_recent_temperature_averages(station_ids, limit, interval_hours, timezone_name=None):
+def get_most_recent_temperature_averages(station_ids, limit, timezone_name=None):
     result = []
     offset = 0
     extension = weatherdata.WSAMC_EXTENSION
-    interval_seconds = (interval_hours * 60 * 60) * 7 * 24
 
     while limit > 0:
         data = weatherdata.load_data_per_file(const.MEASUREMENTS_DIR, offset, extension)
@@ -200,14 +193,9 @@ def get_most_recent_temperature_averages(station_ids, limit, interval_hours, tim
         measurementbytes_generator = weatherdata.filter_by_field(
             measurementbytes_generator, "station_id", station_ids, extension)
 
-        measurementbytes_generator = weatherdata.filter_most_recent(
-            measurementbytes_generator, interval_seconds, extension)
+        measurementbytes_generator = weatherdata.limit_data(measurementbytes_generator, limit)
 
-        measurementbytes_generator = weatherdata.limit_data(
-            measurementbytes_generator, limit)
-
-        measurement_generator = weatherdata.group_by_timestamp(
-            measurementbytes_generator, interval_seconds, extension)
+        measurement_generator = weatherdata.group_by_timestamp(measurementbytes_generator, extension)
 
         newresult = list(
             weatherdata.groups_to_average("temperature", measurement_generator))
@@ -221,6 +209,5 @@ def get_most_recent_temperature_averages(station_ids, limit, interval_hours, tim
         result = list(map(
             lambda measurement: util.convert_single_field_measurement_timezone(measurement, timezone_name),
             result))
-
 
     return result

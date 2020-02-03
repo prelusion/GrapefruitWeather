@@ -282,13 +282,13 @@ def filter_most_recent(measurementbytes_generator, seconds, extension):
         yield timestamp, measurementbytes
 
 
-def group_by_timestamp(measurementbytes_generator, interval_seconds, extension):
+def group_by_timestamp(measurementbytes_generator, extension):
     measurements = []
     currtimestamp = None
 
-    for timestamp, measurementbytes in measurementbytes_generator:
-        measurement = decode_measurement(measurementbytes, extension, skipfields=["timestamp"])
-        measurement["timestamp"] = timestamp
+    for  measurementbytes in measurementbytes_generator:
+        measurement = decode_measurement(measurementbytes, extension)
+        timestamp = measurement["timestamp"]
 
         if not currtimestamp:
             currtimestamp = timestamp
