@@ -12,13 +12,14 @@ const temperatureHistoryInterval = 3;
 const temperatureRefreshRate = 1000;
 
 /**
- * State variables.
+ * State & other variables.
  */
 let temperatureFirst = true;
 let temperatureFirstLoading = false;
 let tempApiInterval = null;
 let tempPlotInterval = null;
 let temperatureSessionId = 1;
+let country = "";
 
 
 /**
@@ -51,6 +52,7 @@ function drawTempChart(times, temperatures) {
     $("#temperature_chart").show();
     $("#temp_time_label").text("Time (latest): " + times[times.length-1]).show();
     $("#temperature_label").text("temperature (latest): " + temperatures[temperatures.length-1]).show();
+    $("#temperature_country").text("Country: " + country).show();
 
     //commented for later implementation
     // $("#temperature_timezone").show();
@@ -62,8 +64,7 @@ function drawTempChart(times, temperatures) {
  */
 function processTempData(result){
     if(temperatureTimeList.length == 0){
-        for(x = temperatureHistoryInterval - 1; x >= 0; x--){
-            console.log(result);    
+        for(x = temperatureHistoryInterval - 1; x >= 0; x--){    
             temperatureTimeList.push(("" + result.data[x][0].substring(17,25)));
             temperatureList.push(result.data[x][1]);
         }
@@ -112,6 +113,7 @@ function retrieveTempData(pressStations, currentCount) {
 function setNewTempStations(stations) {
     $("#temp_time_label").hide();
     $("#temperature_label").hide();
+    $("#temperature_country").hide();
     $("#temperature_chart").hide();
 
     if (temperatureSessionId > 100) {
@@ -132,6 +134,7 @@ function setNewTempStations(stations) {
     temperatureQueue = [];
     temperatureFirst = true;
     temperatureFirstLoading = false;
+    country = countryName;
     
     if(stations.length != 0){
         $("#temp_status_label").text("Loading history...").show();

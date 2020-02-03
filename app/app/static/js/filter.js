@@ -40,6 +40,7 @@ function getStationsFilter(custom = false, custom_latitude, custom_longitude, cu
     let latitude = (custom === false) ? $("#latitude").val() : custom_latitude;
     let longitude = (custom === false) ? $("#longitude").val() : custom_longitude;
     let country = (custom === false) ?  $("#country").attr("countryid") : custom_country_id;
+    countryName = $("#country").val();
     let limit = $("#limit").val();
     let radius = $("#range").val();
     let error = false;
