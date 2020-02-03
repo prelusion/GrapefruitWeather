@@ -224,10 +224,9 @@ def get_temperature_measurements():
         request.args.get("stations", [85210]))))
     interval = int(request.args.get("interval", 1))  # hours
     limit = int(request.args.get("limit", 1200))
-    offset = int(request.args.get("offset", 0))
     timezone_id = request.args.get("timezone")
 
-    measurements = db.get_most_recent_temperature_averages(stations, limit, interval, offset)
+    measurements = db.get_most_recent_temperature_averages(stations, limit, interval)
 
     if timezone_id:
         timezone = db.get_timezone_by_timezone_id(timezone_id)
