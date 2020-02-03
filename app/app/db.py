@@ -52,7 +52,10 @@ def get_stations_and_sort_distance(track_id):
     stations = fileaccess.get_stations()
     distances = fileaccess.get_track_distances(track_id)
     for station in stations:
-        station["distance"] = int(distances[station["id"]])
+        try:
+            station["distance"] = int(distances[station["id"]])
+        except:   
+            print("Station not found")
     stations.sort(key=lambda st: st["distance"])
     return stations
 
@@ -153,7 +156,7 @@ def get_most_recent_air_pressure_average(station_ids, limit, interval):
 def get_timezone_by_station_id(station_id):
     stations = list(filter(lambda st: int(st["id"]) == int(station_id), fileaccess.get_stations()))
 
-    if stations:
+    if stations:    
         return stations[0]["timezone"]
 
 
