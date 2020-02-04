@@ -119,7 +119,6 @@ def get_airpressure_measurements():
     if timezone_offset is not None:
         offset = util.convert_js_offset_to_storage_offset(int(timezone_offset))
         timezone = db.get_timezone_by_offset(offset)
-        print("timezone:", timezone)
         timezone_name = timezone["name"]
 
     measurements = db.get_most_recent_air_pressure_average(stations, limit,  timezone_name)
@@ -165,6 +164,13 @@ def get_measurements_export():
 
         new Date().getTimezoneOffset();
     """
+    def convert_measurement(measurement, timezone):
+        dt, value = measurement
+        return {
+            "utc_timestamp": dt,
+            "value": value,
+        }
+
     air_stations = list(map(int, util.convert_array_param(
         request.args.get("pressurestations", [743700, 93590, 589210]))))
     temp_stations = list(map(int, util.convert_array_param(
@@ -176,8 +182,11 @@ def get_measurements_export():
         offset = util.convert_js_offset_to_storage_offset(int(timezone_offset))
         timezone_name = db.get_timezone_by_offset(offset)["name"]
 
-    air_measurements = db.get_most_recent_air_pressure_average(air_stations, 120, timezone_name)
-    temp_measurements = db.get_most_recent_temperature_averages(temp_stations, 24 * 7, timezone_name)
+    air_measurements = db.get_most_recent_air_pressure_average(air_stations, 120)
+    temp_measurements = db.get_most_recent_temperature_averages(temp_stations, 24 * 7)
+
+    air_measurements = map(lambda m: convert_measurement(m, timezone_name), air_measurements)
+    temp_measurements = map(lambda m: convert_measurement(m, timezone_name), temp_measurements)
 
     body = {
         "air_pressure": air_measurements,
