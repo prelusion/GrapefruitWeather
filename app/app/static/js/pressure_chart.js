@@ -44,6 +44,14 @@ function drawPressureChart(times, pressures) {
                 display: true,
                 text: "pressure"
             },
+            elements: {
+                point:{
+                    radius: 0
+                },
+                line: {
+                    tension: 0 
+                }
+            },
             animation: false,
             responsive: true,
             maintainAspectRatio: false,
@@ -70,6 +78,7 @@ function processPressureData(result){
             pressureHistoryInterval = result.total;
         }
         for(x = pressureHistoryInterval - 1; x >= 0; x--){
+            console.log(result.data[x][0]);
             pressureTimeList.push(("" + result.data[x][0].substring(17,25)));
             pressureList.push(result.data[x][1]);
         }

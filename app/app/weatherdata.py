@@ -201,7 +201,8 @@ def decode_field(field, data):
     if field == "count":
         return decoded
     if field == "timestamp":
-        return datetime.datetime.utcfromtimestamp(decoded)
+        dt = datetime.datetime.utcfromtimestamp(decoded)
+        return dt
     if field == "rainfall":
         return decoded / 100
     if field == "wind_direction":

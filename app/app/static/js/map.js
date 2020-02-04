@@ -129,6 +129,7 @@ function updateMarker(marker_id) {
 }
 
 function deselectMarkers() {
+    $(".track_container").css({"color": "#848689"});
     selectedAirStations = [];
     selectedTemperatureStations = [];
     for(mark in markers._layers) {

@@ -45,6 +45,14 @@ function drawTempChart(times, temperatures) {
                 display: true,
                 text: "Temperature"
             },
+            elements: {
+                point:{
+                    radius: 0
+                },
+                line: {
+                    tension: 0 
+                }
+            },
             animation: false,
             responsive: true,
             maintainAspectRatio: false,
@@ -56,6 +64,7 @@ function drawTempChart(times, temperatures) {
     $("#temp_time_label").text("Time (latest): " + times[times.length-1]).show();
     $("#temperature_label").text("temperature (latest): " + temperatures[temperatures.length-1] + " ℃").show();
     $("#temperature_country").text("Country: " + country).show();
+    $("#amount_stations").text("Amount of selected temperature stations:  " + getTemperatureStations().length).show();
 
     //commented for later implementation
     // $("#temperature_timezone").show();
@@ -137,6 +146,7 @@ function setNewTempStations(stations) {
     $("#temperature_label").hide();
     $("#temperature_country").hide();
     $("#temperature_chart").hide();
+    $("#amount_stations").hide();
 
     if (temperatureSessionId > 100) {
         temperatureSessionId = 1;

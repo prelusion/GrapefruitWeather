@@ -10,8 +10,10 @@ $(document).ready(function() {
         $(this).next().slideUp();
     });
     $(".track_container").on('click', function() { 
+        $(".track_container").css({"color": "#848689"});
         setMapView($(this).children("p").attr("latitude"), $(this).children("p").attr("longitude"), 13);
         updateMarker(($(this).children("p").attr("trackID")-1));
+        $(this).css({"color": "skyblue"});
         $("#track option:eq("+($(this).children("p").attr("trackID"))+")").prop("selected", true);
         $("#latitude").val($(this).children("p").attr("latitude"));
         $("#longitude").val($(this).children("p").attr("longitude"));
