@@ -55,8 +55,8 @@ public class FileAverageHandler implements Runnable {
                         byte[] fullBuffer = new byte[35];
                         randomAccessFile.seek((i - 1) * 35);
                         randomAccessFile.readFully(fullBuffer);
-                        val ding = result.computeIfAbsent(MeasurementConverter.getIntFromByteArray(idBuffer, 0, 3), integer -> new ArrayList<>());
-                        ding.add(MeasurementConverter.convertByteArrayToAverage(fullBuffer));
+                        val averages = result.computeIfAbsent(MeasurementConverter.getIntFromByteArray(idBuffer, 0, 3), integer -> new ArrayList<>());
+                        averages.add(MeasurementConverter.convertByteArrayToAverage(fullBuffer));
                         ids.remove(idBuffer);
                     }
                 }
@@ -87,8 +87,11 @@ public class FileAverageHandler implements Runnable {
                     // Read the station id and timestamp to the buffer.
                     randomAccessFile.seek((i - 1) * 35);
                     randomAccessFile.readFully(buffer);
-                    result.computeIfAbsent(MeasurementConverter.getIntFromByteArray(buffer, 0, 3), k -> new ArrayList<>())
-                            .add(MeasurementConverter.convertByteArrayToAverage(buffer));
+                    val averages = result.computeIfAbsent(MeasurementConverter.getIntFromByteArray(buffer, 0, 3), k -> new ArrayList<>());
+
+                    if (averages.size() < 2) {
+                        averages.add(MeasurementConverter.convertByteArrayToAverage(buffer));
+                    }
                 }
                 randomAccessFile.close();
             } catch (IOException ignored) {
