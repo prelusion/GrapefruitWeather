@@ -118,7 +118,9 @@ def get_airpressure_measurements():
     timezone_name = None
     if timezone_offset is not None:
         offset = util.convert_js_offset_to_storage_offset(int(timezone_offset))
-        timezone_name = db.get_timezone_by_offset(offset)["name"]
+        timezone = db.get_timezone_by_offset(offset)
+        print("timezone:", timezone)
+        timezone_name = timezone["name"]
 
     measurements = db.get_most_recent_air_pressure_average(stations, limit,  timezone_name)
 
