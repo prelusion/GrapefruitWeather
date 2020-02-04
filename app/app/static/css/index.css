@@ -92,6 +92,15 @@ body {
         margin-top: 20px;
     }
     
+
+    .maincontainer .top_row {
+        margin-top: -80px;
+    }
+    
+    .maincontainer .bot_row {
+        margin-top: 40px;
+    }
+
     .error_container {
         width: 6%;
         margin-right: 2%;
@@ -102,8 +111,8 @@ body {
 
 @media only screen and (max-width: 992px) and (min-width: 768px) {
     .maincontainer {
-        margin-left: 10%;
-        min-width: 80%;
+        margin-left: 5%;
+        min-width: 9 0%;
     }
 
     .maincontainer .row {
@@ -117,8 +126,18 @@ body {
     }
 
     .maincontainer .row .temp_row {
-        margin-top: 100px;
+        margin-top: 130px;
     }
+
+    .maincontainer .top_row {
+        margin-top: -80px;
+    }
+    
+    .maincontainer .bot_row {
+        margin-top: 40px;
+    }
+
+
     
     .error_container {
         width: 6%;
@@ -128,7 +147,7 @@ body {
     }
 }
 
-@media only screen and (max-width: 768px) {
+@media only screen and (max-width: 768px) and (min-width: 580px) {
     .maincontainer {
         min-width: 90%;
         margin-left: 5%;
@@ -144,13 +163,53 @@ body {
         margin-top: 20px;
     }
 
+    .maincontainer .row .filter_row {
+        margin-top: -80px;
+    }
+
     .maincontainer .row .temp_row {
-        margin-top: 140px;
+        margin-top: 80px;
     }
 
     .error_container {
         width: 5%;
         height: 80vh;
         bottom: 25px;
+    }
+}
+
+@media only screen and (max-width: 580px) {
+    .maincontainer {
+        min-width: 90%;
+        margin-left: 0%;
+    }
+
+    .maincontainer .row {
+        max-height: 80vh;
+        min-height: 80vh;
+        margin-top: 100px;
+    }
+
+    .maincontainer .row .columns {
+        margin-top: 20px;
+    }
+
+    .error_container {
+        width: 5%;
+        height: 80vh;
+        bottom: 25px;
+    }
+
+    .maincontainer .row .filter_row {
+        margin-top: -80px;
+    }
+    .maincontainer .row .map_row {
+        margin-top: 30px;
+    }
+    .maincontainer .row .temp_row {
+        margin-top: 10px;
+    }
+    .maincontainer .row .air_row {
+        margin-top: 10px;
     }
 }

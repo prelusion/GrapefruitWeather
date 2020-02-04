@@ -6,16 +6,15 @@
     </head>
     <body>
         {% include 'top_navbar.html' %}
-        {% include 'second_navbar.html' %}
         {% include 'left_navbar.html' %}
         
         {% include 'error.html' %}
         <div class="container maincontainer">
             <div class="row top_row">
-                <div class="col-12 col-lg-6 columns">
+                <div class="col-12 col-lg-6 columns filter_row">
                     {% include 'filter.html' %}
                 </div>
-                <div class="col-12 col-lg-6 columns">
+                <div class="col-12 col-lg-6 columns map_row">
                     {% include 'map.html' %}
                 </div>
             </div>
@@ -23,7 +22,7 @@
                 <div class="col-12 col-lg-6 columns temp_row">
                     {% include 'temperature.html' %}
                 </div>
-                <div class="col-12 col-lg-6 columns">            
+                <div class="col-12 col-lg-6 columns air_row">            
                     {% include 'air.html' %}
                 </div>
             </div>
