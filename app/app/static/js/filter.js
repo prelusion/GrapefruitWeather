@@ -77,9 +77,7 @@ function getStationsFilter(custom = false, track_id, custom_country_id) {
         $.get(url, function(result) {
             setAirStationsFromAPI(result);
         });
-     }, 100);
-
-   
+     }, 150);   
      
     setTimeout(function(){
         url = "/api/stations?track_id="+trackID+"&country="+country;
@@ -89,7 +87,7 @@ function getStationsFilter(custom = false, track_id, custom_country_id) {
         $.get(url, function(result) {
             setTemperatureStationsFromAPI(result);
         });
-     }, 200);
+     }, 300);
 
     
 
