@@ -91,7 +91,6 @@ function processTempData(result){
             temperatureList.push(result.data[0][1]);
         }
     } else {
-        //following is commented for test purposes
          if(result.data[0][0].substring(17,25) != temperatureTimeList[temperatureTimeList.length - 1]) {
             temperatureTimeList.shift();
             temperatureTimeList.push("" + result.data[0][0].substring(17,25));
