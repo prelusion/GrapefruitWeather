@@ -45,12 +45,15 @@ function drawPressureChart(times, pressures) {
                 text: "pressure"
             },
             animation: false,
+            responsive: true,
+            maintainAspectRatio: false,
             events: []
         }
     });
     $("#pressure_chart").show();
     $("#pressure_time_label").text("Time (latest): " + times[times.length-1]).show();
     $("#pressure_label").text("Pressure (latest): " + pressureList[pressures.length-1] + " mbar").show();
+    $("#pressure_globe").hide();
 
     //commented for later implementation
     // $("#air_timezone").show();
@@ -138,10 +141,12 @@ function setNewAirStations(stations) {
     
     if(stations.length != 0){
         $("#pressure_status_label").text("Loading history...").show();
+        $("#pressure_globe").show();
         apiInterval = setInterval(retrieveData, 1000, stations, sessionId);
         plotInterval = setInterval(handleQueue, pressureRefreshRate);
     } else {
-        $("#pressure_status_label").text("There are no airpressure stations available. Try selecting a track!").show();
+        $("#pressure_status_label").text("This is the air pressure graph. Please select a track or station.").show();
+        $("#pressure_globe").hide();
     }
 }
 

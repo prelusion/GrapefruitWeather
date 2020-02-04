@@ -46,9 +46,12 @@ function drawTempChart(times, temperatures) {
                 text: "Temperature"
             },
             animation: false,
+            responsive: true,
+            maintainAspectRatio: false,
             events: []
         }
     });
+    $("#temp_globe").hide();
     $("#temperature_chart").show();
     $("#temp_time_label").text("Time (latest): " + times[times.length-1]).show();
     $("#temperature_label").text("temperature (latest): " + temperatures[temperatures.length-1] + " ℃").show();
@@ -153,10 +156,12 @@ function setNewTempStations(stations) {
     
     if(stations.length != 0){
         $("#temp_status_label").text("Loading history...").show();
+        $("#temp_globe").show();
         tempApiInterval = setInterval(retrieveTempData, 1000, stations, temperatureSessionId);
         tempPlotInterval = setInterval(handletemperatureQueue, temperatureRefreshRate);
     } else {
-        $("#temp_status_label").text("There are no temperature stations available. Try selecting a different track!").show();
+        $("#temp_status_label").text("This is the temperature graph. Please select a track to get all temperature stations in a country.").show();
+        $("#temp_globe").hide();
     }
 }
 
