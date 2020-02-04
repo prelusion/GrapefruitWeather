@@ -44,6 +44,14 @@ function drawPressureChart(times, pressures) {
                 display: true,
                 text: "pressure"
             },
+            elements: {
+                point:{
+                    radius: 0
+                },
+                line: {
+                    tension: 0 
+                }
+            },
             animation: false,
             responsive: true,
             maintainAspectRatio: false,
