@@ -202,6 +202,7 @@ def decode_field(field, data):
         return decoded
     if field == "timestamp":
         dt = datetime.datetime.utcfromtimestamp(decoded)
+        # Add one hour because the weather generator timestamps are one hour old when generated.
         dt += datetime.timedelta(hours=1)
         return dt
     if field == "rainfall":
