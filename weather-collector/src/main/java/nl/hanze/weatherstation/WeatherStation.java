@@ -37,7 +37,7 @@ public class WeatherStation {
         val measurementSaverThread = new Thread(new FileMeasurementSaver(measurementQueue, measurementAverageQueue));
         val averageLoadProcessorThread = new Thread(new AverageLoadProcessor(measurementAverageQueue, measurementAverageLoadQueue, measurementAverages));
         val executor = Executors.newScheduledThreadPool(1);
-        executor.scheduleAtFixedRate(fileAverageHandler, 0, 1, TimeUnit.MINUTES);
+        executor.scheduleAtFixedRate(fileAverageHandler, 0, 10, TimeUnit.MINUTES);
 
         measurementProcessorThread.start();
         averageProcessorThread.start();
