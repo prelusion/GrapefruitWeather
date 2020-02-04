@@ -87,7 +87,7 @@ public class FileAverageHandler implements Runnable {
                     // Read the station id and timestamp to the buffer.
                     randomAccessFile.seek((i - 1) * 35);
                     randomAccessFile.readFully(buffer);
-                    val averages = result.computeIfAbsent(MeasurementConverter.getIntFromByteArray(buffer, 0, 3), k -> new ArrayList<>())
+                    val averages = result.computeIfAbsent(MeasurementConverter.getIntFromByteArray(buffer, 0, 3), k -> new ArrayList<>());
 
                     if (averages.size() < 2) {
                         averages.add(MeasurementConverter.convertByteArrayToAverage(buffer));
