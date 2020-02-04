@@ -46,11 +46,11 @@ function drawTempChart(times, temperatures) {
                 text: "Temperature"
             },
             elements: {
-                point:{
-                    radius: 0
+                point: {
+                    radius: function(){return temperatures.length > 1?0:5;}
                 },
-                line: {
-                    tension: 0 
+            line: {
+                tension: 0 
                 }
             },
             animation: false,
@@ -86,8 +86,10 @@ function processTempData(result){
         }
         temperatureHistoryInterval = temp;
     } else if (temperatureList.length < temp) {
-        temperatureTimeList.push(("" + result.data[0][0].substring(17,25)));
-        temperatureList.push(result.data[0][1]);
+        if(result.data[0][0].substring(17,25) != temperatureTimeList[temperatureTimeList.length - 1]) {
+            temperatureTimeList.push(("" + result.data[0][0].substring(17,25)));
+            temperatureList.push(result.data[0][1]);
+        }
     } else {
         //following is commented for test purposes
          if(result.data[0][0].substring(17,25) != temperatureTimeList[temperatureTimeList.length - 1]) {
