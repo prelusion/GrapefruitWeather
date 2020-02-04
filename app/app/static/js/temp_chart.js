@@ -45,6 +45,14 @@ function drawTempChart(times, temperatures) {
                 display: true,
                 text: "Temperature"
             },
+            elements: {
+                point:{
+                    radius: 0
+                },
+                line: {
+                    tension: 0 
+                }
+            },
             animation: false,
             responsive: true,
             maintainAspectRatio: false,
