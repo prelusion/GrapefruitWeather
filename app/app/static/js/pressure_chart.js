@@ -46,7 +46,7 @@ function drawPressureChart(times, pressures) {
             },
             elements: {
                 point:{
-                    radius: 0
+                    radius: function(){return pressures.length > 1?0:5;}
                 },
                 line: {
                     tension: 0 
@@ -78,16 +78,16 @@ function processPressureData(result){
             pressureHistoryInterval = result.total;
         }
         for(x = pressureHistoryInterval - 1; x >= 0; x--){
-            console.log(result.data[x][0]);
             pressureTimeList.push(("" + result.data[x][0].substring(17,25)));
             pressureList.push(result.data[x][1]);
         }
         pressureHistoryInterval = temporary;
     } else if (pressureList.length < temporary) {
-        pressureTimeList.push(("" + result.data[0][0].substring(17,25)));
-        pressureList.push(result.data[0][1]);
+        if(result.data[0][0].substring(17,25) != pressureTimeList[pressureTimeList.length - 1]) {
+            pressureTimeList.push(("" + result.data[0][0].substring(17,25)));
+            pressureList.push(result.data[0][1]);
+        }
     } else {
-        //following is commented for test purposes
          if(result.data[0][0].substring(17,25) != pressureTimeList[pressureTimeList.length - 1]) {
             pressureTimeList.shift();
             pressureTimeList.push("" + result.data[0][0].substring(17,25));

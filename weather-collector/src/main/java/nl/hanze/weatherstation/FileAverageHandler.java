@@ -103,16 +103,10 @@ public class FileAverageHandler implements Runnable {
 
     @Override
     public void run() {
-        while (true) {
-            if (Thread.currentThread().isInterrupted()) {
-                return;
-            }
-
-            try {
-                process();
-            } catch (Exception exception) {
-                logger.error("Exception in average file processor", exception);
-            }
+        try {
+            process();
+        } catch (Exception exception) {
+            logger.error("Exception in average file processor", exception);
         }
     }
 
