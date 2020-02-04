@@ -76,13 +76,13 @@ function processPressureData(result){
         pressureList.push(result.data[0][1]);
     } else {
         //following is commented for test purposes
-        // if(!result.data[0][0].substring(17,25) == pressureTimeList[pressureTimeList.length - 1]) {
+         if(result.data[0][0].substring(17,25) != pressureTimeList[pressureTimeList.length - 1]) {
             pressureTimeList.shift();
             pressureTimeList.push("" + result.data[0][0].substring(17,25));
 
             pressureList.shift();
             pressureList.push(result.data[0][1]);
-        // }
+         }
     }     
 }
 

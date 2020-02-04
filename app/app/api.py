@@ -116,7 +116,7 @@ def get_airpressure_measurements():
     timezone_offset = request.args.get("timezone")
 
     timezone_name = None
-    if timezone_offset:
+    if timezone_offset is not None:
         offset = util.convert_js_offset_to_storage_offset(int(timezone_offset))
         timezone_name = db.get_timezone_by_offset(offset)["name"]
 
@@ -140,7 +140,7 @@ def get_temperature_measurements():
     timezone_offset = request.args.get("timezone")
 
     timezone_name = None
-    if timezone_offset:
+    if timezone_offset is not None:
         offset = util.convert_js_offset_to_storage_offset(int(timezone_offset))
         timezone_name = db.get_timezone_by_offset(offset)["name"]
 
@@ -157,17 +157,25 @@ def get_temperature_measurements():
 
 @api_bp.route('/measurements/export/xml', methods=['GET'])
 def get_measurements_export():
-    stations = list(map(int, util.convert_array_param(
-        request.args.get("stations", [743700, 93590, 589210]))))
+    """
+    timzone parameter must be given in the format returned by the following
+    javascript command:
+
+        new Date().getTimezoneOffset();
+    """
+    air_stations = list(map(int, util.convert_array_param(
+        request.args.get("pressurestations", [743700, 93590, 589210]))))
+    temp_stations = list(map(int, util.convert_array_param(
+        request.args.get("tempstations", [743700, 93590, 589210]))))
     timezone_offset = request.args.get("timezone")
 
     timezone_name = None
-    if timezone_offset:
+    if timezone_offset is not None:
         offset = util.convert_js_offset_to_storage_offset(int(timezone_offset))
         timezone_name = db.get_timezone_by_offset(offset)["name"]
 
-    air_measurements = db.get_most_recent_air_pressure_average(stations, 120, timezone_name)
-    temp_measurements = db.get_most_recent_temperature_averages(stations, 24 * 7, timezone_name)
+    air_measurements = db.get_most_recent_air_pressure_average(air_stations, 120, timezone_name)
+    temp_measurements = db.get_most_recent_temperature_averages(temp_stations, 24 * 7, timezone_name)
 
     body = {
         "air_pressure": air_measurements,

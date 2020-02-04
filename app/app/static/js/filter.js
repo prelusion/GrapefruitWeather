@@ -10,6 +10,19 @@ $(document).ready(function() {
         getStationsFilter();
     });
     $("#filter_button").trigger("click");
+
+    $("#download_button").on("click", function() {
+        let pressureStations = getPressureStations();
+        let tempStations = getTemperatureStations();
+        let url = "/api/measurements/export/xml?timezone="+new Date().getTimezoneOffset();
+        if (pressureStations.length) {
+            url = url + "&pressurestations="+ pressureStations;
+        }
+        if (tempStations.length) {
+            url = url + "&tempstations="+ tempStations;
+        }
+        window.open(url, "_blank");
+    });
 });
 
 function setFilterValues(latitude, longitude, countryID, countryName) {
