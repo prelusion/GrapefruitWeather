@@ -27,5 +27,5 @@ volumes:
     nfsmount:
         driver_opts:
             type: nfs
-            o: addr=azure19.hopto.org,nolock,soft,rw,nfsvers=4
+            o: addr=azure19.hopto.org,nolock,soft,rw,nfsvers=4,rsize=131072,wsize=131072
             device: ":/"
