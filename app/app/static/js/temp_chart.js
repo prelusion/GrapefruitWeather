@@ -66,7 +66,7 @@ function drawTempChart(times, temperatures) {
  * @param  json result with timestamps and temperature measurements.
  */
 function processTempData(result){
-    console.log(result);
+    let temp = temperatureHistoryInterval;
     if(temperatureTimeList.length == 0){
         if (result.total < temperatureHistoryInterval){
             temperatureHistoryInterval = result.total;
@@ -75,6 +75,10 @@ function processTempData(result){
             temperatureTimeList.push(("" + result.data[x][0].substring(17,25)));
             temperatureList.push(result.data[x][1]);
         }
+        temperatureHistoryInterval = temp;
+    } else if (temperatureList.length < temp) {
+        temperatureTimeList.push(("" + result.data[0][0].substring(17,25)));
+        temperatureList.push(result.data[0][1]);
     } else {
         //following is commented for test purposes
          if(result.data[0][0].substring(17,25) != temperatureTimeList[temperatureTimeList.length - 1]) {
