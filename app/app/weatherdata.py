@@ -202,7 +202,6 @@ def decode_field(field, data):
         return decoded
     if field == "timestamp":
         dt = datetime.datetime.utcfromtimestamp(decoded)
-        dt += datetime.timedelta(hours=1)
         return dt
     if field == "rainfall":
         return decoded / 100
