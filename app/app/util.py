@@ -110,19 +110,21 @@ def convert_array_param(param):
 
 def convert_single_field_measurement_timezone(measurement, timezone):
     dt, value = measurement
-    return utc_to_local(dt, timezone), value
+    return utc_to_local(dt, timezone), value, dt
 
 
 def convert_js_offset_to_storage_offset(offset_mins):
     offset_hours = offset_mins / 60
-    offset_opposite = offset_hours * -1
-    offset_times_hundred = offset_opposite * 100
+    # offset_opposite = offset_hours * -1
+    offset_times_hundred = offset_hours * 100
     offset_rounded = int(offset_times_hundred)
     offset_padded = str(offset_rounded).zfill(5 if offset_rounded < 0 else 4)
-    offset_padded = "+" + offset_padded
+
+    if int(offset_rounded) > 0:
+        offset_padded = "+" + offset_padded
 
     print(offset_mins, offset_padded)
-    if int(offset_rounded) > 0:
-        return offset_padded
 
     return offset_padded
+
+
