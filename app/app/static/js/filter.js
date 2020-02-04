@@ -1,6 +1,7 @@
 $(document).ready(function() {
     //$(#track).val() = the track id+1.
     $("#filter_button").on("click", function() {
+        $(".track_container").css({"color": "#848689"});
         if($("#track").val() == "-1") {
             return;
         }
