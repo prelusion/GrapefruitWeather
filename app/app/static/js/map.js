@@ -159,7 +159,7 @@ function setAirStationsFromAPI(result) {
             currentStations.push(result.data[station].id);
 
             let marker = L.marker([result.data[station].latitude, result.data[station].longitude], {icon: weatherstationIconSelected} ).addTo(markers)
-            .bindPopup("Name:" + result.data[station].name);
+            .bindPopup(result.data[station].name);
             marker.highlighted = true;
             marker.profile = "station";     
             marker.distance = result.data[station].distance;
