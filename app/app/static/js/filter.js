@@ -42,10 +42,10 @@ $("#clear_button").on("click", function(){
 });
 
 $("#limit").on("input", function(){
-    if($(this).val() > 300) {
-        $(this).popover('show')
+    if($(this).val() > 99) {
+        $(this).popover('show');
     } else {
-        $(this).popover('hide')
+        $(this).popover('hide');
     }
 });
 
@@ -70,7 +70,10 @@ function getStationsFilter(custom = false, track_id, custom_country_id) {
     $("#limit_error").hide();
     $("#range_error").hide();
     if(limit === "") {
-        limit = 50;
+        limit = 3;
+    }
+    if(limit > 99) {
+        limit = 100
     }
 
     setTimeout(function(){
