@@ -25,7 +25,7 @@ public class ConversionTests {
     public void averageToBinaryAndBack() {
         Random random = new Random();
         int stationId = random.nextInt(8000);
-        AverageMeasurement averageMeasurement = new AverageMeasurement(LocalDateTime.now());
+        AverageMeasurement averageMeasurement = new AverageMeasurement(stationId, LocalDateTime.now());
         averageMeasurement.setCount(random.nextInt(100));
         averageMeasurement.setTemperature(random.nextDouble() * 100 - 50);
         averageMeasurement.setDewPoint(random.nextDouble() * 100 - 50);
@@ -37,8 +37,9 @@ public class ConversionTests {
         averageMeasurement.setSnowFall(random.nextDouble() * 100 - 50);
         averageMeasurement.setCloudPercentage(random.nextDouble() * 100 - 50);
         averageMeasurement.setWindDirection(random.nextInt(300));
-        byte[] bytes = MeasurementConverter.convertAverageToByteArray(stationId, averageMeasurement);
+        byte[] bytes = MeasurementConverter.convertAverageToByteArray(averageMeasurement);
         AverageMeasurement averageMeasurement2 = MeasurementConverter.convertByteArrayToAverage(bytes);
+        Assert.assertEquals(averageMeasurement.getStationId(), averageMeasurement2.getStationId());
         Assert.assertTrue(averageMeasurement.getDate().isEqual(averageMeasurement2.getDate()));
         Assert.assertEquals(averageMeasurement.getCount(), averageMeasurement2.getCount());
         Assert.assertEquals(averageMeasurement.getTemperature(), averageMeasurement2.getTemperature(), 0.1);

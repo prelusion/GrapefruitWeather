@@ -4,7 +4,8 @@ import lombok.val;
 import nl.hanze.weatherstation.models.AverageMeasurement;
 import nl.hanze.weatherstation.models.Measurement;
 import org.apache.commons.lang3.tuple.Pair;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -20,7 +21,7 @@ public class AverageLoadProcessor implements Runnable {
     private final HashMap<Integer, List<AverageMeasurement>> measurementAverages;
 
     public AverageLoadProcessor(Queue<Measurement> measurementAverageQueue, Queue<Measurement> measurementAverageLoadQueue, HashMap<Integer, List<AverageMeasurement>> measurementAverages) {
-        this.logger = Logger.getLogger(getClass());
+        this.logger = LoggerFactory.getLogger(getClass());
         this.measurementAverageQueue = measurementAverageQueue;
         this.measurementAverageLoadQueue = measurementAverageLoadQueue;
         this.measurementAverages = measurementAverages;
@@ -64,7 +65,7 @@ public class AverageLoadProcessor implements Runnable {
                             .stream()
                             .filter(averageMeasurement -> m.getRight().isEqual(averageMeasurement.getDate()))
                             .findFirst()
-                            .orElse(new AverageMeasurement(m.getRight()));
+                            .orElse(new AverageMeasurement(m.getLeft(), m.getRight()));
                     averages.add(a);
                 }
             });

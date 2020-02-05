@@ -8,22 +8,11 @@ services:
             - "7789:7789"
         volumes:
             - type: volume
-              source: logsmount
-              target: /logs
-              volume:
-                  nocopy: true
-            - type: volume
               source: nfsmount
               target: /measurements
               volume:
                   nocopy: true
 volumes:
-    logsmount:
-      driver: local
-      driver_opts:
-        type: none
-        o: bind
-        device: ${PWD}/logs
     nfsmount:
         driver_opts:
             type: nfs

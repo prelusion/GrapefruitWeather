@@ -7,6 +7,7 @@ import java.time.temporal.ChronoUnit;
 
 @Data
 public class AverageMeasurement {
+    private int stationId;
     private LocalDateTime date;
     private int count;
     private double temperature;
@@ -24,7 +25,8 @@ public class AverageMeasurement {
     private int position;
     private boolean modified;
 
-    public AverageMeasurement(LocalDateTime date) {
+    public AverageMeasurement(int stationId, LocalDateTime date) {
+        this.stationId = stationId;
         this.date = date.truncatedTo(ChronoUnit.HOURS);
     }
 

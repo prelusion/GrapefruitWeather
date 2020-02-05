@@ -3,7 +3,8 @@ package nl.hanze.weatherstation;
 import lombok.val;
 import nl.hanze.weatherstation.models.AverageMeasurement;
 import org.apache.commons.lang3.tuple.Pair;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.time.LocalDateTime;
@@ -17,7 +18,7 @@ public class FileAverageHandler implements Runnable {
     private int collectionId;
 
     public FileAverageHandler(HashMap<Integer, List<AverageMeasurement>> measurementAverages) {
-        this.logger = Logger.getLogger(this.getClass());
+        this.logger = LoggerFactory.getLogger(this.getClass());
         this.measurementAverages = measurementAverages;
 
         val files = FileHelper.extractExtensionSequences("/measurements", "wsamc");
@@ -25,10 +26,7 @@ public class FileAverageHandler implements Runnable {
     }
 
     public static HashMap<Integer, List<AverageMeasurement>> loadAveragesFromFileSystem(List<Pair<Integer, LocalDateTime>> stations) {
-        val files = FileHelper.extractExtensionSequences("/measurements", "wsamc")
-                .stream()
-                .map(id -> new File("/measurements/" + id + ".wsamc"))
-                .collect(Collectors.toList());
+        val collections = FileHelper.extractExtensionSequences("/measurements", "wsamc");
 
         val ids = stations.stream().map(integerLocalDateTimePair -> {
             byte[] id = new byte[7];
@@ -40,7 +38,9 @@ public class FileAverageHandler implements Runnable {
 
         HashMap<Integer, List<AverageMeasurement>> result = new HashMap<>();
 
-        for (File file : files) {
+        for (int id : collections) {
+            val file = new File("/measurements/" + id + ".wsamc");
+
             try {
                 byte[] idBuffer = new byte[7];
 
@@ -56,7 +56,10 @@ public class FileAverageHandler implements Runnable {
                         randomAccessFile.seek((i - 1) * 35);
                         randomAccessFile.readFully(fullBuffer);
                         val averages = result.computeIfAbsent(MeasurementConverter.getIntFromByteArray(idBuffer, 0, 3), integer -> new ArrayList<>());
-                        averages.add(MeasurementConverter.convertByteArrayToAverage(fullBuffer));
+                        val average = MeasurementConverter.convertByteArrayToAverage(fullBuffer);
+                        average.setCollectionId(id);
+                        average.setPosition(i - 1);
+                        averages.add(average);
                         ids.remove(idBuffer);
                     }
                 }
@@ -69,14 +72,12 @@ public class FileAverageHandler implements Runnable {
     }
 
     public static HashMap<Integer, List<AverageMeasurement>> loadAveragesFromFileSystem() {
-        val files = FileHelper.extractExtensionSequences("/measurements", "wsamc")
-                .stream()
-                .map(id -> new File("/measurements/" + id + ".wsamc"))
-                .collect(Collectors.toList());
+        val collections = FileHelper.extractExtensionSequences("/measurements", "wsamc");
 
         HashMap<Integer, List<AverageMeasurement>> result = new HashMap<>();
 
-        for (File file : files) {
+        for (int id : collections) {
+            val file = new File("/measurements/" + id + ".wsamc");
             try {
                 byte[] buffer = new byte[35];
 
@@ -90,7 +91,10 @@ public class FileAverageHandler implements Runnable {
                     val averages = result.computeIfAbsent(MeasurementConverter.getIntFromByteArray(buffer, 0, 3), k -> new ArrayList<>());
 
                     if (averages.size() < 2) {
-                        averages.add(MeasurementConverter.convertByteArrayToAverage(buffer));
+                        val average = MeasurementConverter.convertByteArrayToAverage(buffer);
+                        average.setCollectionId(id);
+                        average.setPosition(i - 1);
+                        averages.add(average);
                     }
                 }
                 randomAccessFile.close();
@@ -111,50 +115,38 @@ public class FileAverageHandler implements Runnable {
     }
 
     public void process() {
-        List<byte[]> values;
+        Map<Optional<Integer>, List<AverageMeasurement>> values;
         synchronized (measurementAverages) {
             values = measurementAverages.keySet()
                     .stream()
-                    .flatMap(stationId -> measurementAverages.get(stationId)
-                            .stream()
-                            .map(averageMeasurement -> MeasurementConverter.convertAverageToByteArray(stationId, averageMeasurement)))
-                    .collect(Collectors.toList());
+                    .flatMap(stationId -> measurementAverages.get(stationId).stream().filter(AverageMeasurement::isModified))
+                            .collect(Collectors.groupingBy(averageMeasurement -> Optional.ofNullable(averageMeasurement.getCollectionId())));
         }
 
-        val files = FileHelper.extractExtensionSequences("/measurements", "wsamc")
-                .stream()
-                .map(id -> new File("/measurements/" + id + ".wsamc"))
-                .collect(Collectors.toList());
-
-        byte[] idCompareBuffer = new byte[7];
-
-        for (File file : files) {
+        values.forEach((collectionId, measurements) -> {
+            if (collectionId.isEmpty()) {
+                return;
+            }
+            val file = new File("/measurements/" + collectionId + ".wsamc");
             try {
                 val randomAccessFile = new RandomAccessFile(file, "rw");
-                val measurementCount = (int) (file.length() / 35);
-
-                for (int i = measurementCount; i > 0; i--) {
-                    randomAccessFile.seek((i - 1) * 35);
-                    randomAccessFile.readFully(idCompareBuffer);
-                    val bytes = values.stream().filter(b -> idCompareBuffer[0] == b[0]
-                            && idCompareBuffer[1] == b[1]
-                            && idCompareBuffer[2] == b[2]
-                            && idCompareBuffer[3] == b[3]
-                            && idCompareBuffer[4] == b[4]
-                            && idCompareBuffer[5] == b[5]
-                            && idCompareBuffer[6] == b[6]).findFirst();
-
-                    if (bytes.isPresent()) {
-                        randomAccessFile.seek((i - 1) * 35);
-                        randomAccessFile.write(bytes.get());
-                        values.remove(bytes.get());
+                measurements.forEach(averageMeasurement -> {
+                    try {
+                        randomAccessFile.seek(averageMeasurement.getPosition() * 35);
+                        randomAccessFile.write(MeasurementConverter.convertAverageToByteArray(averageMeasurement));
+                        averageMeasurement.setModified(false);
+                    } catch (IOException ignored) {
+                        logger.error("", ignored);
                     }
-                }
-
+                });
                 randomAccessFile.close();
-            } catch (IOException exception) {
-                logger.error("", exception);
+            } catch (IOException ignored) {
+                logger.error("", ignored);
             }
+        });
+
+        if (values.get(null) == null) {
+            return;
         }
 
         val file = new File(String.format("/measurements/%s.wsamc", collectionId));
@@ -163,9 +155,16 @@ public class FileAverageHandler implements Runnable {
             file.createNewFile();
 
             try (val outputStream = new FileOutputStream(file, true)) {
-                for (byte[] value : values) {
-                    outputStream.write(value);
-                }
+                values.get(null)
+                        .stream()
+                        .map(MeasurementConverter::convertAverageToByteArray)
+                        .forEach(bytes -> {
+                    try {
+                        outputStream.write(bytes);
+                    } catch (IOException e) {
+                        logger.error("", e);
+                    }
+                });
             }
         } catch (IOException exception) {
             logger.error("", exception);

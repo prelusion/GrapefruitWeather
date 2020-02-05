@@ -2,8 +2,7 @@ package nl.hanze.weatherstation;
 
 import lombok.val;
 import nl.hanze.weatherstation.models.Measurement;
-import org.apache.log4j.Logger;
-import org.apache.log4j.PropertyConfigurator;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -44,7 +43,7 @@ public class WeatherStation {
         measurementSaverThread.start();
         averageLoadProcessorThread.start();
 
-        val healthLogger = Logger.getLogger("server-health");
+        val healthLogger = LoggerFactory.getLogger("server-health");
         val healthExecutor = Executors.newScheduledThreadPool(1);
         healthExecutor.scheduleAtFixedRate(() -> {
             if (!measurementProcessorThread.isAlive()) {
