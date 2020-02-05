@@ -127,7 +127,7 @@ public class FileAverageHandler implements Runnable {
             if (collectionId.isEmpty()) {
                 return;
             }
-            val file = new File("/measurements/" + collectionId + ".wsamc");
+            val file = new File("/measurements/" + collectionId.get() + ".wsamc");
             try {
                 val randomAccessFile = new RandomAccessFile(file, "rw");
                 measurements.forEach(averageMeasurement -> {
@@ -144,8 +144,7 @@ public class FileAverageHandler implements Runnable {
                 logger.error("", ignored);
             }
         });
-
-        if (values.get(null) == null) {
+        if (!values.containsKey(Optional.empty())) {
             return;
         }
 
@@ -153,19 +152,21 @@ public class FileAverageHandler implements Runnable {
 
         try {
             file.createNewFile();
+            val randomAccessFile = new RandomAccessFile(file, "rw");
 
-            try (val outputStream = new FileOutputStream(file, true)) {
-                values.get(null)
-                        .stream()
-                        .map(MeasurementConverter::convertAverageToByteArray)
-                        .forEach(bytes -> {
+                for (AverageMeasurement averageMeasurement : values.get(Optional.empty())) {
+                    val bytes = MeasurementConverter.convertAverageToByteArray(averageMeasurement);
                     try {
-                        outputStream.write(bytes);
+                        averageMeasurement.setCollectionId(collectionId);
+                        averageMeasurement.setPosition((int) (randomAccessFile.length() / 35));
+                        randomAccessFile.seek(randomAccessFile.length());
+                        randomAccessFile.write(bytes);
                     } catch (IOException e) {
                         logger.error("", e);
                     }
-                });
-            }
+                }
+
+            randomAccessFile.close();
         } catch (IOException exception) {
             logger.error("", exception);
         }
