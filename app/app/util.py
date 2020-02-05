@@ -1,45 +1,13 @@
 import csv
-import pytz
-from bisect import bisect_left
 from datetime import timedelta
+
+import pytz
 from flask import jsonify
 from passlib.hash import argon2
 
 
 def avg(lst):
     return sum(lst) / len(lst)
-
-
-def split_by_interval(array, interval: int):
-    """ This function splits a sorted timestamped array into averages for each interval.
-
-        :param array: array of objects containing a timestamp and a value property defined by value_field
-        :param value_field: the field name in the array elements that contains the value to be averaged
-        :param interval: interval in seconds, all measurements between each interval are averaged
-    """
-
-    prev_timestamp = array[0]["timestamp"]
-    values = 0
-    count = 0
-    averages = []
-
-    for el in array:
-        if el["timestamp"] - prev_timestamp >= timedelta(interval):
-            prev_timestamp = el["timestamp"]
-            avg = values / count
-            averages.append(avg)
-            values = count = 0
-        else:
-            values += el["value"]
-            count += 1
-
-
-def binary_search(array, value):
-    i = bisect_left(array, value)
-    if i != len(array) and array[i] == value:
-        return i
-    else:
-        return -1
 
 
 def http_format_error(message):
@@ -51,7 +19,6 @@ def http_format_data(data, params=None):
     if params:
         for param, value in params.items():
             response[param] = value
-
     return jsonify(response)
 
 
@@ -110,14 +77,7 @@ def convert_array_param(param):
 
 def convert_single_field_measurement_timezone(measurement, timezone):
     dt, value = measurement
-    converted = utc_to_local(dt, timezone)
-    # print(converted, dt)
-    # print(str(converted), str(dt))
-    # if time_format:
-    #     # converted = converted.strftime(time_format)
-    #     converted = converted.replace(tzinfo=None)
-    #     print(converted)
-    return converted, value, dt
+    return utc_to_local(dt, timezone), value
 
 
 def convert_js_offset_to_storage_offset(offset_mins):
@@ -131,3 +91,26 @@ def convert_js_offset_to_storage_offset(offset_mins):
 
     return offset_padded
 
+
+def split_by_interval(array, interval: int):
+    """ This function splits a sorted timestamped array into averages for each interval.
+
+        :param array: array of objects containing a timestamp and a value property defined by value_field
+        :param value_field: the field name in the array elements that contains the value to be averaged
+        :param interval: interval in seconds, all measurements between each interval are averaged
+    """
+
+    prev_timestamp = array[0]["timestamp"]
+    values = 0
+    count = 0
+    averages = []
+
+    for el in array:
+        if el["timestamp"] - prev_timestamp >= timedelta(interval):
+            prev_timestamp = el["timestamp"]
+            average = values / count
+            averages.append(average)
+            values = count = 0
+        else:
+            values += el["value"]
+            count += 1
