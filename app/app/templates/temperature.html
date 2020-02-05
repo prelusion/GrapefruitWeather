@@ -8,12 +8,16 @@
         <div style="height: 300px;">
             <canvas id="temperature_chart" ></canvas>
         </div>
-        <div class="temp_realtime_data">
-            <p class="realtime_labels" id="temp_time_label"></p>
-            <p class="realtime_labels" id="temperature_label"></p>
-            <p class="realtime_labels" id="amount_temperature_stations"></p>
-            <p class="realtime_labels" id="temperature_country"></p>
-            <p class="realtime_labels" id="amount_stations"></p>
+        <div class="temp_realtime_data" style="margin-top: 0px;">
+            <div style="line-height: 1em; float: left; width: 40%;">
+                <span class="realtime_labels" id="temp_time_label"></span><br>
+                <span class="realtime_labels" id="temperature_label"></span>
+            </div>
+            <div class="bottom_text" style="line-height: 1em; float: left; width: 50%; margin-left: 3%;">
+                <span class="realtime_labels" id="temperature_country"></span><br>
+                <span class="realtime_labels" id="amount_stations"></span>
+            </div>
+            <div style="clear: both;"></div>
             <div style="float: right; margin-right: 15px;">
                 <button type="button" id="temperature_timezone" class="btn btn-success timezone">Local timezone</button>
             </div>

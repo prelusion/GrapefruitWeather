@@ -18,6 +18,10 @@
     .temperature { 
         margin-top: 200px;
     }
+
+    .bottom_text {
+        display:none;
+    }    
 }
 
 .temperature .footer_container {
@@ -30,7 +34,7 @@
 }
 
 
-.temperature .footer_container .temp_realtime_data{
+.temperature .footer_container .temp_realtime_data {
     margin-top: 30px;
     margin-left: 30px;
     color: black;
