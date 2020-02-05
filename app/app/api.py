@@ -21,14 +21,12 @@ def get_racing_tracks():
 
     success, result = db.get_racing_tracks(track_id, name, city, country)
 
-    params = {
-        "total": len(result),
-    }
-
     if success is False:
         return http_format_error(result)
-    else:
-        return http_format_data(result, params)
+
+    params = {"total": len(result)}
+
+    return http_format_data(result, params)
 
 
 @api_bp.route('/stations')
@@ -40,6 +38,7 @@ def get_stations():
     radius = request.args.get("radius")
     country_id = request.args.get("country")
     limit = request.args.get("limit")
+
     result = []
 
     if track_id:
@@ -54,14 +53,10 @@ def get_stations():
     else:
         return http_format_error("Invalid parameters")
 
-    params = {
-        "limit": limit,
-        "offset": limit,
-        "total": len(result),
-    }
-
     if not result:
         return http_format_error("Unable to retrieve data")
+
+    params = {"limit": limit, "offset": limit, "total": len(result)}
 
     return http_format_data(result, params)
 
@@ -110,8 +105,7 @@ def get_airpressure_measurements():
     """
     Example: http://127.0.0.1:5000/api/measurements/airpressure?limit=120&stations=93590,589210
     """
-    stations = list(map(int, util.convert_array_param(
-        request.args.get("stations", [743700, 93590, 589210]))))
+    stations = list(map(int, util.convert_array_param(request.args.get("stations"))))
     limit = int(request.args.get("limit", 120))
     timezone_offset = request.args.get("timezone")
 
@@ -121,13 +115,9 @@ def get_airpressure_measurements():
         timezone = db.get_timezone_by_offset(offset)
         timezone_name = timezone["name"]
 
-    measurements = db.get_most_recent_air_pressure_average(stations, limit,  timezone_name)
+    measurements = db.get_most_recent_air_pressure_average(stations, limit, timezone_name)
 
-    params = {
-        "total": len(measurements),
-        "limit": limit,
-        "stations": stations,
-    }
+    params = {"total": len(measurements), "limit": limit, "stations": stations}
 
     return http_format_data(measurements, params)
 
@@ -135,8 +125,7 @@ def get_airpressure_measurements():
 @api_bp.route('/measurements/temperature')
 @login_required
 def get_temperature_measurements():
-    stations = list(map(int, util.convert_array_param(
-        request.args.get("stations", [85210]))))
+    stations = list(map(int, util.convert_array_param(request.args.get("stations"))))
     limit = int(request.args.get("limit", 24 * 7))
     timezone_offset = request.args.get("timezone")
 
@@ -147,51 +136,25 @@ def get_temperature_measurements():
 
     measurements = db.get_most_recent_temperature_averages(stations, limit, timezone_name)
 
-    params = {
-        "total": len(measurements),
-        "limit": limit,
-        "stations": stations,
-    }
+    params = {"total": len(measurements), "limit": limit, "stations": stations}
 
     return http_format_data(measurements, params)
 
 
 @api_bp.route('/measurements/export/xml', methods=['GET'])
 def get_measurements_export():
-    """
-    timzone parameter must be given in the format returned by the following
-    javascript command:
+    air_stations = list(map(int, util.convert_array_param(request.args.get("pressurestations"))))
+    temp_stations = list(map(int, util.convert_array_param(request.args.get("tempstations"))))
 
-        new Date().getTimezoneOffset();
-    """
-    def convert_measurement(measurement, timezone):
-        dt, value = measurement
-        return {
-            "utc_timestamp": dt,
-            "value": value,
-        }
-
-    air_stations = list(map(int, util.convert_array_param(
-        request.args.get("pressurestations", [743700, 93590, 589210]))))
-    temp_stations = list(map(int, util.convert_array_param(
-        request.args.get("tempstations", [743700, 93590, 589210]))))
-    timezone_offset = request.args.get("timezone")
-
-    timezone_name = None
-    if timezone_offset is not None:
-        offset = util.convert_js_offset_to_storage_offset(int(timezone_offset))
-        timezone_name = db.get_timezone_by_offset(offset)["name"]
-
+    # 2 minutes of air pressure measurements
     air_measurements = db.get_most_recent_air_pressure_average(air_stations, 120)
+    # a week of hourly temperature measurements
     temp_measurements = db.get_most_recent_temperature_averages(temp_stations, 24 * 7)
 
-    air_measurements = map(lambda m: convert_measurement(m, timezone_name), air_measurements)
-    temp_measurements = map(lambda m: convert_measurement(m, timezone_name), temp_measurements)
+    air_measurements = map(lambda m: {"utc_timestamp": m[0], "value": m[1]}, air_measurements)
+    temp_measurements = map(lambda m: {"utc_timestamp": m[0], "value": m[1]}, temp_measurements)
 
-    body = {
-        "air_pressure": air_measurements,
-        "temperature": temp_measurements,
-    }
+    body = {"air_pressure": air_measurements, "temperature": temp_measurements}
 
     content = dicttoxml(body, custom_root='measurements', attr_type=False,
                         item_func=lambda parent: "measurement")

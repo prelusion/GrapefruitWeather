@@ -10,7 +10,6 @@ import os
 import re
 from collections import OrderedDict
 
-from app import const
 from app import util
 
 MAX_CHUNKSIZE = 100000000  # 100 MB
@@ -287,7 +286,7 @@ def group_by_timestamp(measurementbytes_generator, extension):
     measurements = []
     currtimestamp = None
 
-    for  measurementbytes in measurementbytes_generator:
+    for measurementbytes in measurementbytes_generator:
         measurement = decode_measurement(measurementbytes, extension)
         timestamp = measurement["timestamp"]
 
@@ -308,9 +307,6 @@ def group_by_timestamp(measurementbytes_generator, extension):
 
 def groups_to_average(fieldname, measurement_generator):
     for measurements in measurement_generator:
-        # for measurement in measurements:
-        #     print(measurement["station_id"], measurement[fieldname])
-
         values = [measurement[fieldname] for measurement in measurements]
         yield measurements[0]["timestamp"], round(util.avg(values), 2)
 

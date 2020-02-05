@@ -1,12 +1,10 @@
 import csv
 import os
+from copy import deepcopy
 
 from flask_login import UserMixin
 
-from app import const, util
-from app.const import TRACK_CACHE_DIR
-from copy import deepcopy
-from app.util import csv_to_array_of_dicts
+from app import util, const
 
 _stations_data = None
 _tracks_data = None
@@ -91,8 +89,8 @@ def get_timezones():
 
 
 def generate_track_distance_cache(data, track_id):
-    os.makedirs(TRACK_CACHE_DIR, exist_ok=True)
-    file_path = os.path.join(TRACK_CACHE_DIR, str(track_id) + ".csv")
+    os.makedirs(const.TRACK_CACHE_DIR, exist_ok=True)
+    file_path = os.path.join(const.TRACK_CACHE_DIR, str(track_id) + ".csv")
     with open(file_path, 'w', newline='') as file:
         wr = csv.writer(file)
         wr.writerow(("id", "distance"))
@@ -105,7 +103,7 @@ def get_track_distances(track_id):
 
     if track_id not in _distance_data:
         _distance_data[track_id] = {}
-        with open(TRACK_CACHE_DIR + "/" + str(track_id) + ".csv") as csvfile:
+        with open(const.TRACK_CACHE_DIR + "/" + str(track_id) + ".csv") as csvfile:
             reader = csv.reader(csvfile)
             for row in reader:
                 _distance_data[track_id][row[0]] = row[1]

@@ -1,14 +1,9 @@
 import os
-import sys
-from copy import deepcopy
 from logging import getLogger
-from pprint import pprint
+
 from geopy import distance
 
-from app import const
-from app import weatherdata
-from app import fileaccess
-from app import util
+from app import const, fileaccess, util, weatherdata
 
 logger = getLogger(__name__)
 
@@ -70,12 +65,12 @@ def get_stations_by_coordinates(latitude, longitude, limit):
                               target_location).km)
     stations.sort(key=lambda st: st["distance"])
     return stations[:int(limit)]
-    
+
 
 def get_timezone_by_station_id(station_id):
     stations = list(filter(lambda st: int(st["id"]) == int(station_id), fileaccess.get_stations()))
 
-    if stations:    
+    if stations:
         return stations[0]["timezone"]
 
 
@@ -150,9 +145,10 @@ def get_most_recent_air_pressure_average(station_ids, limit, timezone_name=None)
         offset += 1
 
     if timezone_name:
-        result = list(map(
+        converted = map(
             lambda measurement: util.convert_single_field_measurement_timezone(measurement, timezone_name),
-            result))
+            result)
+        result = list(converted)
 
     return result
 
@@ -186,8 +182,9 @@ def get_most_recent_temperature_averages(station_ids, limit, timezone_name=None)
         offset += 1
 
     if timezone_name:
-        result = list(map(
+        converted = map(
             lambda measurement: util.convert_single_field_measurement_timezone(measurement, timezone_name),
-            result))
+            result)
+        result = list(converted)
 
     return result
