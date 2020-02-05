@@ -8,6 +8,12 @@
     border: 1px solid black;
 }
 
+.left_navbar hr {
+    width: 80%;
+    color: yellow;
+    padding: 5px;
+}
+
 .left_navbar .btn_container {
     width: 90%;
     margin-left: 5px;

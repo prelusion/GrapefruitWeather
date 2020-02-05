@@ -10,15 +10,12 @@ from app.util import encrypt
 @app.route("/", methods=['GET', 'POST'])
 @login_required
 def index():
-    ranges = []
-    for value in range (10000):
-        ranges.append(value)
     if request.method == 'POST':
         if "logout" in request.form: 
             logout_user()
             return redirect("/login")
     racing_tracks = db.get_racing_tracks()[1];
-    return render_template('index.html', racing_tracks=racing_tracks, ranges_array=ranges)
+    return render_template('index.html', racing_tracks=racing_tracks)
 
 
 @app.route('/login', methods=['GET', 'POST'])

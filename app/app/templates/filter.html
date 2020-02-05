@@ -25,12 +25,7 @@
         </div>
         <div class="input_container" style="margin-top: 5px;">
             <label for="range">Temperature Stations Radius</label>
-            <input id="range" class="form-control" list="rangelist" name="range">
-            <datalist id="rangelist">
-                {% for item in ranges_array %}
-                    <option value="{{item * 5}}">s</option>               
-                {% endfor %}
-            </datalist>
+            <input id="range" class="form-control" type="text" name="range">
         </div>
         <div class="input_container">
             <input id="filter_button" class="form-control style_button" type="submit" name="filter_button" value="Filter">
