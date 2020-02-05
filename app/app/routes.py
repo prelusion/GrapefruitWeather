@@ -24,7 +24,7 @@ def login():
 
     if request.method == 'POST':
         user = fileaccess.get_user(username=request.form["username"])
-        if user is not False and argon2.verify(request.form["username"], user.password):
+        if user is not False and argon2.verify(request.form["password"], user.password):
             login_user(user)
             return redirect("/")
 
