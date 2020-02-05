@@ -163,11 +163,11 @@ public class MeasurementConverter {
         return byteArray;
     }
 
-    public static byte[] convertAverageToByteArray(int stationId, AverageMeasurement averageMeasurement) {
+    public static byte[] convertAverageToByteArray(AverageMeasurement averageMeasurement) {
         // Each average has a fixes size of 35 bytes.
         byte[] byteArray = new byte[35];
 
-        writeIntToByteArray(byteArray, 0, 3, stationId);
+        writeIntToByteArray(byteArray, 0, 3, averageMeasurement.getStationId());
         val epoch = averageMeasurement.getDate().toEpochSecond(ZoneOffset.UTC);
         writeIntToByteArray(byteArray, 3, 4, Math.toIntExact(epoch));
         writeIntToByteArray(byteArray, 7, 2, averageMeasurement.getCount());
@@ -187,8 +187,9 @@ public class MeasurementConverter {
     }
 
     public static AverageMeasurement convertByteArrayToAverage(byte[] byteArray) {
+        val stationId = getIntFromByteArray(byteArray, 0, 3);
         val epoch = getIntFromByteArray(byteArray, 3, 4);
-        val averageMeasurement = new AverageMeasurement(Instant.ofEpochSecond(epoch).atZone(ZoneOffset.UTC).toLocalDateTime());
+        val averageMeasurement = new AverageMeasurement(stationId, Instant.ofEpochSecond(epoch).atZone(ZoneOffset.UTC).toLocalDateTime());
 
         averageMeasurement.setCount(getIntFromByteArray(byteArray, 7, 2));
         averageMeasurement.setTemperature(getIntFromByteArray(byteArray, 9, 3) / 10.0);

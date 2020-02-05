@@ -63,6 +63,7 @@ public class AverageProcessor implements Runnable {
                 val average = getAverage(measurement.getStationId(), measurement.getTimestamp());
 
                 if (average != null) {
+                    average.setModified(true);
                     average.addMeasurement(measurement);
                 } else {
                     measurementAverageLoadQueue.offer(measurement);

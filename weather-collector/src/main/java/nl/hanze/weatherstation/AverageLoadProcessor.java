@@ -65,7 +65,7 @@ public class AverageLoadProcessor implements Runnable {
                             .stream()
                             .filter(averageMeasurement -> m.getRight().isEqual(averageMeasurement.getDate()))
                             .findFirst()
-                            .orElse(new AverageMeasurement(m.getRight()));
+                            .orElse(new AverageMeasurement(m.getLeft(), m.getRight()));
                     averages.add(a);
                 }
             });
