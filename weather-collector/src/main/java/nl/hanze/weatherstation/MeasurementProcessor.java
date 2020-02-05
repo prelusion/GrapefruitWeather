@@ -2,7 +2,8 @@ package nl.hanze.weatherstation;
 
 import lombok.val;
 import nl.hanze.weatherstation.models.Measurement;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -16,7 +17,7 @@ public class MeasurementProcessor implements Runnable {
     private final HashMap<Integer, Queue<Measurement>> measurementHistory;
 
     public MeasurementProcessor(MeasurementCorrecter measurementCorrecter, Queue<String> rawDataQueue, Queue<Measurement> measurementQueue, HashMap<Integer, Queue<Measurement>> measurementHistory) {
-        this.logger = Logger.getLogger(getClass());
+        this.logger = LoggerFactory.getLogger(getClass());
         this.measurementCorrecter = measurementCorrecter;
         this.rawDataQueue = rawDataQueue;
         this.measurementQueue = measurementQueue;
