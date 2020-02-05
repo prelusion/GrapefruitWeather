@@ -1,5 +1,5 @@
 import csv
-from datetime import timedelta
+from datetime import timedelta, datetime
 
 import pytz
 from flask import jsonify
@@ -77,7 +77,11 @@ def convert_array_param(param):
 
 def convert_single_field_measurement_timezone(measurement, timezone):
     dt, value = measurement
-    return utc_to_local(dt, timezone), value
+
+    local_dt = utc_to_local(dt, timezone)
+    number_dt = datetime.strftime(dt, "%Y-%m-%d %H:%M:%S")
+
+    return local_dt, value, number_dt
 
 
 def convert_js_offset_to_storage_offset(offset_mins):
