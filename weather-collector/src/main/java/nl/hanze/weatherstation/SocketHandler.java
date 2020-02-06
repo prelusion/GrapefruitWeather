@@ -41,6 +41,10 @@ public class SocketHandler implements Runnable {
             }
         } catch (IOException exception) {
             logger.error("Error occurred on handing socket", exception);
+            try {
+                socket.close();
+            } catch (Exception ignored) {
+            }
         }
     }
 }
