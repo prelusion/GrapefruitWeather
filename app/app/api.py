@@ -4,8 +4,7 @@ from dicttoxml import dicttoxml
 from flask import Blueprint, request, Response
 from flask_login import login_required
 
-from app import db
-from app import util
+from app import db, util
 from app.util import http_format_error, http_format_data
 
 api_bp = Blueprint('api_bp', __name__)
