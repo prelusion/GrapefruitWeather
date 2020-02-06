@@ -2,7 +2,7 @@
 .idea
 .vscode
 venv
-
+data/measurements/
 # GENERATED
 # Created by https://www.gitignore.io/api/node,flask,python,intellij,visualstudio,visualstudiocode
 # Edit at https://www.gitignore.io/?templates=node,flask,python,intellij,visualstudio,visualstudiocode

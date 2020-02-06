@@ -8,9 +8,12 @@ import datetime
 import math
 import os
 import re
+from logging import getLogger
 from collections import OrderedDict
 
 from app import util
+
+logger = getLogger(__name__)
 
 MAX_CHUNKSIZE = 100000000  # 100 MB
 
@@ -115,12 +118,13 @@ def load_data_per_file(datadir, offset, extension):
     :return: data in bytes
     """
     files = get_files(datadir, extension)
-
+    logger.info(f"len files: {len(files)}, files: {files}")
     index = (len(files) - 1) - offset
     if index < 0:
         return []
 
     filename, filepath = files[index]
+    logger.info(f"loading file: {filename}, offset: {offset}, index: {index}")
 
     size = os.path.getsize(filepath)
     if size > MAX_CHUNKSIZE:

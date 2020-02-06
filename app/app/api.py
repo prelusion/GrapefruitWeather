@@ -142,18 +142,24 @@ def get_temperature_measurements():
 
 @api_bp.route('/measurements/export/xml', methods=['GET'])
 def get_measurements_export():
-    air_stations = list(map(int, util.convert_array_param(request.args.get("pressurestations"))))
-    temp_stations = list(map(int, util.convert_array_param(request.args.get("tempstations"))))
+    air_stations = request.args.get("pressurestations")
+    temp_stations = request.args.get("tempstations")
 
-    # 2 minutes of air pressure measurements
-    air_measurements = db.get_most_recent_air_pressure_average(air_stations, 120)
-    # a week of hourly temperature measurements
-    temp_measurements = db.get_most_recent_temperature_averages(temp_stations, 24 * 7)
+    body = {}
 
-    air_measurements = map(lambda m: {"utc_timestamp": m[0], "value": m[1]}, air_measurements)
-    temp_measurements = map(lambda m: {"utc_timestamp": m[0], "value": m[1]}, temp_measurements)
+    if air_stations:
+        air_stations = list(map(int, util.convert_array_param(air_stations)))
+        # 2 minutes of air pressure measurements
+        air_measurements = db.get_most_recent_air_pressure_average(air_stations, 120)
+        air_measurements = map(lambda m: {"utc_timestamp": m[0], "value": m[1]}, air_measurements)
+        body["air_pressure"] = air_measurements
 
-    body = {"air_pressure": air_measurements, "temperature": temp_measurements}
+    if temp_stations:
+        temp_stations = list(map(int, util.convert_array_param(temp_stations)))
+        # a week of hourly temperature measurements
+        temp_measurements = db.get_most_recent_temperature_averages(temp_stations, 24 * 7)
+        temp_measurements = map(lambda m: {"utc_timestamp": m[0], "value": m[1]}, temp_measurements)
+        body["temperature"] = temp_measurements
 
     content = dicttoxml(body, custom_root='measurements', attr_type=False,
                         item_func=lambda parent: "measurement")
